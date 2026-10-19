@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-SIEM Command Center | Security Operations Console</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <h1 class="brand-title">
+                        MINI-SIEM COMMAND CENTER
+                        <span class="brand-badge">V1.0 - FULL SCENARIO</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div class="status-indicator">
+                <div class="pulse-dot"></div>
+                <span>LIVE CORRELATION ENGINE ACTIVE (2s POLLING)</span>
+            </div>
+
+            <div class="header-actions">
+                <button id="btnReset" class="btn btn-outline" title="Reset all in-memory logs and alerts">
+                    🔄 Reset SIEM State
+                </button>
+                <a href="/docs" target="_blank" class="btn btn-primary" title="Open FastAPI Interactive OpenAPI Docs">
+                    📖 API Docs
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+
+        <!-- Top Metrics Bar -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <span class="metric-label">Ingested Logs</span>
+                <span class="metric-value" id="valTotalLogs">0</span>
+            </div>
+            <div class="metric-card critical">
+                <span class="metric-label">Critical Alerts (KRITIS)</span>
+                <span class="metric-value" id="valCriticalAlerts">0</span>
+            </div>
+            <div class="metric-card high">
+                <span class="metric-label">High Alerts (TINGGI)</span>
+                <span class="metric-value" id="valHighAlerts">0</span>
+            </div>
+            <div class="metric-card medium">
+                <span class="metric-label">Medium Alerts (MENENGAH)</span>
+                <span class="metric-value" id="valMediumAlerts">0</span>
+            </div>
+            <div class="metric-card whitelist">
+                <span class="metric-label">Whitelisted IPs (Blind Spots)</span>
+                <span class="metric-value" id="valWhitelistCount">0</span>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Split Layout -->
+        <div class="dashboard-grid">
+
+            <!-- Left Main Column: Live Alerts & Log Stream -->
+            <div class="col-main">
+
+                <!-- Real-time Alerts Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            🚨 Real-Time Security Alerts (Live Feed)
+                        </h2>
+                        <span class="panel-badge" id="alertCountBadge">0 Total</span>
+                    </div>
+                    <div class="panel-body">
+                        <div id="alertList" class="alert-list">
+                            <div class="empty-state">
+                                Menunggu deteksi insiden keamanan...<br>
+                                Gunakan Simulator di sebelah kanan untuk memicu skenario serangan.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Raw Ingestion Stream -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            📡 Ingestion Event Stream (Raw Logs)
+                        </h2>
+                        <span class="panel-badge" id="logCountBadge">0 Logs</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-container">
+                            <table id="logTable">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp (UTC)</th>
+                                        <th>Event Type</th>
+                                        <th>User ID</th>
+                                        <th>Source IP</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logTableBody">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">Belum ada log yang masuk via POST /api/ingest</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Careless Whitelisting & Interactive Simulation Launcher -->
+            <div class="col-side">
+
+                <!-- Feature C: Careless Whitelisting Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            🛡️ Careless Whitelisting Tuning
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="warning-banner">
+                            ⚠️ <strong>FATAL ERROR SIMULATION:</strong> IP yang di-whitelist di sini akan <strong>diabaikan sepenuhnya</strong> oleh Mesin Korelasi (menciptakan Blind Spot fatal!).
+                        </div>
+
+                        <form id="whitelistForm">
+                            <div class="form-group">
+                                <label class="form-label" for="whitelistIp">IPv4 Address to Whitelist</label>
+                                <input type="text" id="whitelistIp" class="form-control" placeholder="Contoh: 203.0.113.50" required pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="whitelistReason">Reason / Catatan Kapten</label>
+                                <input type="text" id="whitelistReason" class="form-control" placeholder="e.g. CEO Laptop / VIP bypass">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                + Whitelist IP Ini (Ciptakan Blind Spot)
+                            </button>
+                        </form>
+
+                        <div style="margin-top: 1.25rem;">
+                            <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Active Whitelisted IPs
+                            </h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>IP Address</th>
+                                            <th>Reason</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="whitelistTableBody">
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada IP yang di-whitelist</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Interactive Scenario Demo Launcher -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            🎯 Quick Scenario Launcher
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                            Tembakkan 7 skenario PRD langsung dari browser atau via terminal <code>python simulator.py</code>:
+                        </p>
+                        <div class="scenario-grid">
+                            <button class="btn-scenario" data-scenario="1">
+                                <span>1. Normal Traffic</span>
+                                <span class="rule-tag" style="background:#1e293b; color:#94a3b8;">Normal</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="2">
+                                <span>2. DDoS Attack (&gt;10 req/10s)</span>
+                                <span class="rule-tag" style="background:rgba(249,115,22,0.2); color:var(--high-orange);">Rule 1 - TINGGI</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="3">
+                                <span>3. Impossible Travel (&lt;1 jam)</span>
+                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">Rule 2 - KRITIS</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="4">
+                                <span>4. Distributed Brute Force</span>
+                                <span class="rule-tag" style="background:rgba(249,115,22,0.2); color:var(--high-orange);">Rule 3 - TINGGI</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="5">
+                                <span>5. Data Exfiltration (&gt;50 dl)</span>
+                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">Rule 5 - KRITIS</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="6">
+                                <span>6. Careless Whitelist Attack</span>
+                                <span class="rule-tag" style="background:rgba(6,182,212,0.2); color:var(--accent-cyan);">Blind Spot Demo</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="7">
+                                <span>7. Data Cacat / Time Drift</span>
+                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">HTTP 422 Test</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
