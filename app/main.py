@@ -39,6 +39,14 @@ def get_dashboard():
     return {"message": "Mini-SIEM API is active. Static dashboard not yet found."}
 
 
+@app.get("/presentation")
+def get_presentation():
+    pres_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "presentation.html")
+    if os.path.exists(pres_file):
+        return FileResponse(pres_file)
+    return {"message": "Presentation file not found."}
+
+
 @app.post("/api/ingest", status_code=status.HTTP_201_CREATED)
 def ingest_log(event: LogEvent):
     """

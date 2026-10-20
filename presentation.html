@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolusi SIEM: Tantangan Self-Adapting & Arsitektur Pengaman</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #080d1a;
+            --bg-card: #0f172a;
+            --bg-card-hover: #1e293b;
+            --border-color: #1e293b;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --danger-red: #ef4444;
+            --warning-orange: #f97316;
+            --success-green: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Header */
+        header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: white;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .slide-counter {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        /* Presentation Container */
+        .presentation-container {
+            max-width: 1280px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Navigation Bar */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            scrollbar-width: thin;
+        }
+
+        .nav-tab {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-main);
+            border-color: var(--accent-cyan);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Slides */
+        .slide {
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Slide Content Components */
+        .slide-header {
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent-cyan);
+            padding-left: 1.25rem;
+        }
+
+        .slide-tag {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.35rem;
+        }
+
+        .slide-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .slide-subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-top: 0.35rem;
+        }
+
+        /* Hero Slide */
+        .hero-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.8));
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 2.75rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.25rem;
+            line-height: 1.2;
+        }
+
+        .hero-desc {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            font-size: 1.15rem;
+            color: var(--text-muted);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .hero-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .hero-box:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+        }
+
+        .hero-box h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 3-Column Concern Grid */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card.danger { border-top: 4px solid var(--danger-red); }
+        .card.warning { border-top: 4px solid var(--warning-orange); }
+        .card.purple { border-top: 4px solid var(--accent-purple); }
+        .card.success { border-top: 4px solid var(--success-green); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .card.danger .card-tag { background: rgba(239, 68, 68, 0.15); color: var(--danger-red); }
+        .card.warning .card-tag { background: rgba(249, 115, 22, 0.15); color: var(--warning-orange); }
+        .card.purple .card-tag { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+        .card.success .card-tag { background: rgba(16, 185, 129, 0.15); color: var(--success-green); }
+
+        .card-body p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .box-highlight {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            border-left: 3px solid;
+            margin-top: 0.5rem;
+        }
+
+        .box-analogy {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .box-analogy strong {
+            color: #38bdf8;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .box-sample {
+            border-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.05);
+        }
+
+        .box-sample strong {
+            color: #f43f5e;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .box-solution {
+            border-color: var(--success-green);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .box-solution strong {
+            color: var(--success-green);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Comparison Split Layout */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .split-layout, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .split-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .split-box.bad {
+            border-top: 4px solid var(--danger-red);
+        }
+
+        .split-box.good {
+            border-top: 4px solid var(--success-green);
+        }
+
+        .split-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .split-box ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .split-box li {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .split-box.bad li::before {
+            content: '❌';
+            position: absolute;
+            left: 0;
+            font-size: 0.8rem;
+        }
+
+        .split-box.good li::before {
+            content: '✅';
+            position: absolute;
+            left: 0;
+            font-size: 0.8rem;
+        }
+
+        /* Interactive Architecture Flow Diagram */
+        .diagram-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-width: 900px;
+        }
+
+        .flow-step {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .flow-step:hover {
+            border-color: var(--accent-cyan);
+            transform: scale(1.03);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .flow-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer Navigation Controls */
+        .footer-controls {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+        }
+
+        .btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.65rem 1.4rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0891b2, #2563eb);
+            border-color: transparent;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: white;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Key Indicator Badge */
+        .kbd-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        kbd {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.15rem 0.4rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-brand">
+            <span class="brand-badge">ARCHITECTURAL BRIEF</span>
+            <span class="brand-title">Evolusi Autonomous SIEM: Ambisi vs Realita</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="kbd-hint">Gunakan tombol <kbd>←</kbd> <kbd>→</kbd> untuk navigasi</div>
+            <div class="slide-counter" id="slideCounter">Slide 1 / 6</div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="presentation-container">
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs" id="navTabs">
+            <button class="nav-tab active" data-index="0">1. Executive Overview</button>
+            <button class="nav-tab" data-index="1">2. Concern Keamanan</button>
+            <button class="nav-tab" data-index="2">3. Concern Operasional & Bisnis</button>
+            <button class="nav-tab" data-index="3">4. Concern Audit & Compliance</button>
+            <button class="nav-tab" data-index="4">5. Data Quality vs Threats</button>
+            <button class="nav-tab" data-index="5">6. Arsitektur Pengaman (Safe Blueprint)</button>
+        </nav>
+
+        <!-- SLIDE 1: Executive Overview -->
+        <section class="slide active" id="slide-0">
+            <div class="hero-card">
+                <span class="slide-tag">VISION & STRATEGIC CHALLENGE</span>
+                <h1 class="hero-title">Bolehkah SIEM "Belajar & Menangani Sendiri" Kasus Baru Secara Otonom?</h1>
+                <p class="hero-desc">
+                    Mengevolusikan Mini-SIEM menjadi sistem yang <strong>Self-Adapting</strong> (mampu mempelajari anomali baru, mengklasifikasikan data tanpa campur tangan manusia, dan membuat penanganan mandiri) adalah visi ideal masa depan. 
+                    Namun di dunia nyata pertahanan siber, <em>otonomi tanpa pengaman adalah bencana terbesar SOC</em>.
+                </p>
+
+                <div class="hero-grid">
+                    <div class="hero-box">
+                        <h3 style="color: var(--danger-red);">🛡️ 1. Concern Keamanan</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">
+                            Penyerang dapat dengan sengaja "meracuni" logika adaptasi sistem (Data Poisoning & Blind Spot Otomatis).
+                        </p>
+                    </div>
+                    <div class="hero-box">
+                        <h3 style="color: var(--warning-orange);">⚙️ 2. Concern Operasional</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">
+                            False positive liar yang memicu pemblokiran sepihak terhadap transaksi bisnis penting (Self-Inflicted DoS).
+                        </p>
+                    </div>
+                    <div class="hero-box">
+                        <h3 style="color: var(--accent-purple);">📜 3. Concern Audit & Kepatuhan</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">
+                            "Black-Box Decision": Ketidakmampuan menjelaskan dasar hukum pemblokiran saat audit forensik / regulasi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: Concern Keamanan -->
+        <section class="slide" id="slide-1">
+            <div class="slide-header">
+                <span class="slide-tag">RISK VECTOR 01</span>
+                <h2 class="slide-title">Concern Keamanan (Security & Adversarial Risks)</h2>
+                <p class="slide-subtitle">Bagaimana sistem yang "bisa belajar sendiri" justru menjadi senjata makan tuan yang dimanfaatkan penyerang.</p>
+            </div>
+
+            <div class="split-layout">
+                <!-- Kasus 1: Boiling the Frog -->
+                <div class="card danger">
+                    <div class="card-header">
+                        <h3 class="card-title">1. Adversarial Poisoning ("Boiling the Frog")</h3>
+                        <span class="card-tag">MANIPULASI DATA</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Jika SIEM menganggap pola baru yang sering muncul sebagai <em>"kebiasaan baru yang wajar"</em>, penyerang tidak akan menyerang secara agresif, melainkan menyuntikkan anomali kecil secara perlahan selama berbulan-bulan.
+                        </p>
+                        
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi Mudah: Katak dalam Air Mendidih</strong>
+                            Jika katak dilempar ke air mendidih, ia akan melompat (alarm bunyi). Tapi jika ditaruh di air dingin lalu api dibesarkan perlahan 1°C per hari, katak akan menganggap air hangat itu "normal" hingga ia mati terebus tanpa pernah melompat.
+                        </div>
+
+                        <div class="box-highlight box-sample">
+                            <strong>🔥 Sample Case Nyata: APT Data Exfiltration</strong>
+                            Ambang batas unduh normal: 50 file/menit. Hacker mencuri data dengan kecepatan 10 file/menit di minggu pertama, 15 di minggu kedua, dan 45 di bulan berikutnya. SIEM adaptif "belajar" bahwa trafik ini biasa, sehingga saat 500GB database bocor, SIEM mengabaikannya!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kasus 2: Automated Careless Whitelisting -->
+                <div class="card danger">
+                    <div class="card-header">
+                        <h3 class="card-title">2. Automated Blind Spot (Careless Whitelist)</h3>
+                        <span class="card-tag">KEBUTAAN SISTEM</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Sistem melihat server lama sering mengirim log error atau format cacat. Demi "efisiensi", SIEM secara mandiri membuat aturan: <em>"Abaikan anomali dari IP Server Lama ini"</em>.
+                        </p>
+                        
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi Mudah: Satpam & Kunci Pagar Rusak</strong>
+                            Pagar belakang komplek berkarat dan sering berbunyi nyaring mengganggu tidur satpam. Satpam yang "beradaptasi sendiri" memilih mematikan alarm pagar dan mengganjalnya terbuka agar tenang. Pencuri masuk lewat gerbang yang sengaja dibiarkan terbuka tersebut.
+                        </div>
+
+                        <div class="box-highlight box-sample">
+                            <strong>🔥 Sample Case Nyata: Serangan Lateral via IP Whitelisted</strong>
+                            Persis seperti <em>Skenario 6</em> pada simulator kita: Hacker meretas server legacy tersebut. Karena IP server telah di-whitelist secara otomatis oleh SIEM, seluruh aksi injeksi malware dan pivoting hacker sama sekali tidak memicu alarm!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: Concern Operasional & Bisnis -->
+        <section class="slide" id="slide-2">
+            <div class="slide-header">
+                <span class="slide-tag">RISK VECTOR 02</span>
+                <h2 class="slide-title">Concern Operasional & Bisnis (Disruption Risks)</h2>
+                <p class="slide-subtitle">Ketika sistem pertahanan justru menjadi penyebab utama lumpuhnya pendapatan perusahaan.</p>
+            </div>
+
+            <div class="split-layout">
+                <!-- Kasus 1: Self-Inflicted DoS -->
+                <div class="card warning">
+                    <div class="card-header">
+                        <h3 class="card-title">1. Self-Inflicted DoS (Pemblokiran Bisnis)</h3>
+                        <span class="card-tag">FALSE POSITIVE CATASTROPHE</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Sistem mendeteksi lonjakan trafik yang belum pernah tercatat dalam sejarah database korelasi. Karena panik menghadapi pola baru, SIEM otomatis membuat aturan blokir massal.
+                        </p>
+                        
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi Mudah: Pemadam Kebakaran & Restoran Steak</strong>
+                            Restoran mewah memasak steak dengan teknik *flambé* (api berkobar indah di wajan). Sistem pemadam kebakaran pintar yang belum pernah melihat atraksi itu mengira gedung kebakaran hebat, lalu menyemprotkan ribuan liter air ke seluruh tamu restoran dan merusak acara.
+                        </div>
+
+                        <div class="box-highlight box-sample">
+                            <strong>🔥 Sample Case Nyata: Tragedi Flash Sale 11.11</strong>
+                            Perusahaan menggelar diskon besar pukul 00:00. Ratusan ribu pembeli checkout bersamaan. SIEM adaptif mengklasifikasikan ini sebagai <em>"DDoS Attack & Distributed Brute Force Baru"</em>, lalu secara otonom memblokir gateway pembayaran bank. Kerugian perusahaan mencapai miliaran rupiah dalam 10 menit!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kasus 2: Feedback Loop of Doom -->
+                <div class="card warning">
+                    <div class="card-header">
+                        <h3 class="card-title">2. Cascading Feedback Loop of Doom</h3>
+                        <span class="card-tag">EFEK DOMINO</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Aturan baru yang dibuat otomatis oleh AI akan memengaruhi data yang di-ingest detik berikutnya. Satu kesalahan inferensi memicu rangkaian reaksi salah kaprah berantai.
+                        </p>
+                        
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi Mudah: Mikrofon Terlalu Dekat ke Speaker</strong>
+                            Suara kecil masuk ke mic, keluar dari speaker lebih keras, ditangkap lagi oleh mic, dan dalam 2 detik menghasilkan dengungan melengking memekakkan telinga (*audio feedback screech*) yang merusak speaker.
+                        </div>
+
+                        <div class="box-highlight box-sample">
+                            <strong>🔥 Sample Case Nyata: Pemblokiran Layanan Internal</strong>
+                            Microservice A dianggap anomali -> SIEM blokir IP Microservice A -> Microservice B gagal memanggil A dan melempar ribuan error log -> SIEM menganggap Microservice B ikut menyerang -> SIEM blokir B -> Seluruh arsitektur cloud runtuh secara otomatis.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: Concern Audit & Compliance -->
+        <section class="slide" id="slide-3">
+            <div class="slide-header">
+                <span class="slide-tag">RISK VECTOR 03</span>
+                <h2 class="slide-title">Concern Auditability & Kepatuhan Hukum</h2>
+                <p class="slide-subtitle">Masalah "Kotak Hitam" (Black-Box Problem) dan konsekuensi hukum bagi institusi.</p>
+            </div>
+
+            <div class="split-layout">
+                <!-- Kasus 1: The Black-Box Problem -->
+                <div class="card purple">
+                    <div class="card-header">
+                        <h3 class="card-title">1. The Black-Box Problem (Ketiadaan Jejak Forensik)</h3>
+                        <span class="card-tag">FORENSIC FAILURE</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Dalam dunia investigasi siber dan peradilan, setiap pemblokiran IP atau drop paket harus dapat dijelaskan secara deterministik (*klausul aturan apa yang dilanggar, kapan, dan buktinya apa*).
+                        </p>
+                        
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi Mudah: Tilang Polisi Tanpa Pasal</strong>
+                            Anda ditilang dan mobil disita di jalan raya. Saat bertanya: *"Pak, saya melanggar marka apa atau batas kecepatan berapa?"*, polisi menjawab: *"Firasat AI saya bilang gaya berkendara Anda mencurigakan, tapi saya sendiri tidak tahu alasan persisnya"*. Tidak ada pengadilan yang menerima dalih ini.
+                        </div>
+
+                        <div class="box-highlight box-sample">
+                            <strong>🔥 Sample Case Nyata: Investigasi Kebocoran Data Direksi</strong>
+                            Akun Direktur Keuangan diblokir saat transfer akuisisi penting. Saat diaudit oleh OJK / Auditor Forensik: *"Mengapa transaksi di-drop?"*. Tim SOC menjawab: *"Mesin belajar sendiri dan memutuskan drop tanpa aturan terdokumentasi"*. Perusahaan terancam denda pencabutan lisensi.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kasus 2: Pelanggaran Regulasi -->
+                <div class="card purple">
+                    <div class="card-header">
+                        <h3 class="card-title">2. Kepatuhan Regulasi (ISO 27001, PCI-DSS, GDPR)</h3>
+                        <span class="card-tag">REGULATORY COMPLIANCE</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Standar kepatuhan internasional mewajibkan <em>Change Management Control</em> untuk setiap perubahan aturan keamanan. Aturan yang tercipta sendiri oleh mesin tanpa tiket persetujuan (*Change Ticket*) melanggar prinsip dasar kepatuhan.
+                        </p>
+                        
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi Mudah: Perubahan Desain Gedung Tanpa IMB</strong>
+                            Arsitek mengubah sendiri pilar beton penyangga gedung tanpa izin dinas tata kota dan tanpa perhitungan struktur yang ditandatangani insinyur berizin. Walaupun arsitek berdalih "biar lebih adaptif", gedung tersebut ilegal dan disegel.
+                        </div>
+
+                        <div class="box-highlight box-sample">
+                            <strong>🔥 Sample Case Nyata: Kegagalan Audit Tahunan PCI-DSS</strong>
+                            Auditor meminta dokumen: *"Tunjukkan log persetujuan (approval) untuk 50 aturan korelasi baru yang dibuat bulan lalu"*. Karena aturan tersebut dibuat otomatis oleh script AI tanpa approval manusia, sertifikasi keamanan transaksi kartu kredit perusahaan dicabut!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: Data Quality vs Threat Behavior -->
+        <section class="slide" id="slide-4">
+            <div class="slide-header">
+                <span class="slide-tag">FOUNDATIONAL ARCHITECTURE</span>
+                <h2 class="slide-title">Pemisahan Mutlak: Data Engineering vs Threat Behavior</h2>
+                <p class="slide-subtitle">Sistem TIDAK BOLEH "beradaptasi" dengan cara mengampuni data kotor!</p>
+            </div>
+
+            <div class="split-layout">
+                <div class="split-box bad">
+                    <h3 style="color: var(--danger-red);">❌ Pola Adaptasi yang SALAH (Fatal)</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        SIEM mencoba "ramah dan toleran" terhadap data cacat:
+                    </p>
+                    <ul>
+                        <li>Log datang dengan <code>ip_address: null</code>? SIEM mengisinya dengan default <code>"0.0.0.0"</code> agar tidak error.</li>
+                        <li>Log datang dengan timestamp tahun 1970? SIEM memajukannya sendiri ke jam sekarang.</li>
+                        <li>JSON terpotong? SIEM menebak-nebak atribut yang hilang.</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85rem; color: var(--danger-red);">
+                        <strong>Akibatnya:</strong> Perhitungan window korelasi DDoS, Brute Force, dan Impossible Travel seketika rusak total karena data sampah diolah sebagai fakta!
+                    </div>
+                </div>
+
+                <div class="split-box good">
+                    <h3 style="color: var(--success-green);">✅ Pola Adaptasi yang BENAR (Aman)</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Pemisahan tegas dua lapisan pertahanan independen:
+                    </p>
+                    <ul>
+                        <li><strong>Lapisan 1: Gatekeeper Ingestion (Hukum Rimba):</strong> Validasi skema kaku dan deterministik. Data cacat <em>selalu</em> di-drop dengan HTTP 422 dan dicatat ke antrean karantina (Dead-Letter Queue). Zero tolerance!</li>
+                        <li><strong>Lapisan 2: Correlation Engine (Perilaku):</strong> Hanya menganalisis data bersih yang telah terverifikasi untuk mendeteksi taktik penyerang (DDoS, Exfiltration, Travel Anomaly).</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 6px; font-size: 0.85rem; color: var(--success-green);">
+                        <strong>Hasilnya:</strong> Backend tidak pernah crash, mesin korelasi tidak pernah terdistorsi data kotor, dan penyerang tidak bisa menyusup lewat celah format rusak.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: Arsitektur Pengaman (Safe Blueprint) -->
+        <section class="slide" id="slide-5">
+            <div class="slide-header">
+                <span class="slide-tag">BLUEPRINT & SOLUTIONS</span>
+                <h2 class="slide-title">Rekomendasi Arsitektur Pengaman: "Human-Supervised Adaptation"</h2>
+                <p class="slide-subtitle">Bagaimana cara mencapai kapabilitas pembelajaran mesin tanpa mengorbankan stabilitas dan keamanan.</p>
+            </div>
+
+            <!-- Flow Diagram -->
+            <div class="diagram-container">
+                <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
+                    Siklus Aman: Dari Deteksi Kasus Baru hingga Implementasi Produksi
+                </h4>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="flow-icon">📥</div>
+                        <div class="flow-title">1. Gatekeeper Ingest</div>
+                        <div class="flow-desc">Validasi skema ketat (Drop 422 jika cacat)</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">☣️</div>
+                        <div class="flow-title">2. DLQ Quarantine</div>
+                        <div class="flow-desc">Pola anomali baru ditampung di karantina</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🤖</div>
+                        <div class="flow-title">3. AI Classifier</div>
+                        <div class="flow-desc">Sintesis pola & usulkan Candidate Rule</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">📼</div>
+                        <div class="flow-title">4. Canary Replay</div>
+                        <div class="flow-desc">Uji aturan pada 30 hari data historis</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step" style="border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1);">
+                        <div class="flow-icon">👨‍✈️</div>
+                        <div class="flow-title">5. HITL Approval</div>
+                        <div class="flow-desc">Kapten SOC menyetujui / menolak di Dashboard</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solution Cards -->
+            <div class="grid-3">
+                <div class="card success">
+                    <div class="card-header">
+                        <h3 class="card-title">1. Shadow Rule Mode (HITL)</h3>
+                        <span class="card-tag">HUMAN-IN-THE-LOOP</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Aturan baru yang di-generate oleh modul AI berstatus **"Shadow / Candidate"** (hanya melakukan simulasi di latar belakang tanpa mengeksekusi blokir nyata).
+                        </p>
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi: Dokter Residen & Dokter Spesialis</strong>
+                            Dokter muda magang membuat diagnosa dan menulis resep obat, tetapi obat tidak boleh diberikan ke pasien sebelum ditandatangani oleh dokter konsulen spesialis.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card success">
+                    <div class="card-header">
+                        <h3 class="card-title">2. Dead-Letter Queue (DLQ)</h3>
+                        <span class="card-tag">DATA ISOLATION</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Log data cacat atau tidak dikenal tidak diabaikan, melainkan masuk ke pipeline terisolasi untuk dianalisis oleh algoritma *clustering* tanpa membebani server utama.
+                        </p>
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi: Ruang Isolasi Bea Cukai Bandara</strong>
+                            Koper mencurigakan tidak langsung dibakar atau diloloskan, tetapi dibawa ke ruang X-Ray terpisah untuk diperiksa anjing pelacak tanpa menghentikan antrean penumpang lain.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card success">
+                    <div class="card-header">
+                        <h3 class="card-title">3. Canary Replay & Rollback</h3>
+                        <span class="card-tag">REGRESSION TEST</span>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Sebelum aturan baru disetujui, sistem memutar ulang (*replay*) data trafik minggu lalu. Jika aturan baru tersebut menghasilkan False Positive > 2%, aturan otomatis ditolak!
+                        </p>
+                        <div class="box-highlight box-analogy">
+                            <strong>💡 Analogi: Uji Tabrak Mobil Simulator</strong>
+                            Sebelum mobil baru diproduksi massal untuk jalan raya, desain mobil diuji dalam simulasi komputer jutaan kilometer untuk memastikan rem tidak blong mendadak.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Navigation -->
+        <div class="footer-controls">
+            <button class="btn" id="btnPrev" disabled>← Slide Sebelumnya</button>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                Mini-SIEM Command Center Architecture Edition
+            </div>
+            <button class="btn btn-primary" id="btnNext">Slide Selanjutnya →</button>
+        </div>
+
+    </div>
+
+    <!-- Interactive Navigation Script -->
+    <script>
+        const slides = document.querySelectorAll(".slide");
+        const navTabs = document.querySelectorAll(".nav-tab");
+        const slideCounter = document.getElementById("slideCounter");
+        const btnPrev = document.getElementById("btnPrev");
+        const btnNext = document.getElementById("btnNext");
+
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        function updateSlide(index) {
+            if (index < 0 || index >= totalSlides) return;
+            currentSlide = index;
+
+            slides.forEach((s, idx) => {
+                s.classList.toggle("active", idx === currentSlide);
+            });
+
+            navTabs.forEach((tab, idx) => {
+                tab.classList.toggle("active", idx === currentSlide);
+                if (idx === currentSlide) {
+                    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            });
+
+            slideCounter.textContent = `Slide ${currentSlide + 1} / ${totalSlides}`;
+            btnPrev.disabled = currentSlide === 0;
+            btnNext.disabled = currentSlide === totalSlides - 1;
+        }
+
+        navTabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                const idx = parseInt(tab.getAttribute("data-index"), 10);
+                updateSlide(idx);
+            });
+        });
+
+        btnPrev.addEventListener("click", () => updateSlide(currentSlide - 1));
+        btnNext.addEventListener("click", () => updateSlide(currentSlide + 1));
+
+        // Keyboard Navigation (Arrow Left, Arrow Right)
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight") {
+                updateSlide(currentSlide + 1);
+            } else if (e.key === "ArrowLeft") {
+                updateSlide(currentSlide - 1);
+            }
+        });
+    </script>
+</body>
+</html>
