@@ -370,24 +370,24 @@ async function runScenarioFromBrowser(scNum) {
             status: "success"
         });
 
-        // Test 4: Time Drift Error (Tahun 1970)
+        // Test 4: Skenario Negatif Time Drift (Baterai CMOS Server HRD habis, reset ke 1970)
         const resTimeDrift = await postLog({
             timestamp: "1970-01-01T00:00:00Z",
-            event_type: "web_request",
-            user_id: "time_traveler",
-            ip_address: "1.2.3.4",
-            location: "Time Rift",
+            event_type: "login_attempt",
+            user_id: "hrd_staff_budi",
+            ip_address: "192.168.1.50",
+            location: "Kantor HRD",
             status: "success"
         });
 
         alert(
-            `Hasil Pengujian Skenario Negatif:\n` +
-            `1. Malformed Log (ip_address: null) -> HTTP ${resNull?.status} (Ditolak)\n` +
-            `2. Malformed Log (JSON terpotong)   -> HTTP ${resTruncatedStatus} (Ditolak)\n` +
-            `3. Malformed Log (Field IP hilang) -> HTTP ${resMissing?.status} (Ditolak)\n` +
-            `4. Time Drift (Tahun 1970)         -> HTTP ${resTimeDrift?.status} (Ditolak)\n\n` +
+            `Hasil Pengujian Skenario Negatif (Gatekeeper Protection):\n` +
+            `1. Malformed Log (ip_address: null)  -> HTTP ${resNull?.status} (Ditolak)\n` +
+            `2. Malformed Log (JSON terpotong)    -> HTTP ${resTruncatedStatus} (Ditolak)\n` +
+            `3. Malformed Log (Field IP hilang)  -> HTTP ${resMissing?.status} (Ditolak)\n` +
+            `4. Time Drift (CMOS HRD Tahun 1970)  -> HTTP ${resTimeDrift?.status} (Time Drift Error Ditolak)\n\n` +
             `Hasil: Lapisan Validasi Skema (Gatekeeper) menolak data kotor secara aman.\n` +
-            `Backend SIEM TIDAK CRASH dan seluruh pusat komando tetap berjalan normal!`
+            `Mesin korelasi terlindungi dari distorsi waktu & backend TIDAK CRASH!`
         );
     }
 

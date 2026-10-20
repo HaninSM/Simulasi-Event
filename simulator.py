@@ -325,24 +325,27 @@ def scenario_7_corrupted_data_and_time_drift(api_base):
         print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res4.status_code}{RESET}")
         all_passed = False
 
-    # Test 5: Time Drift Error (Tahun 1970 > 24 jam lampau)
-    print(f"\n  [Test 5] Time Drift Error: Timestamp Tahun 1970 (> 24 Jam Lampau)...")
+    # Test 5: Skenario Negatif Time Drift - Baterai CMOS Server HRD habis (Reset ke 1970)
+    print(f"\n  [Test 5] Skenario Negatif Time Drift: Baterai CMOS Server HRD habis...")
+    print(f"           Jam server me-reset ke tahun 1970 (timestamp='1970-01-01T00:00:00Z').")
+    print(f"           Tantangan: Log kuno ini berpotensi merusak windowing korelasi waktu SIEM.")
     res5 = requests.post(url, json={
         "timestamp": "1970-01-01T00:00:00Z",
         "event_type": "login_attempt",
-        "user_id": "ancient_sender",
+        "user_id": "hrd_staff_budi",
         "ip_address": "192.168.1.50",
-        "location": "Jakarta",
+        "location": "Kantor HRD",
         "status": "success"
     }, timeout=5)
     if res5.status_code == 422 and "Time Drift Error" in res5.text:
-        print(f"  {GREEN}[PASS] Timestamp 1970 -> HTTP 422 ('Time Drift Error' Ditolak){RESET}")
+        print(f"  {GREEN}[PASS] Log 1970 Ditolak Gatekeeper -> HTTP 422 ('Time Drift Error'){RESET}")
+        print(f"         Mesin korelasi terlindungi dari distorsi data waktu lampau.")
     else:
         print(f"  {RED}[FAIL] Expected HTTP 422 Time Drift, got HTTP {res5.status_code}{RESET}")
         all_passed = False
 
-    # Test 6: Time Drift Error (Dari masa depan +1 tahun)
-    print(f"\n  [Test 6] Time Drift Error: Timestamp Masa Depan (+1 Tahun)...")
+    # Test 6: Skenario Negatif Time Drift - Jam Server Mengalami NTP Drift ke Masa Depan (+1 Tahun)
+    print(f"\n  [Test 6] Skenario Negatif Time Drift: NTP Desinkronisasi ke Masa Depan (+1 Tahun)...")
     future_time = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
     res6 = requests.post(url, json={
         "timestamp": future_time,

@@ -84,14 +84,14 @@ def test_invalid_ipv4_rejected():
     assert response.status_code == 422
 
 
-def test_time_drift_past_rejected():
-    # 1970 timestamp (> 24 hours ago)
+def test_time_drift_cmos_battery_reset_1970_rejected():
+    # Skenario Negatif: Baterai CMOS server HRD habis, jam me-reset ke tahun 1970 (> 24 jam lampau)
     payload = {
         "timestamp": "1970-01-01T00:00:00Z",
-        "event_type": "web_request",
-        "user_id": "ancient_user",
-        "ip_address": "192.168.1.1",
-        "location": "Jakarta",
+        "event_type": "login_attempt",
+        "user_id": "hrd_staff_budi",
+        "ip_address": "192.168.1.50",
+        "location": "Kantor HRD",
         "status": "success"
     }
     response = client.post("/api/ingest", json=payload)
