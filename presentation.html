@@ -532,6 +532,48 @@
             font-family: var(--font-mono);
             font-size: 0.75rem;
         }
+
+        /* Presentation Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .pres-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .pres-table th, .pres-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pres-table th {
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pres-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .pres-code {
+            font-family: var(--font-mono);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.2rem 0.45rem;
+            border-radius: 4px;
+            color: #38bdf8;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -563,7 +605,7 @@
             <button class="nav-tab" data-index="7">8. Skenario 4 - 7 (Brute, Exfil, Blind Spot, Drift)</button>
             <button class="nav-tab" data-index="8">9. Tantangan Otonom (Keamanan, Bisnis, Audit)</button>
             <button class="nav-tab" data-index="9">10. Arsitektur Pengaman (Safe Blueprint)</button>
-            <button class="nav-tab" data-index="10">11. What If...</button>
+            <button class="nav-tab" data-index="10">11. Tantangan Sistem Integrasi</button>
         </nav>
 
         <!-- ==================== SLIDE 1: COVER ==================== -->
@@ -1135,89 +1177,213 @@
             </div>
         </section>
 
-        <!-- ==================== SLIDE 11: WHAT IF... (BAGIAN AKHIR) ==================== -->
+        <!-- ==================== SLIDE 11: TANTANGAN SISTEM INTEGRASI (BAGIAN AKHIR) ==================== -->
         <section class="slide" id="slide-10">
             <div class="slide-header">
-                <span class="slide-tag">BAGIAN 5: STRATEGIC FORESIGHT</span>
-                <h2 class="slide-title">Section "What If...": Skenario Masa Depan & Penerapan Nyata</h2>
-                <p class="slide-subtitle">Eksplorasi skenario kritis jika Mini-SIEM Command Center diterapkan di lingkungan instansi pertahanan dan ekosistem nyata.</p>
+                <span class="slide-tag">BAGIAN 5: SYSTEM INTEGRATION ARCHITECTURE</span>
+                <h2 class="slide-title">Tantangan Sistem Integrasi: Korelasi Lintas Aplikasi & Hardware</h2>
+                <p class="slide-subtitle">Menghubungkan data digital heterogen (CSV, Audit Log, Syslog) dari dunia fisik hingga aplikasi militer ke dalam Mini-SIEM.</p>
             </div>
 
+            <!-- Pengantar -->
+            <div class="card cyan" style="margin-bottom: 1.5rem;">
+                <p style="font-size: 0.95rem; line-height: 1.7; color: var(--text-main);">
+                    Fokus pada <strong>Sistem Integrasi</strong> adalah kunci paling krusial dalam keberhasilan sebuah SIEM di instansi pertahanan.<br>
+                    Tantangan terbesarnya: <strong>Setiap aplikasi dan perangkat keras militer berbicara dengan "bahasa" (format) yang berbeda-beda</strong>—mulai dari file teks <code class="pres-code">.csv</code> mesin absensi jadul, <em>audit log</em> database terenkripsi, <em>Syslog</em> router perbatasan, hingga log perangkat taktis lapangan.
+                </p>
+            </div>
+
+            <!-- 1. Arsitektur Jalur Integrasi -->
+            <div class="diagram-container">
+                <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    🏛️ 1. Arsitektur Jalur Integrasi (Universal Ingestion Pipeline)
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Agar Mini-SIEM berbasis <code class="pres-code">POST /api/ingest</code> dapat menerima log dari perangkat apa pun tanpa mengubah arsitektur intinya, kita menempatkan <strong>Log Collector & Adapter Layer</strong> di depan Gatekeeper:
+                </p>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="flow-icon">🚪</div>
+                        <div class="flow-title">1. Sumber Log Fisik & App</div>
+                        <div class="flow-desc">Hardware Pintu (CSV), Firewall (Syslog), DB Audit Log, Windows DC (EVTX), Radio/Radar</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step" style="border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08);">
+                        <div class="flow-icon">🔄</div>
+                        <div class="flow-title">2. Log Collector & Parser</div>
+                        <div class="flow-desc">Baca baris baru .CSV real-time & petakan (mapping) ke format standar JSON Kontrak Data</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🛡️</div>
+                        <div class="flow-title">3. Gatekeeper (/api/ingest)</div>
+                        <div class="flow-desc">Validasi IPv4, Integritas Skema, & Time Drift (Tolak jika > 24 jam / CMOS 1970)</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🧠</div>
+                        <div class="flow-title">4. Correlation Brain</div>
+                        <div class="flow-desc">Menghubungkan titik kejadian lintas hardware & aplikasi secara real-time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Matriks Integrasi -->
+            <div class="card purple" style="margin-bottom: 1.5rem;">
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">📊 2. Matriks Integrasi: Hardware vs Aplikasi vs Format Log</h3>
+                <p style="font-size: 0.88rem; color: var(--text-muted);">
+                    Di instansi pertahanan, berikut adalah pemetaan perangkat yang mengeluarkan log digital dan cara adaptor mengubahnya:
+                </p>
+                <div class="table-container">
+                    <table class="pres-table">
+                        <thead>
+                            <tr>
+                                <th>Kategori Sumber</th>
+                                <th>Perangkat / Aplikasi</th>
+                                <th>Format Asli</th>
+                                <th>Cara Pengambilan Data</th>
+                                <th>Pemetaan ke Mini-SIEM Data Contract</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong style="color: #fff;">Hardware Akses Fisik</strong></td>
+                                <td>Pintu Gerbang RFID Markas, Smart-Lock Brankas Amunisi</td>
+                                <td><span class="pres-code">File .CSV</span> (Diekspor lokal per menit)</td>
+                                <td>Log Forwarder memantau file <code class="pres-code">.csv</code> (tailing baris baru).</td>
+                                <td>
+                                    <code class="pres-code">timestamp</code> &larr; Kolom Waktu<br>
+                                    <code class="pres-code">user_id</code> &larr; Kolom ID Prajurit<br>
+                                    <code class="pres-code">location</code> &larr; "Gerbang Markas A"<br>
+                                    <code class="pres-code">event_type</code> &larr; login_attempt
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: #fff;">Aplikasi Militer</strong></td>
+                                <td>Sistem Informasi Personel (HRD Militer), Portal C2 (Command & Control)</td>
+                                <td><span class="pres-code">Audit Log JSON / Database CDC</span></td>
+                                <td>Webhook / API Listener langsung ke SIEM.</td>
+                                <td>
+                                    <code class="pres-code">event_type</code> &larr; login_attempt / web_request<br>
+                                    <code class="pres-code">ip_address</code> &larr; IP Komputer Kerja
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: #fff;">Perangkat Jaringan</strong></td>
+                                <td>Firewall Perbatasan, VPN Militer, Enkriptor Taktis</td>
+                                <td><span class="pres-code">Syslog / CEF (RFC 5424)</span></td>
+                                <td>Daemon Syslog (UDP/TCP Port 514) menerima paket data.</td>
+                                <td>
+                                    <code class="pres-code">ip_address</code> &larr; Src IP Packet<br>
+                                    <code class="pres-code">status</code> &larr; Success / Drop
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: #fff;">Penyimpanan Rahasia</strong></td>
+                                <td>Server Database Intelijen, Dokumen Rahasia Doktrin</td>
+                                <td><span class="pres-code">Database Audit Trail (SQL Log)</span></td>
+                                <td>Audit plugin (Postgres/Oracle Audit Log).</td>
+                                <td>
+                                    <code class="pres-code">event_type</code> &larr; database_download<br>
+                                    <code class="pres-code">user_id</code> &larr; Akun Database
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Contoh Skenario Nyata Korelasi -->
+            <div class="card cyan" style="margin-bottom: 1.5rem;">
+                <h3 class="card-title" style="margin-bottom: 0.25rem;">
+                    🧠 3. Contoh Skenario Nyata Korelasi Antara File .CSV Hardware & Audit Log Aplikasi
+                </h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Inilah kekuatan sejati korelasi sistem integrasi: <strong>Satu sistem sendirian tidak tahu ada bahaya, tetapi ketika data CSV hardware disilangkan dengan audit log aplikasi, ancaman langsung terbongkar!</strong>
+                </p>
+
+                <div class="grid-2">
+                    <!-- Kasus 1 -->
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1.25rem; border-left: 3px solid var(--danger-red);">
+                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;">
+                            Kasus 1: Korelasi CSV Pintu Markas + Audit Log VPN (Membongkar Akun Terbajak)
+                        </h4>
+                        <div class="box-highlight box-story">
+                            <strong>🚪 Kejadian Hardware (Sumber 1 - File CSV):</strong>
+                            Pukul 08:00 WIB, sensor pintu putar markas mencatat pada file <code class="pres-code">gate_access.csv</code>:<br>
+                            <code class="pres-code">2026-10-20 08:00:15,KOLONEL_HENDRO,PINTU_LOBI_MABES,ACCESS_GRANTED</code><br>
+                            <em>(Artinya: Secara fisik, Kolonel Hendro sudah masuk ke dalam markas di Jakarta).</em>
+                        </div>
+                        <div class="box-highlight box-siem">
+                            <strong>🌐 Kejadian Aplikasi (Sumber 2 - Audit Log VPN Firewall):</strong>
+                            Pukul 08:05 WIB (5 menit kemudian), log firewall VPN mencatat:<br>
+                            <code class="pres-code">{"time": "08:05:00", "user": "KOLONEL_HENDRO", "src_ip": "185.220.101.5", "country": "NETHERLANDS", "status": "SUCCESS"}</code>
+                        </div>
+                        <div class="box-highlight box-danger">
+                            <strong>⚡ Korelasi & Output di Mini-SIEM:</strong>
+                            Mesin korelasi menyilangkan: <em>"User KOLONEL_HENDRO tercatat di file CSV sedang berada di Lobi Mabes Jakarta, mengapa akun yang sama login VPN dari Belanda 5 menit kemudian?"</em><br>
+                            <strong>Output:</strong> Terpicu <strong>Rule 2: Impossible Travel (Level: KRITIS)</strong>! Pusat komando langsung memutus sesi VPN tersebut karena akun sang kolonel dipastikan telah dibobol hacker luar negeri.
+                        </div>
+                    </div>
+
+                    <!-- Kasus 2 -->
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1.25rem; border-left: 3px solid var(--warning-orange);">
+                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;">
+                            Kasus 2: Korelasi Audit Log Database + CSV Sensor Suhu Ruang Server (Eksfiltrasi Rahasia)
+                        </h4>
+                        <div class="box-highlight box-story">
+                            <strong>🗄️ Kejadian Aplikasi (Sumber 1 - Audit Log Database):</strong>
+                            Sebuah akun analis intelijen melakukan kueri <code class="pres-code">SELECT * FROM peta_posisi_pasukan</code> sebanyak 60 kali berturut-turut pada jam istirahat.
+                        </div>
+                        <div class="box-highlight box-siem">
+                            <strong>🌡️ Kejadian Hardware (Sumber 2 - CSV Sensor IoT Lingkungan):</strong>
+                            Sensor suhu dan konsumsi listrik rak server mencatat lonjakan beban daya dan panas prosesor secara mendadak.
+                        </div>
+                        <div class="box-highlight box-output">
+                            <strong>⚡ Korelasi & Output di Mini-SIEM:</strong>
+                            Menghubungkan lonjakan kueri data dengan frekuensi unduhan massal.<br>
+                            <strong>Output:</strong> Terpicu <strong>Rule 5: Data Exfiltration (Level: KRITIS)</strong>! SIEM memerintahkan firewall internal untuk memutus kabel jaringan port analis tersebut dan menyalakan alarm merah berkedip di layar monitor komandan jaga.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Penanganan Data Cacat CSV Jadul & Kesimpulan -->
             <div class="grid-2">
-                <!-- What If 1: Instansi Pertahanan -->
-                <div class="card cyan">
-                    <div class="card-header">
-                        <h3 class="card-title">1. What If... Diterapkan di Instansi Pertahanan?</h3>
-                        <span class="card-tag">DEFENSE SECTOR</span>
-                    </div>
-                    <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Bagaimana jika sistem ini benar-benar di-deploy di Markas Komando Pertahanan / BSSN / Mabes TNI?
-                    </p>
-                    <div class="box-highlight box-story">
-                        <strong>🛡️ Tantangan Spesifik Militer:</strong>
-                        Jaringan harus <strong>100% Air-Gapped</strong> (terputus total dari internet luar), verifikasi Security Clearance personel pengembang, kedaulatan penuh atas kode (<em>Zero Backdoor / Sovereign Tech</em>), dan protokol data satu arah (<em>Data Diode</em>).
-                    </div>
-                    <div class="box-highlight box-output">
-                        <strong>✅ Solusi Mini-SIEM:</strong>
-                        Infrastruktur On-Premise bare-metal, bebas dependensi cloud luar, dan diuji melalui simulasi <em>Geladi Siber (Cyber War Games)</em> berkala.
-                    </div>
-                </div>
-
-                <!-- What If 2: Integrasi Hardware & CSV Jadul -->
-                <div class="card purple">
-                    <div class="card-header">
-                        <h3 class="card-title">2. What If... Seluruh Hardware & File CSV Terintegrasi?</h3>
-                        <span class="card-tag">CROSS-SYSTEM INTEGRATION</span>
-                    </div>
-                    <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Bagaimana jika sistem harus menyilangkan data dari file CSV mesin absensi jadul, audit log database, hingga radio taktis?
-                    </p>
-                    <div class="box-highlight box-story">
-                        <strong>✨ Sihir Korelasi Lintas Alam:</strong>
-                        Seorang perwira tap kartu RFID di Lobi Mabes Jakarta (tercatat di file <code>gate_access.csv</code>). Tepat 5 menit kemudian, akunnya login VPN dari Belanda. SIEM langsung menyilangkan dua data ini dan membongkar pembajakan akun (<em>Impossible Travel</em>)!
-                    </div>
-                    <div class="box-highlight box-siem">
-                        <strong>✅ Solusi Mini-SIEM:</strong>
-                        Menggunakan <em>Universal Parser Adapter Layer</em> yang mengubah format CSV/Syslog menjadi Kontrak Data JSON standar sebelum masuk Gatekeeper.
-                    </div>
-                </div>
-
-                <!-- What If 3: Penyerang Sengaja Suntik Data Kotor -->
-                <div class="card danger">
-                    <div class="card-header">
-                        <h3 class="card-title">3. What If... Penyerang Sengaja Kirim Jam 1970 & Data Cacat?</h3>
-                        <span class="card-tag">ZERO CRASH GATEKEEPER</span>
-                    </div>
-                    <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Bagaimana jika penyerang berusaha merusak memori korelasi SIEM dengan membanjiri log <code>ip_address: null</code> atau stempel waktu tahun 1970?
-                    </p>
-                    <div class="box-highlight box-danger">
-                        <strong>💥 Ancaman Fatal:</strong>
-                        Jika SIEM tanpa validasi ketat, backend akan mengalami Unhandled Exception (crash mendadak), melumpuhkan seluruh pusat komando operasi.
-                    </div>
-                    <div class="box-highlight box-output">
-                        <strong>✅ Solusi Mini-SIEM:</strong>
-                        Lapisan Gatekeeper berbasis Pydantic seketika melempar <strong>HTTP 422 Drop</strong>. Data sampah disingkirkan di pintu gerbang, dan sistem SIEM tetap beroperasi 100% stabil.
-                    </div>
-                </div>
-
-                <!-- What If 4: Autonomous AI Tanpa Manusia -->
                 <div class="card warning">
-                    <div class="card-header">
-                        <h3 class="card-title">4. What If... Kita Membiarkan AI Bertindak Tanpa Manusia?</h3>
-                        <span class="card-tag">HUMAN-IN-THE-LOOP</span>
-                    </div>
-                    <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Bagaimana jika SIEM diizinkan secara mandiri membuat aturan blokir dan beradaptasi tanpa supervisi analis?
+                    <h3 class="card-title">🛠️ 4. Bagaimana Cara Menangani Data Cacat dari File CSV Jadul?</h3>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.5rem;">
+                        Hardware pertahanan sering kali berusia tua dan file CSV yang dihasilkan terkadang bermasalah:
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>⚠️ Risiko Nyata:</strong>
-                        Terjadinya <em>Boiling the Frog</em> (penyerang meracuni pola AI secara bertahap) dan <em>Self-Inflicted DoS</em> (SIEM memutus koneksi markas saat operasi militer penting karena salah paham anomali).
+                        <strong>1. Kasus Kolom Kosong (<code class="pres-code">ip_address: ""</code> atau <code class="pres-code">null</code>):</strong>
+                        Jika mesin absensi fisik tidak memiliki konsep IP (hanya ID pintu), adapter bertugas mengisi IP statis pintu tersebut (misal: 10.10.1.15). Namun jika adapter gagal dan data tetap null, <strong>Gatekeeper Mini-SIEM kita langsung menolaknya dengan HTTP 422</strong>, sehingga memori sistem tidak akan pernah rusak.
                     </div>
-                    <div class="box-highlight box-siem">
-                        <strong>✅ Prinsip Emas Pertahanan:</strong>
-                        <strong>"AI merekomendasikan taktik (<em>Candidate Rules</em>), Komandan/Analis Manusia yang mengesahkan (<em>Human-in-the-Loop</em>)."</strong>
+                    <div class="box-highlight box-danger">
+                        <strong>2. Kasus Jam Reset (Baterai CMOS Pintu Habis &rarr; 1970):</strong>
+                        Jika mesin pintu mengirim CSV dengan stempel waktu 1970, Gatekeeper Mini-SIEM mendeteksi <em>Time Drift Error</em> (> 24 jam) dan seketika melempar <strong>HTTP 422 Drop</strong>. Log masuk ke antrean Dead-Letter Queue (DLQ) dan teknisi pemeliharaan markas otomatis mendapat tiket ganti baterai.
                     </div>
+                </div>
+
+                <div class="card success">
+                    <h3 class="card-title">🎯 Kesimpulan untuk Instansi Pertahanan</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.7;">
+                        Dengan memfokuskan integrasi pada <strong>Adapter Log Parser &rarr; Gatekeeper Skema &rarr; Correlation Brain</strong>, Mini-SIEM mampu:
+                    </p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; font-size: 0.9rem;">
+                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <span style="color: var(--success-green); font-weight: bold;">1.</span>
+                            <span><strong>Menelan data dari perangkat apa pun:</strong> CSV mesin absensi, Syslog router perbatasan, Audit Log database terenkripsi, hingga jaringan militer.</span>
+                        </li>
+                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <span style="color: var(--success-green); font-weight: bold;">2.</span>
+                            <span><strong>Menghilangkan titik buta (Blind Spot):</strong> Menghubungkan dunia fisik (pintu/hardware) dan dunia siber (aplikasi/jaringan) secara real-time.</span>
+                        </li>
+                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <span style="color: var(--success-green); font-weight: bold;">3.</span>
+                            <span><strong>Melindungi dirinya sendiri dari data sampah:</strong> Menolak data kotor secara mandiri tanpa pernah mengalami <em>crash</em>.</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </section>
