@@ -256,76 +256,119 @@ def scenario_6_careless_whitelisting(api_base):
 
 # ---------------- SCENARIO 7: DATA CACAT / TIME DRIFT ----------------
 def scenario_7_corrupted_data_and_time_drift(api_base):
-    print(f"\n{BOLD}{RED}>>> Skenario 7: Data Cacat & Time Drift (Negative Testing & Robustness){RESET}")
-    print("Memastikan Gatekeeper SIEM menolak data kotor dengan HTTP 422 tanpa menyebabkan crash.")
+    print(f"\n{BOLD}{RED}>>> Skenario 7: Malformed Log (Format Cacat/Hilang) & Time Drift{RESET}")
+    print("Masalah: Server lama mengalami bug / koneksi putus, mengirim log tanpa atribut penting atau JSON rusak.")
+    print("Tantangan: Jika SIEM tidak memiliki schema validator, backend akan crash saat membaca log.ip_address.")
+    print("Penanganan: Lapisan Validasi Skema (Gatekeeper) menolak log dengan HTTP 422, SIEM tetap berjalan normal.")
 
-    tests = [
-        {
-            "name": "JSON tanpa IP Address (Field Wajib Kosong)",
-            "data": {
-                "timestamp": get_current_utc_iso(),
-                "event_type": "web_request",
-                "user_id": "test_user",
-                "ip_address": "",
-                "location": "Jakarta",
-                "status": "success"
-            }
-        },
-        {
-            "name": "Format IP Bukan IPv4 ('not-an-ip')",
-            "data": {
-                "timestamp": get_current_utc_iso(),
-                "event_type": "web_request",
-                "user_id": "test_user",
-                "ip_address": "999.999.999.999",
-                "location": "Jakarta",
-                "status": "success"
-            }
-        },
-        {
-            "name": "Time Drift Error: Tahun 1970 (> 24 Jam Lalu)",
-            "data": {
-                "timestamp": "1970-01-01T00:00:00Z",
-                "event_type": "login_attempt",
-                "user_id": "ancient_sender",
-                "ip_address": "192.168.1.50",
-                "location": "Jakarta",
-                "status": "success"
-            }
-        },
-        {
-            "name": "Time Drift Error: Dari Masa Depan (+1 Tahun)",
-            "data": {
-                "timestamp": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
-                "event_type": "login_attempt",
-                "user_id": "future_sender",
-                "ip_address": "192.168.1.50",
-                "location": "Jakarta",
-                "status": "success"
-            }
-        }
-    ]
-
+    url = f"{api_base}/api/ingest"
     all_passed = True
-    for t in tests:
-        res = post_log(api_base, t["data"])
-        if res is not None and res.status_code == 422:
-            print(f"  {GREEN}[PASS] {t['name']} -> HTTP 422 (Ditolak Sesuai Spesifikasi){RESET}")
-        else:
-            status_code = res.status_code if res else "No Response"
-            print(f"  {RED}[FAIL] {t['name']} -> Expected HTTP 422, got HTTP {status_code}{RESET}")
-            all_passed = False
 
-    # Check if SIEM is still alive
+    # Test 1: ip_address: null
+    print(f"\n  [Test 1] Server lama mengirim log dengan 'ip_address: null'...")
+    res1 = requests.post(url, json={
+        "timestamp": get_current_utc_iso(),
+        "event_type": "web_request",
+        "user_id": "legacy_server_bug_01",
+        "ip_address": None,
+        "location": "Server Room A",
+        "status": "success"
+    }, timeout=5)
+    if res1.status_code == 422:
+        print(f"  {GREEN}[PASS] Log dengan ip_address: null -> HTTP 422 (Ditolak / Dropped Aman){RESET}")
+    else:
+        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res1.status_code}{RESET}")
+        all_passed = False
+
+    # Test 2: JSON terpotong / malformed syntax (jaringan putus di tengah jalan)
+    print(f"\n  [Test 2] Koneksi terputus di tengah pengiriman (JSON terpotong / sintaks rusak)...")
+    res2 = requests.post(
+        url,
+        data='{"timestamp": "2026-10-20T03:00:00Z", "event_type": "web_request", "user_id": "legacy_server',
+        headers={"Content-Type": "application/json"},
+        timeout=5
+    )
+    if res2.status_code == 422:
+        print(f"  {GREEN}[PASS] JSON Terpotong/Cacat -> HTTP 422 (Ditolak Parser Gatekeeper){RESET}")
+    else:
+        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res2.status_code}{RESET}")
+        all_passed = False
+
+    # Test 3: Missing attribute 'ip_address' completely
+    print(f"\n  [Test 3] Log tanpa key 'ip_address' sama sekali...")
+    res3 = requests.post(url, json={
+        "timestamp": get_current_utc_iso(),
+        "event_type": "web_request",
+        "user_id": "legacy_server_bug_02",
+        "location": "Server Room B",
+        "status": "success"
+    }, timeout=5)
+    if res3.status_code == 422:
+        print(f"  {GREEN}[PASS] Atribut ip_address Hilang -> HTTP 422 (Ditolak Gatekeeper){RESET}")
+    else:
+        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res3.status_code}{RESET}")
+        all_passed = False
+
+    # Test 4: Format IP bukan IPv4 valid
+    print(f"\n  [Test 4] Format IP bukan IPv4 ('999.999.999.999')...")
+    res4 = requests.post(url, json={
+        "timestamp": get_current_utc_iso(),
+        "event_type": "web_request",
+        "user_id": "test_user",
+        "ip_address": "999.999.999.999",
+        "location": "Jakarta",
+        "status": "success"
+    }, timeout=5)
+    if res4.status_code == 422:
+        print(f"  {GREEN}[PASS] Format IP Salah -> HTTP 422 (Ditolak Gatekeeper){RESET}")
+    else:
+        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res4.status_code}{RESET}")
+        all_passed = False
+
+    # Test 5: Time Drift Error (Tahun 1970 > 24 jam lampau)
+    print(f"\n  [Test 5] Time Drift Error: Timestamp Tahun 1970 (> 24 Jam Lampau)...")
+    res5 = requests.post(url, json={
+        "timestamp": "1970-01-01T00:00:00Z",
+        "event_type": "login_attempt",
+        "user_id": "ancient_sender",
+        "ip_address": "192.168.1.50",
+        "location": "Jakarta",
+        "status": "success"
+    }, timeout=5)
+    if res5.status_code == 422 and "Time Drift Error" in res5.text:
+        print(f"  {GREEN}[PASS] Timestamp 1970 -> HTTP 422 ('Time Drift Error' Ditolak){RESET}")
+    else:
+        print(f"  {RED}[FAIL] Expected HTTP 422 Time Drift, got HTTP {res5.status_code}{RESET}")
+        all_passed = False
+
+    # Test 6: Time Drift Error (Dari masa depan +1 tahun)
+    print(f"\n  [Test 6] Time Drift Error: Timestamp Masa Depan (+1 Tahun)...")
+    future_time = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
+    res6 = requests.post(url, json={
+        "timestamp": future_time,
+        "event_type": "login_attempt",
+        "user_id": "future_sender",
+        "ip_address": "192.168.1.50",
+        "location": "Jakarta",
+        "status": "success"
+    }, timeout=5)
+    if res6.status_code == 422 and "Time Drift Error" in res6.text:
+        print(f"  {GREEN}[PASS] Timestamp Masa Depan -> HTTP 422 ('Time Drift Error' Ditolak){RESET}")
+    else:
+        print(f"  {RED}[FAIL] Expected HTTP 422 Time Drift, got HTTP {res6.status_code}{RESET}")
+        all_passed = False
+
+    # Check if SIEM backend is still alive and didn't crash
+    print(f"\n  [Health Check] Memeriksa status kesehatan backend SIEM...")
     stats_res = requests.get(f"{api_base}/api/stats", timeout=5)
     if stats_res.status_code == 200:
-        print(f"  {GREEN}[+] Health Check: SIEM tetap stabil, aktif dan responsif (No Crash)!{RESET}")
+        print(f"  {GREEN}[+] KONDISI SISTEM: SIEM tetap stabil, aktif dan responsif (NO CRASH)!{RESET}")
     else:
-        print(f"  {RED}[!] SIEM tidak merespons setelah data kotor!{RESET}")
+        print(f"  {RED}[!] SIEM crash atau tidak merespons!{RESET}")
         all_passed = False
 
     if all_passed:
-        print(f"{GREEN}[OK] Hasil Skenario 7: Seluruh tes negatif lulus validasi gatekeeper.{RESET}")
+        print(f"{GREEN}[OK] Hasil Skenario 7: Seluruh tes data cacat & time drift berhasil ditangani dengan aman.{RESET}")
 
 
 # ---------------- UTILITY: RESET ----------------

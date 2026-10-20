@@ -284,35 +284,57 @@ python simulator.py --scenario 6
 
 ---
 
-### Skenario 7: Data Cacat & Time Drift (Gatekeeper Negative Testing)
+### Skenario 7: Malformed Log (Format Cacat/Hilang) & Time Drift (Gatekeeper Negative Testing)
 
-#### Tujuan
-Membuktikan ketahanan gerbang masuk SIEM (*Gatekeeper*) dalam menolak data kotor (*malformed JSON*) dan log dengan anomali waktu (*Time Drift Error*), serta menjamin server SIEM **tidak crash**.
+#### Masalah & Tantangan
+*   **Masalah:** Sebuah server lama mengalami bug atau koneksi terputus di tengah transmisi dan mengirim log tanpa atribut penting (misalnya `ip_address: null`, atribut `ip_address` hilang sama sekali, atau format JSON-nya terpotong).
+*   **Tantangan SIEM:** Jika mesin korelasi langsung mencoba membaca `log.ip_address` yang tidak ada atau `null`, program backend akan mengalami *unhandled exception / crash* (mati mendadak) dan seluruh pusat komando lumpuh.
+*   **Penanganan (Aturan SIEM):** SIEM memiliki lapisan **Validasi Skema (Gatekeeper)** berbasis Pydantic. Jika format tidak sesuai atau atribut penting `null`/hilang, log langsung ditolak (*Drop*) dengan status **HTTP 422 (Unprocessable Entity)**, dan sistem backend tetap berjalan normal 100% tanpa *crash*.
 
 #### Kasus Uji Negatif yang Ditembakkan:
-1. **JSON Kosong pada Field Wajib**: Field `ip_address` bernilai `""`.
-2. **Format IP Rusak**: Nilai `999.999.999.999` (bukan format IPv4 valid).
-3. **Time Drift Lampau (> 24 Jam)**: Nilai timestamp tahun 1970 (`1970-01-01T00:00:00Z`).
-4. **Time Drift Masa Depan**: Nilai timestamp +1 tahun dari sekarang.
+1.  **Log dengan `ip_address: null`**: Server lama mengirim nilai `null` pada IP address.
+2.  **JSON Terpotong / Malformed Syntax**: Koneksi jaringan terputus di tengah transmisi sehingga sintaks JSON tidak lengkap.
+3.  **Atribut `ip_address` Hilang**: Payload log dikirim tanpa menyertakan kunci `ip_address` sama sekali.
+4.  **Format IP Bukan IPv4**: Nilai string acak atau di luar jangkauan oktet IPv4 (`999.999.999.999`).
+5.  **Time Drift Lampau (> 24 Jam)**: Timestamp dari masa lampau jauh (contoh: tahun 1970 `1970-01-01T00:00:00Z`).
+6.  **Time Drift Masa Depan (+1 Tahun)**: Timestamp dari masa depan.
 
 #### Cara Eksekusi
 ```powershell
 python simulator.py --scenario 7
 ```
 
-#### Apa yang Terjadi?
+#### Apa yang Terjadi di Terminal?
 ```text
->>> Skenario 7: Data Cacat & Time Drift (Negative Testing & Robustness)
-Memastikan Gatekeeper SIEM menolak data kotor dengan HTTP 422 tanpa menyebabkan crash.
-  [PASS] JSON tanpa IP Address (Field Wajib Kosong) -> HTTP 422 (Ditolak Sesuai Spesifikasi)
-  [PASS] Format IP Bukan IPv4 ('not-an-ip') -> HTTP 422 (Ditolak Sesuai Spesifikasi)
-  [PASS] Time Drift Error: Tahun 1970 (> 24 Jam Lalu) -> HTTP 422 (Ditolak Sesuai Spesifikasi)
-  [PASS] Time Drift Error: Dari Masa Depan (+1 Tahun) -> HTTP 422 (Ditolak Sesuai Spesifikasi)
-  [+] Health Check: SIEM tetap stabil, aktif dan responsif (No Crash)!
-[OK] Hasil Skenario 7: Seluruh tes negatif lulus validasi gatekeeper.
+>>> Skenario 7: Malformed Log (Format Cacat/Hilang) & Time Drift
+Masalah: Server lama mengalami bug / koneksi putus, mengirim log tanpa atribut penting atau JSON rusak.
+Tantangan: Jika SIEM tidak memiliki schema validator, backend akan crash saat membaca log.ip_address.
+Penanganan: Lapisan Validasi Skema (Gatekeeper) menolak log dengan HTTP 422, SIEM tetap berjalan normal.
+
+  [Test 1] Server lama mengirim log dengan 'ip_address: null'...
+  [PASS] Log dengan ip_address: null -> HTTP 422 (Ditolak / Dropped Aman)
+
+  [Test 2] Koneksi terputus di tengah pengiriman (JSON terpotong / sintaks rusak)...
+  [PASS] JSON Terpotong/Cacat -> HTTP 422 (Ditolak Parser Gatekeeper)
+
+  [Test 3] Log tanpa key 'ip_address' sama sekali...
+  [PASS] Atribut ip_address Hilang -> HTTP 422 (Ditolak Gatekeeper)
+
+  [Test 4] Format IP bukan IPv4 ('999.999.999.999')...
+  [PASS] Format IP Salah -> HTTP 422 (Ditolak Gatekeeper)
+
+  [Test 5] Time Drift Error: Timestamp Tahun 1970 (> 24 Jam Lampau)...
+  [PASS] Timestamp 1970 -> HTTP 422 ('Time Drift Error' Ditolak)
+
+  [Test 6] Time Drift Error: Timestamp Masa Depan (+1 Tahun)...
+  [PASS] Timestamp Masa Depan -> HTTP 422 ('Time Drift Error' Ditolak)
+
+  [Health Check] Memeriksa status kesehatan backend SIEM...
+  [+] KONDISI SISTEM: SIEM tetap stabil, aktif dan responsif (NO CRASH)!
+[OK] Hasil Skenario 7: Seluruh tes data cacat & time drift berhasil ditangani dengan aman.
 ```
 
-*SIEM tetap aktif 100%, metrik server berjalan normal, dan data kotor tidak mencemari database in-memory.*
+*Backend SIEM terbukti tangguh menolak data cacat, tidak mengalami crash, dan tetap melayani permintaan baru secara normal.*
 
 ---
 

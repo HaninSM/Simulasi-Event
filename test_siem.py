@@ -33,6 +33,44 @@ def test_missing_ip_address_rejected():
     assert response.status_code == 422
 
 
+def test_null_ip_address_rejected():
+    # Skenario Negatif: Server lama mengirim log dengan ip_address: null
+    payload = {
+        "timestamp": get_iso_now(),
+        "event_type": "web_request",
+        "user_id": "legacy_server_01",
+        "ip_address": None,
+        "location": "Server Room A",
+        "status": "success"
+    }
+    response = client.post("/api/ingest", json=payload)
+    assert response.status_code == 422
+
+
+def test_missing_ip_key_completely_rejected():
+    # Skenario Negatif: Server lama mengirim log tanpa atribut ip_address sama sekali
+    payload = {
+        "timestamp": get_iso_now(),
+        "event_type": "web_request",
+        "user_id": "legacy_server_02",
+        "location": "Server Room A",
+        "status": "success"
+    }
+    response = client.post("/api/ingest", json=payload)
+    assert response.status_code == 422
+
+
+def test_truncated_malformed_json_rejected():
+    # Skenario Negatif: Jaringan putus di tengah jalan sehingga JSON terpotong (syntax rusak)
+    raw_truncated_payload = '{"timestamp": "2026-10-20T03:00:00Z", "event_type": "web_request", "user_id": "legacy'
+    response = client.post(
+        "/api/ingest",
+        content=raw_truncated_payload,
+        headers={"Content-Type": "application/json"}
+    )
+    assert response.status_code == 422
+
+
 def test_invalid_ipv4_rejected():
     payload = {
         "timestamp": get_iso_now(),

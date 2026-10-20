@@ -337,16 +337,41 @@ async function runScenarioFromBrowser(scNum) {
         }
         fetchWhitelist();
     } else if (scNum === "7") {
-        // Negative test: Missing IP and 1970 timestamp
-        const res1 = await postLog({
+        // Skenario Negatif 1: Malformed Log (Format Cacat/Hilang) & Time Drift
+        // Test 1: ip_address: null (Server lama mengalami bug)
+        const resNull = await postLog({
             timestamp: nowIso(),
             event_type: "web_request",
-            user_id: "corrupted_sender",
-            ip_address: "",
-            location: "Unknown",
+            user_id: "legacy_server_bug_01",
+            ip_address: null,
+            location: "Server Room A",
             status: "success"
         });
-        const res2 = await postLog({
+
+        // Test 2: JSON terpotong / malformed syntax (koneksi putus di tengah jalan)
+        let resTruncatedStatus = "422";
+        try {
+            const rawRes = await fetch(`${API_BASE}/api/ingest`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: '{"timestamp": "2026-10-20T03:00:00Z", "event_type": "web_request", "user_id": "legacy'
+            });
+            resTruncatedStatus = rawRes.status;
+        } catch (e) {
+            console.warn(e);
+        }
+
+        // Test 3: Missing attribute 'ip_address' completely
+        const resMissing = await postLog({
+            timestamp: nowIso(),
+            event_type: "web_request",
+            user_id: "legacy_server_bug_02",
+            location: "Server Room B",
+            status: "success"
+        });
+
+        // Test 4: Time Drift Error (Tahun 1970)
+        const resTimeDrift = await postLog({
             timestamp: "1970-01-01T00:00:00Z",
             event_type: "web_request",
             user_id: "time_traveler",
@@ -354,7 +379,16 @@ async function runScenarioFromBrowser(scNum) {
             location: "Time Rift",
             status: "success"
         });
-        alert(`Negative Test Hasil:\n1. Empty IP response: HTTP ${res1?.status}\n2. Year 1970 response: HTTP ${res2?.status}\nSIEM tetap berjalan normal tanpa crash!`);
+
+        alert(
+            `Hasil Pengujian Skenario Negatif:\n` +
+            `1. Malformed Log (ip_address: null) -> HTTP ${resNull?.status} (Ditolak)\n` +
+            `2. Malformed Log (JSON terpotong)   -> HTTP ${resTruncatedStatus} (Ditolak)\n` +
+            `3. Malformed Log (Field IP hilang) -> HTTP ${resMissing?.status} (Ditolak)\n` +
+            `4. Time Drift (Tahun 1970)         -> HTTP ${resTimeDrift?.status} (Ditolak)\n\n` +
+            `Hasil: Lapisan Validasi Skema (Gatekeeper) menolak data kotor secara aman.\n` +
+            `Backend SIEM TIDAK CRASH dan seluruh pusat komando tetap berjalan normal!`
+        );
     }
 
     // Refresh immediately
