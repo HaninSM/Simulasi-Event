@@ -586,7 +586,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
             <div style="font-size: 0.75rem; color: var(--text-muted);">Navigasi Keyboard <kbd>←</kbd> <kbd>→</kbd></div>
-            <div class="slide-counter" id="slideCounter">Slide 1 / 13</div>
+            <div class="slide-counter" id="slideCounter">Slide 1 / 14</div>
         </div>
     </header>
 
@@ -604,10 +604,11 @@
             <button class="nav-tab" data-index="6">7. Skenario 1 - 3 (Normal, DDoS, Travel)</button>
             <button class="nav-tab" data-index="7">8. Skenario 4 - 7 (Brute, Exfil, Blind Spot, Drift)</button>
             <button class="nav-tab" data-index="8">9. Skenario 8: The Low & Slow APT (Hot vs Cold)</button>
-            <button class="nav-tab" data-index="9">10. Tantangan Storage (Hot vs Cold & Solusi Stateful)</button>
-            <button class="nav-tab" data-index="10">11. Tantangan Otonom (Keamanan, Bisnis, Audit)</button>
-            <button class="nav-tab" data-index="11">12. Arsitektur Pengaman (Safe Blueprint)</button>
+            <button class="nav-tab" data-index="9">10. Tantangan Otonom (Keamanan, Bisnis, Audit)</button>
+            <button class="nav-tab" data-index="10">11. Arsitektur Pengaman (Safe Blueprint)</button>
+            <button class="nav-tab" data-index="11">12. Bridging: Implementasi Lapangan</button>
             <button class="nav-tab" data-index="12">13. Tantangan Sistem Integrasi</button>
+            <button class="nav-tab" data-index="13">14. Tantangan Storage (Hot vs Cold)</button>
         </nav>
 
         <!-- ==================== SLIDE 1: COVER ==================== -->
@@ -1160,157 +1161,8 @@
             </div>
         </section>
 
-        <!-- ==================== SLIDE 10: TANTANGAN STORAGE (HOT & COLD STORAGE) ==================== -->
+        <!-- ==================== SLIDE 10: TANTANGAN OTONOM (POINT 4) ==================== -->
         <section class="slide" id="slide-9">
-            <div class="slide-header">
-                <span class="slide-tag">BAGIAN 3D: STORAGE ARCHITECTURE & DATA LIFECYCLE</span>
-                <h2 class="slide-title">Tantangan Storage: Hot Storage vs. Cold Storage</h2>
-                <p class="slide-subtitle">Mengapa solusi ultimate bukan sekadar memperbesar storage, melainkan penerapan Stateful Entity Tracking dan On-Demand Cold Log Rehydration.</p>
-            </div>
-
-            <!-- Grid 1: Perbandingan Dua Dunia Penyimpanan -->
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <!-- Hot Storage -->
-                <div class="card warning">
-                    <div class="card-header">
-                        <h3 class="card-title">🔥 Hot Storage (Memori & Indeks Cepat)</h3>
-                        <span class="card-tag">REAL-TIME INGESTION</span>
-                    </div>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-main);">
-                        <li><strong>⚡ Keunggulan:</strong> Kecepatan query sub-detik (&lt; 10ms) untuk korelasi stream instan (Sliding Window, RAM, NVMe SSD).</li>
-                        <li><strong>💸 Kendala Biaya:</strong> Sangat mahal per Gigabyte. Bila menampung miliaran log/hari selama berbulan-bulan, anggaran infrastruktur meledak.</li>
-                        <li><strong>⏳ Siklus Retensi:</strong> Dibatasi (misal 14 hari) agar kapasitas memori dan engine korelasi tidak runtuh (*out-of-memory*).</li>
-                    </ul>
-                </div>
-
-                <!-- Cold Storage -->
-                <div class="card cyan">
-                    <div class="card-header">
-                        <h3 class="card-title">❄️ Cold Storage (Gudang Arsip Beku)</h3>
-                        <span class="card-tag">COMPLIANCE & ARCHIVE</span>
-                    </div>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-main);">
-                        <li><strong>💰 Keunggulan:</strong> Sangat hemat biaya (10x - 50x lebih murah via S3 Glacier, Parquet, atau Tape) untuk kepatuhan regulasi bertahun-tahun.</li>
-                        <li><strong>🧊 Sifat Pasif (Inert):</strong> Data dikompresi rapat, tidak terindeks instan, dan <em>tidak bisa dibaca otomatis oleh mesin korelasi SIEM</em>.</li>
-                        <li><strong>⏱️ Waktu Akses:</strong> Memerlukan waktu menit hingga jam untuk proses dekompresi dan pemindahan (*rehydration*).</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Peringatan Kritis: The Brute-Force Fallacy -->
-            <div class="card danger" style="margin-bottom: 1.5rem;">
-                <div class="card-header">
-                    <h3 class="card-title">⚠️ Mengapa "Memperbesar Storage" BUKAN Solusi Ultimate?</h3>
-                    <span class="card-tag">THE BRUTE-FORCE FALLACY</span>
-                </div>
-                <div style="font-size: 0.92rem; color: var(--text-main); line-height: 1.7;">
-                    <p style="margin-bottom: 0.65rem;">
-                        Banyak pihak beranggapan: <em>"Jika peretas menyerang di Hari ke-20, perbesar saja Hot Storage menjadi 30 atau 90 hari!"</em><br>
-                        Ini adalah <strong>jebakan logika fatal</strong> dalam arsitektur keamanan modern karena tiga alasan utama:
-                    </p>
-                    <div class="grid-3" style="margin-top: 0.75rem;">
-                        <div class="box-highlight box-danger" style="margin: 0;">
-                            <strong>1. Biaya Eksponensial</strong>
-                            Menyimpan petabyte log mentah di tier instan memboroskan ratusan juta hingga miliaran rupiah anggaran IT setiap bulan.
-                        </div>
-                        <div class="box-highlight box-danger" style="margin: 0;">
-                            <strong>2. Query Latency Drop</strong>
-                            Semakin gemuk index pencarian aktif, latensi korelasi merosot dari milidetik menjadi puluhan detik. SIEM tercekik (*bottleneck*).
-                        </div>
-                        <div class="box-highlight box-danger" style="margin: 0;">
-                            <strong>3. Noise-to-Signal Trap</strong>
-                            99.9% dari miliaran log adalah aktivitas wajar (noise). Membayar storage mahal demi mencari 1 jarum di tumpukan jerami adalah pemborosan.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dua Solusi Arsitektural Utama -->
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <!-- Solusi 1: Stateful Entity Tracking -->
-                <div class="card success">
-                    <div class="card-header">
-                        <h3 class="card-title">1. Stateful Entity Tracking / Risk Scoring</h3>
-                        <span class="card-tag">LIGHTWEIGHT LONG-TERM MEMORY</span>
-                    </div>
-                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
-                        <p style="margin-bottom: 0.5rem;">
-                            <strong>Inti Pendekatan:</strong> SIEM <strong>tidak perlu menyimpan seluruh log mentah</strong>. Cukup menyimpan <em>"status/skor kecurigaan"</em> dari IP atau akun tersebut di database persisten (Long-term Watchlist/Greylist).
-                        </p>
-                        <div class="box-highlight box-story">
-                            <strong>💡 Penghematan Data &gt; 99.99%:</strong>
-                            Alih-alih menahan 50 GB rekaman trafik HTTP mentah di Hot Memory, SIEM hanya menyimpan 1 baris JSON metadata: <code class="pres-code">{"ip": "198.51.100.77", "risk": "HIGH", "score": 85, "reason": "recon_day_1"}</code>.
-                        </div>
-                        <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--text-muted);">
-                            Status ini dapat bertahan berbulan-bulan dengan konsumsi memori hanya beberapa Kilobyte, siap menjerat peretas yang datang kembali di Hari ke-20!
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Solusi 2: Cold Log Rehydration -->
-                <div class="card purple">
-                    <div class="card-header">
-                        <h3 class="card-title">2. Cold Log Rehydration (On-Demand Deep Forensic)</h3>
-                        <span class="card-tag">TARGETED HISTORICAL RESTORATION</span>
-                    </div>
-                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
-                        <p style="margin-bottom: 0.5rem;">
-                            <strong>Inti Pendekatan:</strong> Saat insiden terjadi di Hari ke-20, sistem secara otomatis <em>"mencairkan" (rehydrate)</em> log terkait dari arsip beku untuk merajut kembali linimasa penyerangan utuh (*Kill Chain Reconstruction*).
-                        </p>
-                        <div class="box-highlight box-siem">
-                            <strong>🔍 Tidak Perlu Full-Table Scan:</strong>
-                            Sistem tidak membakar sumber daya untuk membaca seluruh Cold Storage, melainkan hanya menarik paket log milik entitas bersangkutan yang relevan dengan rentang waktu insiden.
-                        </div>
-                        <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--text-muted);">
-                            Hasil rehidrasi langsung disajikan ke hadapan analis forensik untuk pembuktian hukum dan investigasi mendalam tanpa membebani engine real-time.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Setup Lokasi Hot & Cold Storage pada SIEM -->
-            <div class="diagram-container">
-                <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                    ⚙️ Setup Lokasi Hot &amp; Cold Storage: Kunci Mendapatkan Konteks "Correlation Showdown"
-                </h3>
-                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.7;">
-                    Agar fitur <em>On-Demand Rehydration</em> dapat bekerja presisi saat Hari ke-20, SIEM wajib mengonfigurasikan <strong>katalog pemetaan lokasi (Storage Tiering Setup)</strong> antara Hot Buffer dan Cold Archive:
-                </p>
-
-                <div class="flow-diagram">
-                    <div class="flow-step" style="border-color: var(--accent-gold); background: rgba(245, 158, 11, 0.08);">
-                        <div class="flow-icon">🔥</div>
-                        <div class="flow-title">1. Setup Hot Storage Tier</div>
-                        <div class="flow-desc">Partisi RAM & SSD NVMe cepat untuk sliding window 14 hari + Real-Time Entity Risk Scoring</div>
-                    </div>
-                    <div class="flow-arrow">➔</div>
-                    <div class="flow-step" style="border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08);">
-                        <div class="flow-icon">📦</div>
-                        <div class="flow-title">2. Storage Mapping Catalog</div>
-                        <div class="flow-desc">Petakan path arsip: <br><code class="pres-code" style="font-size:0.75rem;">cold_s3://logs/{yyyy}/{mm}/{dd}/{ip_hash}/</code></div>
-                    </div>
-                    <div class="flow-arrow">➔</div>
-                    <div class="flow-step" style="border-color: var(--danger-red); background: rgba(239, 68, 68, 0.08);">
-                        <div class="flow-icon">🚨</div>
-                        <div class="flow-title">3. Hari ke-20 Trigger</div>
-                        <div class="flow-desc">IP di Watchlist menyerang &rarr; Alarm Kritis APT menyala via Stateful Table</div>
-                    </div>
-                    <div class="flow-arrow">➔</div>
-                    <div class="flow-step" style="border-color: var(--success-green); background: rgba(16, 185, 129, 0.08);">
-                        <div class="flow-icon">🔄</div>
-                        <div class="flow-title">4. Correlation Showdown</div>
-                        <div class="flow-desc">SIEM merujuk koordinat katalog, menarik log Tanggal 1 & merajut bukti forensik instan!</div>
-                    </div>
-                </div>
-
-                <div class="box-highlight box-output" style="margin-top: 1rem;">
-                    <strong>🎯 Kesimpulan Arsitektur:</strong> Dengan setup pemetaan lokasi yang terstruktur, SIEM mendapatkan <em>kecepatan instan</em> dari Hot Storage, <em>efisiensi biaya</em> dari Cold Storage, dan <em>kecerdasan korelasi lintas waktu</em> dari Stateful Entity Tracking.
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== SLIDE 11: TANTANGAN OTONOM (POINT 4) ==================== -->
-        <section class="slide" id="slide-10">
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 4: STRATEGIC ANALYSIS</span>
                 <h2 class="slide-title">Tantangan SIEM Self-Adapting: Keamanan, Bisnis, & Kepatuhan</h2>
@@ -1377,8 +1229,8 @@
             </div>
         </section>
 
-        <!-- ==================== SLIDE 12: ARSITEKTUR PENGAMAN (POINT 4 BLUEPRINT) ==================== -->
-        <section class="slide" id="slide-11">
+        <!-- ==================== SLIDE 11: ARSITEKTUR PENGAMAN (POINT 4 BLUEPRINT) ==================== -->
+        <section class="slide" id="slide-10">
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 4: BLUEPRINT & REKOMENDASI</span>
                 <h2 class="slide-title">Rekomendasi Arsitektur: "Human-Supervised Adaptation"</h2>
@@ -1468,7 +1320,108 @@
             </div>
         </section>
 
-        <!-- ==================== SLIDE 13: TANTANGAN SISTEM INTEGRASI (BAGIAN AKHIR) ==================== -->
+        <!-- ==================== SLIDE 12: BRIDGING IMPLEMENTASI LAPANGAN ==================== -->
+        <section class="slide" id="slide-11">
+            <div class="slide-header">
+                <span class="slide-tag">BAGIAN 5: REAL-WORLD IMPLEMENTATION &amp; BRIDGING</span>
+                <h2 class="slide-title">Bagaimana Jika Mini-SIEM Ini Diimplementasikan?</h2>
+                <p class="slide-subtitle">Transisi dari prototipe uji lab ke instansi nyata: Siklus adopsi lapangan dan dua tantangan terbesar yang wajib diantisipasi.</p>
+            </div>
+
+            <!-- Kartu Pertanyaan & Premis Utama -->
+            <div class="card cyan" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">🏛️ Pertanyaan Strategis: "Bagaimana Jika Di-Apply di Suatu Instansi Nyata?"</h3>
+                    <span class="card-tag">FIELD FEASIBILITY</span>
+                </div>
+                <p style="font-size: 0.95rem; line-height: 1.8; color: var(--text-main);">
+                    Setelah membuktikan kehandalan mesin korelasi real-time, perlindungan gatekeeper data cacat, dan arsitektur pengaman otonom, muncul pertanyaan krusial dari pimpinan instansi / pertahanan:
+                    <br>
+                    <em>"Jika Mini-SIEM ini benar-benar akan diterapkan di instansi kita untuk mengawal infrastruktur kritikal, apa saja tahapan yang harus dilalui dan apa tantangan terberatnya?"</em>
+                </p>
+            </div>
+
+            <!-- Timeline Sederhana Implementasi Lapangan -->
+            <div class="diagram-container" style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
+                    🗺️ Roadmap &amp; Timeline Sederhana Adopsi Lapangan (5 Fase Eksekusi)
+                </h4>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="flow-icon">📋</div>
+                        <div class="flow-title">Fase 1: Audit Aset</div>
+                        <div class="flow-desc">Petakan seluruh hardware (pintu, CCTV, sensor) &amp; aplikasi (DB, LDAP, OS) penghasil log</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🔌</div>
+                        <div class="flow-title">Fase 2: Adapter Pipeline</div>
+                        <div class="flow-desc">Bangun adapter parser format heterogen (.CSV, Syslog, Audit Log) ke kontrak JSON standar</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🗄️</div>
+                        <div class="flow-title">Fase 3: Storage Tiering</div>
+                        <div class="flow-desc">Setup pemetaan partisi Hot Storage (korelasi instan) &amp; Cold Archive (arsip kepatuhan)</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🧪</div>
+                        <div class="flow-title">Fase 4: Canary Replay</div>
+                        <div class="flow-desc">Jalankan aturan pada data riil 30 hari dalam mode bayangan (HITL) tanpa auto-block sembrono</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step" style="border-color: var(--success-green); background: rgba(16, 185, 129, 0.1);">
+                        <div class="flow-icon">🛡️</div>
+                        <div class="flow-title">Fase 5: Live SOC Command</div>
+                        <div class="flow-desc">Go-live operasional 24/7 di Command Center dengan dasbor visual &amp; mitigasi terkendali</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BRIDGING DUA PILAR TANTANGAN TERBESAR -->
+            <div class="card warning">
+                <div class="card-header">
+                    <h3 class="card-title">⚡ Bridging Kunci: Dua Tantangan Fundamental yang Harus Diperhatikan</h3>
+                    <span class="card-tag">CRITICAL CHALLENGES</span>
+                </div>
+                <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.7; margin-bottom: 1rem;">
+                    Berdasarkan pengalaman lapangan, keberhasilan implementasi Mini-SIEM di instansi nyata bertumpu pada kemampuan tim mengantisipasi <strong>Dua Tantangan Arsitektural Terbesar</strong> berikut:
+                </p>
+
+                <div class="grid-2">
+                    <!-- Tantangan 1 -->
+                    <div class="card cyan" style="margin: 0; background: rgba(6, 182, 212, 0.05); border-color: rgba(6, 182, 212, 0.3);">
+                        <div class="card-header">
+                            <h4 style="font-size: 1rem; color: var(--accent-cyan);">1. Challenge Sistem Integrasi (Slide 13)</h4>
+                            <span class="card-tag">INPUT &amp; NORMALISASI</span>
+                        </div>
+                        <p style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
+                            <strong>Tantangan di Pintu Masuk Data:</strong> Ratusan perangkat keras dan aplikasi berbicara dalam "bahasa" berbeda-beda—dari CSV mesin absensi, Syslog router jaringan, hingga Audit Log database militer terenkripsi.
+                        </p>
+                        <div class="box-highlight box-siem" style="margin-top: 0.5rem; font-size: 0.82rem;">
+                            👉 Dibahas tuntas pada <strong>Slide 13: Tantangan Sistem Integrasi</strong>.
+                        </div>
+                    </div>
+
+                    <!-- Tantangan 2 -->
+                    <div class="card purple" style="margin: 0; background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.3);">
+                        <div class="card-header">
+                            <h4 style="font-size: 1rem; color: #a78bfa;">2. Challenge Storage: Hot vs Cold (Slide 14)</h4>
+                            <span class="card-tag">VOLUME &amp; RETENSI</span>
+                        </div>
+                        <p style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
+                            <strong>Tantangan di Ruang Penyimpanan:</strong> Banjir miliaran log per hari tidak bisa diselesaikan hanya dengan memperbesar disk, melainkan lewat Stateful Entity Tracking &amp; Cold Log Rehydration.
+                        </p>
+                        <div class="box-highlight box-story" style="margin-top: 0.5rem; font-size: 0.82rem;">
+                            👉 Dibahas tuntas pada <strong>Slide 14: Tantangan Storage</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 13: TANTANGAN SISTEM INTEGRASI ==================== -->
         <section class="slide" id="slide-12">
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 5: SYSTEM INTEGRATION ARCHITECTURE</span>
@@ -1675,6 +1628,155 @@
                             <span><strong>Melindungi dirinya sendiri dari data sampah:</strong> Menolak data kotor secara mandiri tanpa pernah mengalami <em>crash</em>.</span>
                         </li>
                     </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 14: TANTANGAN STORAGE (HOT & COLD STORAGE) ==================== -->
+        <section class="slide" id="slide-13">
+            <div class="slide-header">
+                <span class="slide-tag">BAGIAN 5B: STORAGE ARCHITECTURE &amp; DATA LIFECYCLE (CHALLENGE #2)</span>
+                <h2 class="slide-title">Tantangan Storage: Hot Storage vs. Cold Storage</h2>
+                <p class="slide-subtitle">Mengapa solusi ultimate bukan sekadar memperbesar storage, melainkan penerapan Stateful Entity Tracking dan On-Demand Cold Log Rehydration.</p>
+            </div>
+
+            <!-- Grid 1: Perbandingan Dua Dunia Penyimpanan -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <!-- Hot Storage -->
+                <div class="card warning">
+                    <div class="card-header">
+                        <h3 class="card-title">🔥 Hot Storage (Memori &amp; Indeks Cepat)</h3>
+                        <span class="card-tag">REAL-TIME INGESTION</span>
+                    </div>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-main);">
+                        <li><strong>⚡ Keunggulan:</strong> Kecepatan query sub-detik (&lt; 10ms) untuk korelasi stream instan (Sliding Window, RAM, NVMe SSD).</li>
+                        <li><strong>💸 Kendala Biaya:</strong> Sangat mahal per Gigabyte. Bila menampung miliaran log/hari selama berbulan-bulan, anggaran infrastruktur meledak.</li>
+                        <li><strong>⏳ Siklus Retensi:</strong> Dibatasi (misal 14 hari) agar kapasitas memori dan engine korelasi tidak runtuh (<em>out-of-memory</em>).</li>
+                    </ul>
+                </div>
+
+                <!-- Cold Storage -->
+                <div class="card cyan">
+                    <div class="card-header">
+                        <h3 class="card-title">❄️ Cold Storage (Gudang Arsip Beku)</h3>
+                        <span class="card-tag">COMPLIANCE &amp; ARCHIVE</span>
+                    </div>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-main);">
+                        <li><strong>💰 Keunggulan:</strong> Sangat hemat biaya (10x - 50x lebih murah via S3 Glacier, Parquet, atau Tape) untuk kepatuhan regulasi bertahun-tahun.</li>
+                        <li><strong>🧊 Sifat Pasif (Inert):</strong> Data dikompresi rapat, tidak terindeks instan, dan <em>tidak bisa dibaca otomatis oleh mesin korelasi SIEM</em>.</li>
+                        <li><strong>⏱️ Waktu Akses:</strong> Memerlukan waktu menit hingga jam untuk proses dekompresi dan pemindahan (<em>rehydration</em>).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Peringatan Kritis: The Brute-Force Fallacy -->
+            <div class="card danger" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">⚠️ Mengapa "Memperbesar Storage" BUKAN Solusi Ultimate?</h3>
+                    <span class="card-tag">THE BRUTE-FORCE FALLACY</span>
+                </div>
+                <div style="font-size: 0.92rem; color: var(--text-main); line-height: 1.7;">
+                    <p style="margin-bottom: 0.65rem;">
+                        Banyak pihak beranggapan: <em>"Jika peretas menyerang di Hari ke-20, perbesar saja Hot Storage menjadi 30 atau 90 hari!"</em><br>
+                        Ini adalah <strong>jebakan logika fatal</strong> dalam arsitektur keamanan modern karena tiga alasan utama:
+                    </p>
+                    <div class="grid-3" style="margin-top: 0.75rem;">
+                        <div class="box-highlight box-danger" style="margin: 0;">
+                            <strong>1. Biaya Eksponensial</strong>
+                            Menyimpan petabyte log mentah di tier instan memboroskan ratusan juta hingga miliaran rupiah anggaran IT setiap bulan.
+                        </div>
+                        <div class="box-highlight box-danger" style="margin: 0;">
+                            <strong>2. Query Latency Drop</strong>
+                            Semakin gemuk index pencarian aktif, latensi korelasi merosot dari milidetik menjadi puluhan detik. SIEM tercekik (<em>bottleneck</em>).
+                        </div>
+                        <div class="box-highlight box-danger" style="margin: 0;">
+                            <strong>3. Noise-to-Signal Trap</strong>
+                            99.9% dari miliaran log adalah aktivitas wajar (noise). Membayar storage mahal demi mencari 1 jarum di tumpukan jerami adalah pemborosan.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dua Solusi Arsitektural Utama -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <!-- Solusi 1: Stateful Entity Tracking -->
+                <div class="card success">
+                    <div class="card-header">
+                        <h3 class="card-title">1. Stateful Entity Tracking / Risk Scoring</h3>
+                        <span class="card-tag">LIGHTWEIGHT LONG-TERM MEMORY</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
+                        <p style="margin-bottom: 0.5rem;">
+                            <strong>Inti Pendekatan:</strong> SIEM <strong>tidak perlu menyimpan seluruh log mentah</strong>. Cukup menyimpan <em>"status/skor kecurigaan"</em> dari IP atau akun tersebut di database persisten (Long-term Watchlist/Greylist).
+                        </p>
+                        <div class="box-highlight box-story">
+                            <strong>💡 Penghematan Data &gt; 99.99%:</strong>
+                            Alih-alih menahan 50 GB rekaman trafik HTTP mentah di Hot Memory, SIEM hanya menyimpan 1 baris JSON metadata: <code class="pres-code">{"ip": "198.51.100.77", "risk": "HIGH", "score": 85, "reason": "recon_day_1"}</code>.
+                        </div>
+                        <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--text-muted);">
+                            Status ini dapat bertahan berbulan-bulan dengan konsumsi memori hanya beberapa Kilobyte, siap menjerat peretas yang datang kembali di Hari ke-20!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Solusi 2: Cold Log Rehydration -->
+                <div class="card purple">
+                    <div class="card-header">
+                        <h3 class="card-title">2. Cold Log Rehydration (On-Demand Deep Forensic)</h3>
+                        <span class="card-tag">TARGETED HISTORICAL RESTORATION</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
+                        <p style="margin-bottom: 0.5rem;">
+                            <strong>Inti Pendekatan:</strong> Saat insiden terjadi di Hari ke-20, sistem secara otomatis <em>"mencairkan" (rehydrate)</em> log terkait dari arsip beku untuk merajut kembali linimasa penyerangan utuh (<em>Kill Chain Reconstruction</em>).
+                        </p>
+                        <div class="box-highlight box-siem">
+                            <strong>🔍 Tidak Perlu Full-Table Scan:</strong>
+                            Sistem tidak membakar sumber daya untuk membaca seluruh Cold Storage, melainkan hanya menarik paket log milik entitas bersangkutan yang relevan dengan rentang waktu insiden.
+                        </div>
+                        <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--text-muted);">
+                            Hasil rehidrasi langsung disajikan ke hadapan analis forensik untuk pembuktian hukum dan investigasi mendalam tanpa membebani engine real-time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Setup Lokasi Hot & Cold Storage pada SIEM -->
+            <div class="diagram-container">
+                <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    ⚙️ Setup Lokasi Hot &amp; Cold Storage: Kunci Mendapatkan Konteks "Correlation Showdown"
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.7;">
+                    Agar fitur <em>On-Demand Rehydration</em> dapat bekerja presisi saat Hari ke-20, SIEM wajib mengonfigurasikan <strong>katalog pemetaan lokasi (Storage Tiering Setup)</strong> antara Hot Buffer dan Cold Archive:
+                </p>
+
+                <div class="flow-diagram">
+                    <div class="flow-step" style="border-color: var(--accent-gold); background: rgba(245, 158, 11, 0.08);">
+                        <div class="flow-icon">🔥</div>
+                        <div class="flow-title">1. Setup Hot Storage Tier</div>
+                        <div class="flow-desc">Partisi RAM &amp; SSD NVMe cepat untuk sliding window 14 hari + Real-Time Entity Risk Scoring</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step" style="border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08);">
+                        <div class="flow-icon">📦</div>
+                        <div class="flow-title">2. Storage Mapping Catalog</div>
+                        <div class="flow-desc">Petakan path arsip: <br><code class="pres-code" style="font-size:0.75rem;">cold_s3://logs/{yyyy}/{mm}/{dd}/{ip_hash}/</code></div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step" style="border-color: var(--danger-red); background: rgba(239, 68, 68, 0.08);">
+                        <div class="flow-icon">🚨</div>
+                        <div class="flow-title">3. Hari ke-20 Trigger</div>
+                        <div class="flow-desc">IP di Watchlist menyerang &rarr; Alarm Kritis APT menyala via Stateful Table</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step" style="border-color: var(--success-green); background: rgba(16, 185, 129, 0.08);">
+                        <div class="flow-icon">🔄</div>
+                        <div class="flow-title">4. Correlation Showdown</div>
+                        <div class="flow-desc">SIEM merujuk koordinat katalog, menarik log Tanggal 1 &amp; merajut bukti forensik instan!</div>
+                    </div>
+                </div>
+
+                <div class="box-highlight box-output" style="margin-top: 1rem;">
+                    <strong>🎯 Kesimpulan Arsitektur:</strong> Dengan setup pemetaan lokasi yang terstruktur, SIEM mendapatkan <em>kecepatan instan</em> dari Hot Storage, <em>efisiensi biaya</em> dari Cold Storage, dan <em>kecerdasan korelasi lintas waktu</em> dari Stateful Entity Tracking.
                 </div>
             </div>
         </section>
