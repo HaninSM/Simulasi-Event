@@ -589,11 +589,6 @@ def main():
         return
 
     interactive_menu(args.api)
-        }
-        scenarios[args.scenario](args.api)
-        return
-
-    interactive_menu(args.api)
 
 
 if __name__ == "__main__":
