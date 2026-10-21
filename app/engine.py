@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Set, Optional
 from collections import defaultdict
 
-from app.models import LogEvent, Alert, WhitelistRequest
+from app.models import LogEvent, Alert, WhitelistRequest, WatchlistRequest
 
 
 class CorrelationEngine:
@@ -11,9 +11,17 @@ class CorrelationEngine:
         # Whitelisted IP addresses: ip_address -> dict(reason, added_at)
         self.whitelist: Dict[str, dict] = {}
         
-        # In-memory storage for logs and alerts
+        # Stateful Watchlist (Greylist) for Long-Term APT Tracking:
+        # ip_address -> dict(risk_level, reason, added_at, probe_count)
+        self.watchlist: Dict[str, dict] = {}
+
+        # In-memory Hot Storage for logs and alerts (Instant Correlation)
         self.raw_logs: List[LogEvent] = []
         self.alerts: List[Alert] = []
+
+        # Cold Storage Archive: Simulates logs moved to frozen storage (> 14 days)
+        # Not queried by normal real-time engine unless rehydrated
+        self.cold_archive: List[LogEvent] = []
 
         # Sliding window event buffers for fast correlation:
         # 1. web_requests: ip -> list of (timestamp_utc, LogEvent)
@@ -49,9 +57,75 @@ class CorrelationEngine:
     def is_whitelisted(self, ip_address: str) -> bool:
         return ip_address in self.whitelist
 
+    # --- Persistent Watchlist & Cold Archive Methods (APT Mitigations) ---
+
+    def add_to_watchlist(self, req: WatchlistRequest) -> dict:
+        self.watchlist[req.ip_address] = {
+            "ip_address": req.ip_address,
+            "risk_level": req.risk_level or "HIGH",
+            "reason": req.reason or "Reconnaissance probe detected",
+            "added_at": datetime.now(timezone.utc).isoformat()
+        }
+        return self.watchlist[req.ip_address]
+
+    def remove_from_watchlist(self, ip_address: str) -> bool:
+        if ip_address in self.watchlist:
+            del self.watchlist[ip_address]
+            return True
+        return False
+
+    def get_watchlist(self) -> List[dict]:
+        return list(self.watchlist.values())
+
+    def is_watchlisted(self, ip_address: str) -> bool:
+        return ip_address in self.watchlist
+
+    def archive_to_cold(self, ip_address: Optional[str] = None) -> int:
+        """
+        Simulates log lifecycle: moves events from hot storage into frozen cold archive.
+        If ip_address is specified, archives only that IP's events. Otherwise archives all.
+        Also flushes the active sliding window buffers for those events.
+        """
+        archived_count = 0
+        retained_logs = []
+        for log in self.raw_logs:
+            if ip_address is None or log.ip_address == ip_address:
+                self.cold_archive.append(log)
+                archived_count += 1
+            else:
+                retained_logs.append(log)
+        self.raw_logs = retained_logs
+
+        # Flush corresponding correlation buffers
+        if ip_address:
+            self.web_requests_by_ip.pop(ip_address, None)
+        else:
+            self.web_requests_by_ip.clear()
+            self.successful_logins_by_user.clear()
+            self.failed_logins_by_user.clear()
+            self.db_downloads_by_user.clear()
+
+        return archived_count
+
+    def rehydrate_cold(self, ip_address: str) -> List[LogEvent]:
+        """
+        Simulates Cold Log Rehydration: pulls archived logs back into active correlation view
+        for deep forensic investigation when an APT trigger matches.
+        """
+        matching = [log for log in self.cold_archive if log.ip_address == ip_address]
+        # Re-inject back into raw_logs
+        for log in matching:
+            self.raw_logs.append(log)
+        return matching
+
+    def get_cold_archive(self) -> List[LogEvent]:
+        return list(self.cold_archive)
+
     def clear_all(self):
         self.raw_logs.clear()
         self.alerts.clear()
+        self.cold_archive.clear()
+        self.watchlist.clear()
         self.web_requests_by_ip.clear()
         self.successful_logins_by_user.clear()
         self.failed_logins_by_user.clear()
@@ -75,6 +149,59 @@ class CorrelationEngine:
         ts_utc = ts_utc.astimezone(timezone.utc)
 
         triggered_alerts: List[Alert] = []
+
+        # --- Rule 0 (Stateful APT): Persistent Watchlist Correlation (Level: KRITIS) ---
+        # Catches 'Low and Slow' attacks spanning across retention cycles (Day 1 vs Day 20)
+        if self.is_watchlisted(event.ip_address):
+            watch_info = self.watchlist[event.ip_address]
+            alert = self._create_alert(
+                rule_name="APT Low & Slow / Persistent Threat",
+                severity="KRITIS",
+                description=(
+                    f"APT Low & Slow Alert! IP {event.ip_address} previously flagged on Watchlist "
+                    f"('{watch_info['reason']}') initiated subsequent event '{event.event_type}'. "
+                    f"Cross-retention correlation succeeded via Stateful Watchlist!"
+                ),
+                ip_address=event.ip_address,
+                user_id=event.user_id,
+                details={
+                    "watchlist_reason": watch_info["reason"],
+                    "watchlist_risk": watch_info["risk_level"],
+                    "flagged_at": watch_info["added_at"],
+                    "current_event": event.event_type,
+                    "target_user": event.user_id,
+                    "mitigation": "Stateful Greylist & Cold Log Rehydration"
+                },
+                cooldown_key=f"apt_watch_{event.ip_address}_{event.event_type}",
+                cooldown_seconds=5,
+                ref_time=ts_utc
+            )
+            if alert:
+                triggered_alerts.append(alert)
+
+        # --- Rule: Reconnaissance Probe / Vulnerability Scan (Level: MENENGAH) ---
+        if event.event_type == "recon_probe":
+            alert = self._create_alert(
+                rule_name="Reconnaissance Probe",
+                severity="MENENGAH",
+                description=(
+                    f"Vulnerability reconnaissance probe detected from IP {event.ip_address} "
+                    f"targeting user/service '{event.user_id}' at {event.location}."
+                ),
+                ip_address=event.ip_address,
+                user_id=event.user_id,
+                details={
+                    "probe_type": "vulnerability_scan",
+                    "ip_address": event.ip_address,
+                    "user_id": event.user_id,
+                    "location": event.location
+                },
+                cooldown_key=f"recon_{event.ip_address}",
+                cooldown_seconds=5,
+                ref_time=ts_utc
+            )
+            if alert:
+                triggered_alerts.append(alert)
 
         # --- Rule 1: DDoS / Botnet (Level: TINGGI) ---
         # > 10 web_request from 1 ip_address in 10 seconds

@@ -311,7 +311,116 @@ def test_careless_whitelisting_blinds_correlation_engine():
     assert len(alerts_after) >= 1
 
 
-# ---------------- 8. STATS & RESET ----------------
+# ---------------- 9. SCENARIO 8: LOW & SLOW APT / HOT VS COLD STORAGE ----------------
+
+def test_scenario_8_recon_probe_and_cold_storage_aging():
+    attacker_ip = "198.51.100.77"
+
+    # Day 1: Attacker sends reconnaissance probe
+    res = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "recon_probe",
+        "user_id": "target_service",
+        "ip_address": attacker_ip,
+        "location": "External Border Gateway",
+        "status": "success"
+    })
+    assert res.status_code == 201
+    assert res.json()["alerts_triggered"] == 1
+    assert res.json()["alerts"][0]["rule_name"] == "Reconnaissance Probe"
+    assert res.json()["alerts"][0]["severity"] == "MENENGAH"
+
+    # Simulate 14-day Log Lifecycle: Move Day 1 logs to cold archive
+    archive_res = client.post(f"/api/archive/cold?ip_address={attacker_ip}")
+    assert archive_res.status_code == 200
+    assert archive_res.json()["archived_count"] >= 1
+
+    # Verify hot storage is cleared of this log
+    hot_logs = client.get("/api/logs").json()
+    assert not any(l["ip_address"] == attacker_ip for l in hot_logs)
+
+    # Verify cold storage contains the Day 1 recon log
+    cold_logs = client.get("/api/archive/cold").json()
+    assert any(l["ip_address"] == attacker_ip and l["event_type"] == "recon_probe" for l in cold_logs)
+
+
+def test_scenario_8_apt_correlation_blind_spot_without_watchlist():
+    attacker_ip = "198.51.100.88"
+
+    # Day 1 Recon probe
+    client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "recon_probe",
+        "user_id": "target_web",
+        "ip_address": attacker_ip,
+        "location": "DMZ Gateway",
+        "status": "success"
+    })
+
+    # 14 days pass -> Archived to cold storage
+    client.post(f"/api/archive/cold?ip_address={attacker_ip}")
+
+    # Day 20: Attacker executes single exploit web_request
+    # WITHOUT persistent watchlist, correlation fails (treated as an isolated normal request)
+    day20_res = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "web_request",
+        "user_id": "api_endpoint",
+        "ip_address": attacker_ip,
+        "location": "Jakarta DMZ",
+        "status": "success"
+    })
+    assert day20_res.status_code == 201
+    # No APT alert triggered because Day 1 was frozen in cold storage
+    alerts = day20_res.json()["alerts"]
+    assert not any(a["rule_name"] == "APT Low & Slow / Persistent Threat" for a in alerts)
+
+
+def test_scenario_8_apt_correlation_success_with_persistent_watchlist():
+    attacker_ip = "198.51.100.99"
+
+    # Day 1 Recon probe
+    client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "recon_probe",
+        "user_id": "target_web",
+        "ip_address": attacker_ip,
+        "location": "DMZ Gateway",
+        "status": "success"
+    })
+
+    # SOLUTION: Flag IP into persistent Watchlist/Greylist
+    wl_res = client.post("/api/watchlist", json={
+        "ip_address": attacker_ip,
+        "risk_level": "HIGH",
+        "reason": "Reconnaissance probe detected on Day 1"
+    })
+    assert wl_res.status_code == 200
+
+    # 14 days pass -> Day 1 logs moved to Cold Storage
+    client.post(f"/api/archive/cold?ip_address={attacker_ip}")
+
+    # Day 20: Attacker returns and launches exploit
+    day20_res = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "web_request",
+        "user_id": "admin_portal",
+        "ip_address": attacker_ip,
+        "location": "Jakarta DMZ",
+        "status": "success"
+    })
+    assert day20_res.status_code == 201
+    assert day20_res.json()["alerts_triggered"] >= 1
+    apt_alerts = [a for a in day20_res.json()["alerts"] if a["rule_name"] == "APT Low & Slow / Persistent Threat"]
+    assert len(apt_alerts) == 1
+    assert apt_alerts[0]["severity"] == "KRITIS"
+
+    # Test Cold Log Rehydration: Fetch Day 1 logs for forensic correlation
+    rehydrate_res = client.post(f"/api/archive/rehydrate?ip_address={attacker_ip}")
+    assert rehydrate_res.status_code == 200
+    assert rehydrate_res.json()["rehydrated_count"] >= 1
+    assert rehydrate_res.json()["data"][0]["event_type"] == "recon_probe"
+
 
 def test_stats_and_reset_endpoints():
     client.post("/api/ingest", json={

@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from typing import List, Optional
 import os
 
-from app.models import LogEvent, Alert, WhitelistRequest
+from app.models import LogEvent, Alert, WhitelistRequest, WatchlistRequest
 from app.engine import CorrelationEngine
 
 app = FastAPI(
@@ -108,6 +108,63 @@ def delete_whitelist(ip_address: str):
     return {"status": "success", "message": f"IP {ip_address} removed from whitelist"}
 
 
+# ---------------- WATCHLIST & COLD STORAGE (APT DEFENSE) ----------------
+
+@app.post("/api/watchlist")
+def add_watchlist(req: WatchlistRequest):
+    """
+    Adds a suspicious IP to the persistent Watchlist (Greylist).
+    Events from this IP will trigger critical alerts even across long retention windows.
+    """
+    entry = engine.add_to_watchlist(req)
+    return {"status": "success", "message": f"IP {req.ip_address} added to persistent watchlist", "data": entry}
+
+
+@app.get("/api/watchlist")
+def list_watchlist():
+    return engine.get_watchlist()
+
+
+@app.delete("/api/watchlist/{ip_address}")
+def delete_watchlist(ip_address: str):
+    removed = engine.remove_from_watchlist(ip_address)
+    if not removed:
+        raise HTTPException(status_code=404, detail="IP address not found in watchlist")
+    return {"status": "success", "message": f"IP {ip_address} removed from watchlist"}
+
+
+@app.post("/api/archive/cold")
+def archive_to_cold(ip_address: Optional[str] = None):
+    """
+    Simulates Log Lifecycle aging (> 14 days): moves hot logs to frozen cold archive.
+    """
+    count = engine.archive_to_cold(ip_address)
+    return {
+        "status": "success",
+        "message": f"Moved {count} log(s) to cold storage archive (> 14 days aging simulation)",
+        "archived_count": count
+    }
+
+
+@app.get("/api/archive/cold", response_model=List[LogEvent])
+def list_cold_archive(limit: int = Query(50, ge=1, le=500)):
+    return list(reversed(engine.get_cold_archive()))[:limit]
+
+
+@app.post("/api/archive/rehydrate")
+def rehydrate_cold(ip_address: str = Query(..., min_length=1)):
+    """
+    Simulates Cold Log Rehydration: pulls archived logs back into active investigation view.
+    """
+    rehydrated = engine.rehydrate_cold(ip_address)
+    return {
+        "status": "success",
+        "message": f"Rehydrated {len(rehydrated)} cold log(s) for IP {ip_address}",
+        "rehydrated_count": len(rehydrated),
+        "data": rehydrated
+    }
+
+
 @app.get("/api/stats")
 def get_stats():
     """
@@ -118,7 +175,7 @@ def get_stats():
         if a.severity in alerts_by_sev:
             alerts_by_sev[a.severity] += 1
 
-    events_by_type = {"login_attempt": 0, "web_request": 0, "database_download": 0}
+    events_by_type = {"login_attempt": 0, "web_request": 0, "database_download": 0, "recon_probe": 0}
     for log in engine.raw_logs:
         if log.event_type in events_by_type:
             events_by_type[log.event_type] += 1
@@ -128,7 +185,9 @@ def get_stats():
         "total_alerts": len(engine.alerts),
         "alerts_by_severity": alerts_by_sev,
         "events_by_type": events_by_type,
-        "whitelist_count": len(engine.whitelist)
+        "whitelist_count": len(engine.whitelist),
+        "watchlist_count": len(engine.watchlist),
+        "cold_archive_count": len(engine.cold_archive)
     }
 
 

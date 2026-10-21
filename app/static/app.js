@@ -18,6 +18,8 @@ const valCriticalAlerts = document.getElementById("valCriticalAlerts");
 const valHighAlerts = document.getElementById("valHighAlerts");
 const valMediumAlerts = document.getElementById("valMediumAlerts");
 const valWhitelistCount = document.getElementById("valWhitelistCount");
+const valWatchlistCount = document.getElementById("valWatchlistCount");
+const valColdCount = document.getElementById("valColdCount");
 const alertCountBadge = document.getElementById("alertCountBadge");
 const logCountBadge = document.getElementById("logCountBadge");
 
@@ -89,6 +91,8 @@ async function fetchStats() {
         valHighAlerts.textContent = stats.alerts_by_severity.TINGGI || 0;
         valMediumAlerts.textContent = stats.alerts_by_severity.MENENGAH || 0;
         valWhitelistCount.textContent = stats.whitelist_count || 0;
+        if (valWatchlistCount) valWatchlistCount.textContent = stats.watchlist_count || 0;
+        if (valColdCount) valColdCount.textContent = stats.cold_archive_count || 0;
     } catch (err) {
         console.error("Error fetching stats:", err);
     }
@@ -388,6 +392,56 @@ async function runScenarioFromBrowser(scNum) {
             `4. Time Drift (CMOS HRD Tahun 1970)  -> HTTP ${resTimeDrift?.status} (Time Drift Error Ditolak)\n\n` +
             `Hasil: Lapisan Validasi Skema (Gatekeeper) menolak data kotor secara aman.\n` +
             `Mesin korelasi terlindungi dari distorsi waktu & backend TIDAK CRASH!`
+        );
+    } else if (scNum === "8") {
+        // Skenario 8: The Low & Slow APT (Hot vs Cold Storage Dilemma & Stateful Watchlist)
+        const attackerIp = "198.51.100.77";
+
+        // Step 1: Day 1 Recon Probe
+        await postLog({
+            timestamp: nowIso(),
+            event_type: "recon_probe",
+            user_id: "api_gateway_target",
+            ip_address: attackerIp,
+            location: "DMZ Edge Gateway",
+            status: "success"
+        });
+
+        // Step 2: 14-day Log Lifecycle -> Move to Cold Storage Archive
+        await fetch(`${API_BASE}/api/archive/cold?ip_address=${attackerIp}`, { method: "POST" });
+
+        // Step 3: Flag IP to Stateful Persistent Watchlist
+        await fetch(`${API_BASE}/api/watchlist`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ip_address: attackerIp,
+                risk_level: "HIGH",
+                reason: "Reconnaissance probe detected on Day 1"
+            })
+        });
+
+        // Step 4: Day 20 Exploit -> Triggers [KRITIS] APT Low & Slow alert!
+        await postLog({
+            timestamp: nowIso(),
+            event_type: "web_request",
+            user_id: "admin_portal",
+            ip_address: attackerIp,
+            location: "DMZ Edge Gateway",
+            status: "success"
+        });
+
+        // Step 5: Cold Log Rehydration for deep forensics
+        const rehydrateRes = await fetch(`${API_BASE}/api/archive/rehydrate?ip_address=${attackerIp}`, { method: "POST" });
+        const rehydrateData = await rehydrateRes.json();
+
+        alert(
+            `Hasil Pengujian Skenario 8 (The Low & Slow APT):\n` +
+            `1. [Tanggal 1] Recon Probe dikirim dari IP ${attackerIp} -> Menghasilkan Alert MENENGAH.\n` +
+            `2. [Log Lifecycle 14 Hari] Log dipindahkan ke Gudang Arsip Beku (Cold Storage).\n` +
+            `3. [Solusi Arsitektur] IP ${attackerIp} didaftarkan ke Stateful Persistent Watchlist.\n` +
+            `4. [Tanggal 20] Exploit dilancarkan -> Korelasi Showdown BERHASIL! Alert KRITIS APT dipicu!\n` +
+            `5. [Forensic Rehydration] ${rehydrateData.rehydrated_count} log berhasil ditarik dari Cold Storage untuk investigasi forensik.`
         );
     }
 

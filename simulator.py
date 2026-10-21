@@ -374,6 +374,108 @@ def scenario_7_corrupted_data_and_time_drift(api_base):
         print(f"{GREEN}[OK] Hasil Skenario 7: Seluruh tes data cacat & time drift berhasil ditangani dengan aman.{RESET}")
 
 
+# ---------------- SCENARIO 8: LOW & SLOW APT / HOT VS COLD STORAGE ----------------
+def scenario_8_low_and_slow_apt(api_base):
+    print(f"\n{BOLD}{RED}>>> Skenario 8: The Low & Slow APT (Jebakan Hot vs Cold Storage & Solusi Persistent Watchlist){RESET}")
+    print("Studi Kasus APT: Siklus Retensi Hot Storage 14 Hari vs Eksploitasi Tanggal 20.")
+    attacker_ip = "198.51.100.77"
+
+    # --- BABAK 1: RECONNAISSANCE TANGGAL 1 ---
+    print(f"\n{CYAN}[BABAK 1 - TANGGAL 1] Peretas APT melancarkan Recon Probe (Pengecekan Celah)...{RESET}")
+    payload_recon = {
+        "timestamp": get_current_utc_iso(),
+        "event_type": "recon_probe",
+        "user_id": "api_gateway_target",
+        "ip_address": attacker_ip,
+        "location": "DMZ Edge Gateway",
+        "status": "success"
+    }
+    res_recon = post_log(api_base, payload_recon)
+    if res_recon and res_recon.status_code == 201:
+        print(f"  [+] Log Reconnaissance Ingested -> HTTP 201 Created")
+        alerts = res_recon.json().get("alerts", [])
+        if alerts:
+            print(f"  {YELLOW}[ALARM] Ditangkap SIEM: {alerts[0]['rule_name']} (Severity: {alerts[0]['severity']}){RESET}")
+    time.sleep(1)
+
+    # --- SIMULASI LOG LIFECYCLE (LEWAT DARI 14 HARI) ---
+    print(f"\n{YELLOW}[LOG LIFECYCLE POLICY] Waktu bergulir > 14 hari...{RESET}")
+    print("  Mengarsipkan data panas ke Gudang Beku (Cold Storage Archive)...")
+    try:
+        archive_res = requests.post(f"{api_base}/api/archive/cold?ip_address={attacker_ip}", timeout=5)
+        if archive_res.status_code == 200:
+            print(f"  {GREEN}[+] Status: {archive_res.json().get('message')}{RESET}")
+    except Exception as e:
+        print(f"  {RED}[!] Gagal arsip cold storage: {e}{RESET}")
+    time.sleep(1)
+
+    # --- BABAK 1B: MASALAH - EKSPLOITASI TANGGAL 20 TANPA WATCHLIST ---
+    print(f"\n{RED}[BABAK 1B - TANGGAL 20: MASALAH / TEMPORAL BLIND SPOT]{RESET}")
+    print(f"  Peretas mengeksekusi serangan dari IP {attacker_ip}...")
+    print("  Karena log Tanggal 1 sudah beku di Cold Storage, SIEM standar TIDAK BISA mengaitkan korelasi!")
+    payload_day20_fail = {
+        "timestamp": get_current_utc_iso(),
+        "event_type": "web_request",
+        "user_id": "admin_service",
+        "ip_address": attacker_ip,
+        "location": "DMZ Edge Gateway",
+        "status": "success"
+    }
+    res_fail = post_log(api_base, payload_day20_fail)
+    if res_fail and res_fail.status_code == 201:
+        alerts = res_fail.json().get("alerts", [])
+        apt_alerts = [a for a in alerts if a["rule_name"] == "APT Low & Slow / Persistent Threat"]
+        if not apt_alerts:
+            print(f"  {YELLOW}[!] HASIL TANPA SOLUSI: Alert APT = 0! Permintaan dianggap trafik normal terisolasi! (TITIK BUTA TEMPORAL){RESET}")
+    time.sleep(1.5)
+
+    # --- BABAK 2: SOLUSI - PERSISTENT WATCHLIST & COLD LOG REHYDRATION ---
+    print(f"\n{CYAN}[BABAK 2 - SOLUSI: PERSISTENT STATEFUL WATCHLIST & REHYDRATION]{RESET}")
+    print(f"  Mendaftarkan IP {attacker_ip} ke Persistent Suspicious Watchlist/Greylist...")
+    try:
+        wl_res = requests.post(f"{api_base}/api/watchlist", json={
+            "ip_address": attacker_ip,
+            "risk_level": "HIGH",
+            "reason": "Reconnaissance probe detected on Day 1"
+        }, timeout=5)
+        if wl_res.status_code == 200:
+            print(f"  {GREEN}[+] IP {attacker_ip} aktif dalam Stateful Watchlist lintas masa retensi.{RESET}")
+    except Exception as e:
+        print(f"  {RED}[!] Gagal mendaftarkan watchlist: {e}{RESET}")
+    time.sleep(1)
+
+    print(f"\n{RED}[BABAK 2B - TANGGAL 20: KORELASI SHOWDOWN BERHASIL!]{RESET}")
+    print("  Peretas kembali melancarkan request eksploitasi...")
+    payload_day20_success = {
+        "timestamp": get_current_utc_iso(),
+        "event_type": "web_request",
+        "user_id": "admin_service",
+        "ip_address": attacker_ip,
+        "location": "DMZ Edge Gateway",
+        "status": "success"
+    }
+    res_success = post_log(api_base, payload_day20_success)
+    if res_success and res_success.status_code == 201:
+        alerts = res_success.json().get("alerts", [])
+        apt_alerts = [a for a in alerts if a["rule_name"] == "APT Low & Slow / Persistent Threat"]
+        if apt_alerts:
+            print(f"  {RED}{BOLD}🚨 [ALARM KRITIS DIPICU!] {apt_alerts[0]['rule_name']} (Severity: {apt_alerts[0]['severity']}){RESET}")
+            print(f"     Deskripsi: {apt_alerts[0]['description']}")
+            print(f"     Solusi Aktif: {apt_alerts[0]['details'].get('mitigation')}")
+
+    # Rehidrasi log dingin untuk verifikasi audit forensik
+    print(f"\n  [Forensic Rehydration] Menarik kembali log Tanggal 1 dari Cold Storage...")
+    try:
+        rehydrate_res = requests.post(f"{api_base}/api/archive/rehydrate?ip_address={attacker_ip}", timeout=5)
+        if rehydrate_res.status_code == 200:
+            data = rehydrate_res.json()
+            print(f"  {GREEN}[+] Berhasil merehidrasi {data.get('rehydrated_count')} log dingin untuk pembuktian forensik!{RESET}")
+    except Exception as e:
+        print(f"  {RED}[!] Gagal rehidrasi log dingin: {e}{RESET}")
+
+    print(f"\n{GREEN}[OK] Hasil Skenario 8: Terbukti berhasil mengatasi jebakan Low & Slow APT!{RESET}")
+
+
 # ---------------- UTILITY: RESET ----------------
 def reset_siem_database(api_base):
     try:
@@ -387,7 +489,7 @@ def reset_siem_database(api_base):
 
 
 def run_all_scenarios(api_base):
-    print(f"\n{BOLD}{CYAN}===== MENJALANKAN SELURUH 7 SKENARIO SECARA BERUNTUN ====={RESET}")
+    print(f"\n{BOLD}{CYAN}===== MENJALANKAN SELURUH 8 SKENARIO SECARA BERUNTUN ====={RESET}")
     reset_siem_database(api_base)
     scenario_1_normal_traffic(api_base)
     time.sleep(1)
@@ -402,7 +504,9 @@ def run_all_scenarios(api_base):
     scenario_6_careless_whitelisting(api_base)
     time.sleep(1)
     scenario_7_corrupted_data_and_time_drift(api_base)
-    print(f"\n{BOLD}{GREEN}===== SELURUH SKENARIO SELESAI DIJALANKAN ====={RESET}")
+    time.sleep(1)
+    scenario_8_low_and_slow_apt(api_base)
+    print(f"\n{BOLD}{GREEN}===== SELURUH 8 SKENARIO SELESAI DIJALANKAN ====={RESET}")
 
 
 def interactive_menu(api_base):
@@ -416,13 +520,14 @@ def interactive_menu(api_base):
         print("  5. Skenario 5 - Data Exfiltration (>50 database_download - Rule 5 KRITIS)")
         print("  6. Skenario 6 - Careless Whitelisting (Demonstrasi Blind Spot Fatal)")
         print("  7. Skenario 7 - Data Cacat & Time Drift (Validasi Gatekeeper HTTP 422)")
+        print("  8. Skenario 8 - The Low & Slow APT (Hot vs Cold Storage Dilemma & Stateful Watchlist)")
         print("  -------------------------------------------------------------")
-        print("  8. Jalankan Seluruh Skenario (1 - 7 Tour Lengkap)")
-        print("  9. Reset SIEM Memory (Bersihkan log, alarm & whitelist)")
+        print("  9. Jalankan Seluruh Skenario (1 - 8 Tour Lengkap)")
+        print("  R. Reset SIEM Memory (Bersihkan log, alarm & whitelist)")
         print("  0. Keluar (Exit)")
         print("-" * 65)
 
-        choice = input("Masukkan pilihan Anda [0-9]: ").strip()
+        choice = input("Masukkan pilihan Anda: ").strip()
         if choice == "1":
             scenario_1_normal_traffic(api_base)
         elif choice == "2":
@@ -438,8 +543,10 @@ def interactive_menu(api_base):
         elif choice == "7":
             scenario_7_corrupted_data_and_time_drift(api_base)
         elif choice == "8":
-            run_all_scenarios(api_base)
+            scenario_8_low_and_slow_apt(api_base)
         elif choice == "9":
+            run_all_scenarios(api_base)
+        elif choice.upper() == "R":
             reset_siem_database(api_base)
         elif choice == "0":
             print("Keluar dari simulator. Sampai jumpa!")
@@ -453,7 +560,7 @@ def interactive_menu(api_base):
 def main():
     parser = argparse.ArgumentParser(description="Mini-SIEM Attack & Telemetry Simulator")
     parser.add_argument("--api", default=DEFAULT_API_BASE, help="SIEM API base URL (default: http://127.0.0.1:8000)")
-    parser.add_argument("--scenario", "-s", type=int, choices=range(1, 8), help="Jalankan skenario tertentu (1-7)")
+    parser.add_argument("--scenario", "-s", type=int, choices=range(1, 9), help="Jalankan skenario tertentu (1-8)")
     parser.add_argument("--all", action="store_true", help="Jalankan semua skenario secara berurutan")
     parser.add_argument("--reset", action="store_true", help="Reset state memori SIEM")
 
@@ -476,6 +583,12 @@ def main():
             5: scenario_5_data_exfiltration,
             6: scenario_6_careless_whitelisting,
             7: scenario_7_corrupted_data_and_time_drift,
+            8: scenario_8_low_and_slow_apt,
+        }
+        scenarios[args.scenario](args.api)
+        return
+
+    interactive_menu(args.api)
         }
         scenarios[args.scenario](args.api)
         return

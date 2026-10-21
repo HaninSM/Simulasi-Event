@@ -4,7 +4,7 @@ from typing import Optional, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-EventType = Literal["login_attempt", "web_request", "database_download"]
+EventType = Literal["login_attempt", "web_request", "database_download", "recon_probe"]
 EventStatus = Literal["success", "failed"]
 SeverityLevel = Literal["KRITIS", "TINGGI", "MENENGAH"]
 
@@ -62,6 +62,24 @@ class LogEvent(BaseModel):
 class WhitelistRequest(BaseModel):
     ip_address: str
     reason: Optional[str] = "Manual entry by Captain SIEM"
+
+    @field_validator("ip_address")
+    @classmethod
+    def validate_ipv4(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("ip_address cannot be empty")
+        v = v.strip()
+        try:
+            addr = ipaddress.IPv4Address(v)
+            return str(addr)
+        except Exception:
+            raise ValueError(f"'{v}' is not a valid IPv4 address")
+
+
+class WatchlistRequest(BaseModel):
+    ip_address: str
+    risk_level: Optional[str] = "HIGH"
+    reason: Optional[str] = "Reconnaissance probe detected"
 
     @field_validator("ip_address")
     @classmethod

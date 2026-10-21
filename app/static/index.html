@@ -68,6 +68,14 @@
                 <span class="metric-label">Whitelisted IPs (Blind Spots)</span>
                 <span class="metric-value" id="valWhitelistCount">0</span>
             </div>
+            <div class="metric-card" style="border-left-color: #8b5cf6;">
+                <span class="metric-label">Stateful Watchlist (Greylist)</span>
+                <span class="metric-value" id="valWatchlistCount">0</span>
+            </div>
+            <div class="metric-card" style="border-left-color: #06b6d4;">
+                <span class="metric-label">Cold Storage Archive (&gt;14d)</span>
+                <span class="metric-value" id="valColdCount">0</span>
+            </div>
         </section>
 
         <!-- Main Dashboard Split Layout -->
@@ -220,6 +228,10 @@
                             <button class="btn-scenario" data-scenario="7">
                                 <span>7. Data Cacat / Time Drift</span>
                                 <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">HTTP 422 Test</span>
+                            </button>
+                            <button class="btn-scenario" data-scenario="8">
+                                <span>8. The Low &amp; Slow APT</span>
+                                <span class="rule-tag" style="background:rgba(139,92,246,0.2); color:#a78bfa;">Hot vs Cold &amp; Watchlist</span>
                             </button>
                         </div>
                     </div>
