@@ -586,7 +586,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
             <div style="font-size: 0.75rem; color: var(--text-muted);">Navigasi Keyboard <kbd>←</kbd> <kbd>→</kbd></div>
-            <div class="slide-counter" id="slideCounter">Slide 1 / 14</div>
+            <div class="slide-counter" id="slideCounter">Slide 1 / 15</div>
         </div>
     </header>
 
@@ -609,6 +609,7 @@
             <button class="nav-tab" data-index="11">12. Bridging: Implementasi Lapangan</button>
             <button class="nav-tab" data-index="12">13. Tantangan Sistem Integrasi</button>
             <button class="nav-tab" data-index="13">14. Tantangan Storage (Hot vs Cold)</button>
+            <button class="nav-tab" data-index="14">15. Timeline Ecosystem SIEM</button>
         </nav>
 
         <!-- ==================== SLIDE 1: COVER ==================== -->
@@ -1777,6 +1778,235 @@
 
                 <div class="box-highlight box-output" style="margin-top: 1rem;">
                     <strong>🎯 Kesimpulan Arsitektur:</strong> Dengan setup pemetaan lokasi yang terstruktur, SIEM mendapatkan <em>kecepatan instan</em> dari Hot Storage, <em>efisiensi biaya</em> dari Cold Storage, dan <em>kecerdasan korelasi lintas waktu</em> dari Stateful Entity Tracking.
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 15: TIMELINE ECOSYSTEM SIEM ==================== -->
+        <section class="slide" id="slide-14">
+            <div class="slide-header">
+                <span class="slide-tag">BAGIAN 6: PRODUCT MANAGEMENT &amp; DEVELOPMENT ROADMAP</span>
+                <h2 class="slide-title">Timeline Ecosystem SIEM</h2>
+                <p class="slide-subtitle">Peta Jalan Pengembangan Fitur Berbasis Dependensi Teknis &amp; Logika Bisnis: Dari Pondasi Dasar (MVP v1), Otak Korelasi (Phase 2), hingga AI &amp; Otomasi Respons (Phase 3).</p>
+            </div>
+
+            <!-- Summary 3 Fase Utama -->
+            <div class="grid-3" style="margin-bottom: 1.5rem;">
+                <div class="card cyan" style="margin: 0;">
+                    <div class="card-header">
+                        <h3 class="card-title">1. MVP v1 (Foundation)</h3>
+                        <span class="card-tag">FITUR 1 - 6</span>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
+                        <strong>Fokus Pondasi:</strong> Membangun indera pendengaran sistem (Ingestion), menyeragamkan bahasa data (Normalization), rumah data cepat (Hot Storage), pencarian manual analis, dan peringatan dasar.
+                    </p>
+                    <div class="box-highlight box-siem" style="margin-top: 0.6rem; font-size: 0.8rem;">
+                        🎯 <em>Milestone:</em> Analis bisa mencari log &amp; menerima alert statis sederhana.
+                    </div>
+                </div>
+
+                <div class="card purple" style="margin: 0;">
+                    <div class="card-header">
+                        <h3 class="card-title">2. Phase 2 (Intelligence)</h3>
+                        <span class="card-tag">FITUR 7 - 10</span>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
+                        <strong>Fokus Kecerdasan:</strong> Mengaktifkan mesin korelasi lintas waktu (Stateful Tracking), memasukkan "daftar buronan" (Threat Intel), manajemen tiket insiden terpusat, dan efisiensi biaya arsip beku.
+                    </p>
+                    <div class="box-highlight box-story" style="margin-top: 0.6rem; font-size: 0.8rem;">
+                        🎯 <em>Milestone:</em> Menghubungkan titik Recon ke Attack &amp; kerja analis terstruktur.
+                    </div>
+                </div>
+
+                <div class="card warning" style="margin: 0;">
+                    <div class="card-header">
+                        <h3 class="card-title">3. Phase 3 (Advanced)</h3>
+                        <span class="card-tag">FITUR 11 - 13</span>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
+                        <strong>Fokus Otomasi &amp; AI:</strong> Menangkap orang dalam via UEBA (Machine Learning), merespons instan lewat SOAR Playbooks, serta AI Adaptive Rule Generator terkendali (HITL &amp; Canary Replay).
+                    </p>
+                    <div class="box-highlight box-danger" style="margin-top: 0.6rem; font-size: 0.8rem;">
+                        🎯 <em>Milestone:</em> Dari sekadar "Alarm Pasif" menjadi "Satpam yang Memukul Balik Secara Terukur".
+                    </div>
+                </div>
+            </div>
+
+            <!-- Master Table Timeline Ecosystem SIEM -->
+            <div class="diagram-container">
+                <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    📊 Matriks Prioritas, Dependensi &amp; PM Logic (Fitur 1 s/d 13)
+                </h3>
+                <div class="table-container">
+                    <table class="pres-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 14%;">Phase</th>
+                                <th style="width: 5%; text-align: center;">Order</th>
+                                <th style="width: 17%;">Feature Name</th>
+                                <th style="width: 25%;">Description</th>
+                                <th style="width: 13%;">Dependency</th>
+                                <th style="width: 8%; text-align: center;">Priority</th>
+                                <th style="width: 18%;">PM Logic / Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Order 1 -->
+                            <tr>
+                                <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">1</td>
+                                <td><strong>Log Ingestion Engine</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Syslog, API, and Webhook listeners to receive raw data.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">None (Foundation)</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(239, 68, 68, 0.2); color: var(--danger-red); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Critical</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Tanpa log, SIEM buta. Ini fitur pertama yang harus dibangun.</em></td>
+                            </tr>
+                            <!-- Order 2 -->
+                            <tr>
+                                <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">2</td>
+                                <td><strong>Data Parsing &amp; Normalization</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Standardize raw logs (Cisco, Windows, Linux) into a unified JSON format.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Log Ingestion</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(239, 68, 68, 0.2); color: var(--danger-red); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Critical</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Data mentah tidak bisa dicari. Harus diseragamkan dulu agar bahasa log sama.</em></td>
+                            </tr>
+                            <!-- Order 3 -->
+                            <tr>
+                                <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">3</td>
+                                <td><strong>Hot Storage &amp; Indexing</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Store parsed data in fast-retrieval database (Elastic/OpenSearch) for 14-30 days.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Normalization</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(239, 68, 68, 0.2); color: var(--danger-red); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Critical</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Data yang sudah rapi butuh rumah yang bisa dicari dengan kecepatan kilat.</em></td>
+                            </tr>
+                            <!-- Order 4 -->
+                            <tr>
+                                <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">4</td>
+                                <td><strong>Search &amp; Query Interface</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">UI/CLI for analysts to manually search logs using a specific query language.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Hot Storage</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Analis butuh 'Google Search'-nya sendiri untuk investigasi insiden.</em></td>
+                            </tr>
+                            <!-- Order 5 -->
+                            <tr>
+                                <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">5</td>
+                                <td><strong>Rule-Based Alerting</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Trigger alerts based on static rules (e.g., '5 failed logins in 1 minute').</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Search Interface</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Membuat SIEM bekerja otomatis memberi tahu analis jika ada pola sederhana.</em></td>
+                            </tr>
+                            <!-- Order 6 -->
+                            <tr>
+                                <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">6</td>
+                                <td><strong>Basic Dashboard &amp; Reporting</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Visual charts for EPS (Events Per Second), top log sources, and top alerts.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Search Interface</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Medium</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Visibilitas untuk manajemen (C-Level) dan SOC Manager.</em></td>
+                            </tr>
+
+                            <!-- Order 7 -->
+                            <tr style="background: rgba(139, 92, 246, 0.04);">
+                                <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: #a78bfa;">7</td>
+                                <td><strong>Correlation Engine</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Detect complex attacks across multiple log sources over time (Stateful tracking).</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Rule-Based Alerting</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Inti dari SIEM modern. Menghubungkan Recon ke Attack. Butuh alerting dasar mature dulu.</em></td>
+                            </tr>
+                            <!-- Order 8 -->
+                            <tr style="background: rgba(139, 92, 246, 0.04);">
+                                <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: #a78bfa;">8</td>
+                                <td><strong>Threat Intel (TI) Integration</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Ingest IOC feeds (bad IPs/Domains) to match against incoming logs.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Correlation Engine</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Menambahkan 'Daftar Buronan' ke dalam otak korelasi SIEM.</em></td>
+                            </tr>
+                            <!-- Order 9 -->
+                            <tr style="background: rgba(139, 92, 246, 0.04);">
+                                <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: #a78bfa;">9</td>
+                                <td><strong>Incident &amp; Case Management</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Built-in ticketing to assign, track, and annotate alerts/investigations.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Alerting</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Medium</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Menggantikan Excel/Email agar SOC Analyst kerja lebih terstruktur.</em></td>
+                            </tr>
+                            <!-- Order 10 -->
+                            <tr style="background: rgba(139, 92, 246, 0.04);">
+                                <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: #a78bfa;">10</td>
+                                <td><strong>Cold Storage / Archiving</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Compress logs to cheaper storage for 1-7 years for compliance.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Hot Storage</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Medium</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Efisiensi biaya. Hot storage mahal, log lama harus dibekukan.</em></td>
+                            </tr>
+
+                            <!-- Order 11 -->
+                            <tr style="background: rgba(245, 158, 11, 0.04);">
+                                <td><span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 3 (Advanced)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-gold);">11</td>
+                                <td><strong>UEBA (User &amp; Entity Behavior)</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Machine learning to detect anomalous baseline behavior (Insider Threat).</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Correlation, Historical Data</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Mendeteksi peretas yang memakai kredensial sah, butuh data log minimal 30 hari untuk belajar 'normal' itu apa.</em></td>
+                            </tr>
+                            <!-- Order 12 -->
+                            <tr style="background: rgba(245, 158, 11, 0.04);">
+                                <td><span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 3 (Advanced)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-gold);">12</td>
+                                <td><strong>SOAR (Automated Response)</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Automated playbooks (e.g., auto-block IP on Firewall upon critical alert).</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Case Management, TI</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Mengubah SIEM dari sekadar 'Alarm' menjadi 'Satpam yang bisa memukul balik'.</em></td>
+                            </tr>
+                            <!-- Order 13 -->
+                            <tr style="background: rgba(245, 158, 11, 0.04);">
+                                <td><span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 3 (Advanced)</span></td>
+                                <td style="text-align: center; font-weight: bold; color: var(--accent-gold);">13</td>
+                                <td><strong>AI Adaptive Rule Generator (Human-Supervised)</strong></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Mengisolasi anomali ke DLQ, AI mensintesis aturan deteksi baru (Shadow Rule), melakukan Canary Replay pada log 30 hari terakhir, dan menunggu HITL (Human-in-the-Loop) Approval.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">Correlation Engine, Hot Storage (30 Hari), Threat Intel</code></td>
+                                <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Mencegah False Positive massal. AI merekomendasikan dan menguji mundur (Canary), Manusia (Kapten SOC) yang menyetujui sebelum aturan aktif.</em></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Strategic Product Management Takeaways -->
+            <div class="card success" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">💡 Strategic PM Insights: Mengapa Urutan Ini Mutlak?</h3>
+                    <span class="card-tag">DEPENDENCY CHAIN LOGIC</span>
+                </div>
+                <div class="grid-3" style="margin-top: 0.5rem;">
+                    <div class="box-highlight box-story" style="margin: 0; font-size: 0.88rem;">
+                        <strong>1. Fondasi Dulu, AI Belakangan</strong>
+                        Jangan pernah melompat ke AI/UEBA sebelum Ingestion, Parsing, dan Hot Storage 30 hari stabil. Tanpa data historis yang bersih, machine learning hanya akan belajar dari data halusinasi / sampah.
+                    </div>
+                    <div class="box-highlight box-siem" style="margin: 0; font-size: 0.88rem;">
+                        <strong>2. Safety Before Automation</strong>
+                        SOAR diletakkan di Phase 3 setelah Case Management dan Threat Intel matang. Menjalankan auto-block di awal tanpa akurasi tinggi berisiko melumpuhkan operasional bisnis (Self-inflicted DoS).
+                    </div>
+                    <div class="box-highlight box-output" style="margin: 0; font-size: 0.88rem;">
+                        <strong>3. Keseimbangan Biaya &amp; Efisiensi</strong>
+                        Pemisahan Hot Storage (Phase 1) dan Cold Archiving (Phase 2) menjamin SIEM tetap lincah di kecepatan tinggi tanpa membakar anggaran penyimpanan perusahaan.
+                    </div>
                 </div>
             </div>
         </section>
