@@ -581,8 +581,8 @@
     <!-- Header Navigation -->
     <header>
         <div class="header-brand">
-            <span class="brand-badge">MINI-SIEM MASTER DECK</span>
-            <span class="brand-title">Tim JadiBegini | Arsitektur, Simulasi & Analisis Otonom</span>
+            <span class="brand-badge">MINI-SIEM DECK</span>
+            <span class="brand-title">Tim JadiBegini | Arsitektur, Simulasi &amp; Analisis Otonom</span>
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
             <div style="font-size: 0.75rem; color: var(--text-muted);">Navigasi Keyboard <kbd>←</kbd> <kbd>→</kbd></div>
@@ -597,14 +597,14 @@
         <nav class="nav-tabs" id="navTabs">
             <button class="nav-tab active" data-index="0">1. Cover</button>
             <button class="nav-tab" data-index="1">2. Profil Tim JadiBegini</button>
-            <button class="nav-tab" data-index="2">3. Konsep SIEM & Gedung Raksasa</button>
+            <button class="nav-tab" data-index="2">3. Konsep SIEM &amp; Gedung Raksasa</button>
             <button class="nav-tab" data-index="3">4. 3 Uji Pemahaman</button>
             <button class="nav-tab" data-index="4">5. Time To Quiz</button>
             <button class="nav-tab" data-index="5">6. Kasus Final: Toko Online vs DDoS</button>
             <button class="nav-tab" data-index="6">7. Skenario 1 - 3 (Normal, DDoS, Travel)</button>
             <button class="nav-tab" data-index="7">8. Skenario 4 - 7 (Brute, Exfil, Blind Spot, Drift)</button>
-            <button class="nav-tab" data-index="8">9. Skenario 8: The Low & Slow APT (Hot vs Cold)</button>
-            <button class="nav-tab" data-index="9">10. Tantangan Otonom (Keamanan, Bisnis, Audit)</button>
+            <button class="nav-tab" data-index="8">9. Skenario 8: The Low &amp; Slow APT (Hot vs Cold)</button>
+            <button class="nav-tab" data-index="9">10. Tantangan Otonom (Keamanan, Operasional, Audit)</button>
             <button class="nav-tab" data-index="10">11. Arsitektur Pengaman (Safe Blueprint)</button>
             <button class="nav-tab" data-index="11">12. Bridging: Implementasi Lapangan</button>
             <button class="nav-tab" data-index="12">13. Tantangan Sistem Integrasi</button>
@@ -615,7 +615,7 @@
         <!-- ==================== SLIDE 1: COVER ==================== -->
         <section class="slide active" id="slide-0">
             <div class="hero-card">
-                <span class="slide-tag">PROJECT MASTER SHOWCASE</span>
+                <span class="slide-tag">PROJECT PRESENTATION</span>
                 <h1 class="hero-title">MINI-SIEM COMMAND CENTER</h1>
                 <p class="hero-desc">
                     Simulasi Security Information and Event Management Berbasis API: Real-Time Correlation Engine, Mitigasi Data Cacat (Gatekeeper), Pembuktian Blind Spot, dan Tantangan Otonom.
@@ -680,34 +680,34 @@
 
             <div class="card cyan" style="margin-bottom: 1.5rem;">
                 <p style="font-size: 1.05rem; line-height: 1.7; color: var(--text-main);">
-                    🏢 <strong>Bayangkan sebuah gedung perkantoran raksasa dengan ribuan pintu, jendela, dan kamera CCTV.</strong> Mustahil bagi satu orang satpam untuk mengawasi semuanya secara bersamaan. <strong>SIEM (Security Information and Event Management)</strong> adalah pusat komando super cerdas di gedung tersebut.
+                    🏢 <strong>Bayangkan gedung perkantoran bertingkat dengan ratusan pintu, turnstile, dan kamera pengawas.</strong> Satu petugas jaga tidak mungkin memeriksa setiap sudut secara serentak. <strong>SIEM (Security Information and Event Management)</strong> berfungsi sebagai ruang kendali terpadu yang memantau seluruh titik akses tersebut.
                 </p>
                 <p style="font-size: 1rem; line-height: 1.7; color: var(--text-muted); margin-top: 0.5rem;">
-                    Alih-alih mengawasi satu pintu, SIEM mengumpulkan semua rekaman CCTV, daftar absen (log pintu akses), dan sensor alarm ke dalam satu ruangan pusat. Jika ada yang menggunakan kartu akses <strong>"Budi"</strong> di pintu lobi utama, padahal sistem absen melihat Budi sedang berada di lantai 15, SIEM akan langsung membunyikan alarm karena menemukan kejanggalan!
+                    SIEM mengumpulkan rekaman kamera, log pintu akses RFID, dan sensor kebakaran ke satu layar analitik. Saat kartu akses <strong>"Budi"</strong> digunakan di turnstile lobi utama sementara sistem absensi mendeteksi workstation Budi aktif di lantai 15, SIEM langsung memicu alarm korelasi.
                 </p>
                 <p style="font-size: 0.95rem; line-height: 1.7; color: var(--text-muted); margin-top: 0.5rem;">
-                    Di dunia komputer, SIEM mengumpulkan catatan aktivitas (disebut <em>log</em>) dari seluruh penjuru jaringan Anda—seperti antivirus, firewall, server, dan komputer karyawan. Ia membaca jutaan catatan ini dalam hitungan detik untuk mencari pola perilaku mencurigakan yang mungkin merupakan tanda bahwa peretas (hacker) sedang mencoba menyusup.
+                    Pada infrastruktur IT, SIEM mengonsolidasikan log aktivitas dari firewall, server aplikasi, database, dan workstation karyawan. Sistem memproses ribuan log per detik untuk mendeteksi anomali terkoordinasi sebelum penyusupan meluas.
                 </p>
             </div>
 
             <div class="grid-2">
                 <div class="card warning">
                     <div class="card-header">
-                        <h3 class="card-title">Titik Bingung 1: "Apakah SIEM = Antivirus?"</h3>
+                        <h3 class="card-title">Titik Kritis 1: Apakah SIEM Sama dengan Antivirus?</h3>
                         <span class="card-tag">PERBEDAAN PERAN</span>
                     </div>
                     <p style="font-size: 0.92rem; color: var(--text-muted);">
-                        <strong>TIDAK.</strong> Antivirus adalah satpam yang menjaga satu pintu atau ruangan khusus (komputer lokal). SIEM adalah kapten di pusat komando yang menerima laporan dari semua satpam (termasuk antivirus, firewall, dan server) untuk melihat <em>gambaran besarnya</em>.
+                        <strong>Beda peran.</strong> Antivirus melindungi satu perangkat lokal (endpoint). SIEM mengawasi seluruh perimeter dengan menerima telemetri dari antivirus, firewall, switch jaringan, dan server untuk melihat pola serangan berskala luas.
                     </p>
                 </div>
 
                 <div class="card purple">
                     <div class="card-header">
-                        <h3 class="card-title">Titik Bingung 2: "Cuma Gudang Penyimpanan Data?"</h3>
+                        <h3 class="card-title">Titik Kritis 2: Apakah SIEM Hanya Gudang Penyimpanan Log?</h3>
                         <span class="card-tag">SI vs EM</span>
                     </div>
                     <p style="font-size: 0.92rem; color: var(--text-muted);">
-                        Banyak yang mengira SIEM hanya tempat menumpuk data historis (huruf <strong>"SI"</strong> - Security Information). Padahal, kunci utamanya ada di huruf <strong>"EM" (Event Management)</strong>—ia secara aktif menganalisis, mencocokkan, dan menghubungkan titik-titik kejadian secara real-time untuk menemukan ancaman tersembunyi.
+                        Bukan sekadar arsip. Huruf <strong>"SI"</strong> (Security Information) mengumpulkan data historis untuk audit. Nilai terbesarnya terletak pada huruf <strong>"EM"</strong> (Event Management): menganalisis, memvalidasi aturan, dan mengorelasikan log secara real-time saat insiden berlangsung.
                     </p>
                 </div>
             </div>
@@ -716,38 +716,38 @@
         <!-- ==================== SLIDE 4: 3 UJI PEMAHAMAN (POINT 2B) ==================== -->
         <section class="slide" id="slide-3">
             <div class="slide-header">
-                <span class="slide-tag">BAGIAN 2: UJI PEMAHAMAN AUDIENS</span>
-                <h2 class="slide-title">Mari Uji Pemahaman Anda</h2>
-                <p class="slide-subtitle">3 Pertanyaan logika menggunakan analogi gedung sebelum masuk ke pembongkaran jawaban.</p>
+                <span class="slide-tag">BAGIAN 2: UJI PEMAHAMAN LOGIKA</span>
+                <h2 class="slide-title">Uji Pemahaman Logika Deteksi</h2>
+                <p class="slide-subtitle">Tiga pertanyaan mendasar sebelum masuk ke analisis teknis lapangan.</p>
             </div>
 
             <div class="quiz-card">
                 <div class="quiz-question">
                     <span>1.</span>
-                    <span>Jika antivirus di komputer Anda berhasil menangkap sebuah virus dan langsung menghapusnya, apakah SIEM di pusat komando masih perlu tahu tentang kejadian itu? Menurut Anda, kenapa?</span>
+                    <span>Saat antivirus di workstation berhasil menghapus malware, apakah tim pusat komando (SIEM) tetap wajib menerima log tersebut?</span>
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-left: 1.5rem;">
-                    <em>Pertanyaan: Apakah penghapusan virus lokal sudah menyelesaikan masalah keamanan seluruh perusahaan?</em>
+                    <em>Pertanyaan: Apakah pembersihan malware lokal menjamin perimeter jaringan aman dari serangan terdistribusi?</em>
                 </div>
             </div>
 
             <div class="quiz-card">
                 <div class="quiz-question">
                     <span>2.</span>
-                    <span>Bayangkan seseorang berhasil login ke sistem perusahaan dari Jakarta pada pukul 09:00, lalu login lagi dari sistem yang sama di London pada pukul 09:05. Kata sandinya benar di kedua lokasi. Bagaimana cara SIEM menyadari bahwa ini adalah sebuah ancaman?</span>
+                    <span>Akun pengguna login berhasil dari Jakarta pukul 09:00, lalu login lagi dari London pukul 09:05 dengan password yang valid. Mengapa SIEM menandai aktivitas berstatus sukses ini sebagai ancaman kritis?</span>
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-left: 1.5rem;">
-                    <em>Pertanyaan: Kenapa aktivitas yang berstatus "SUKSES" dan menggunakan password benar justru bisa berbahaya?</em>
+                    <em>Pertanyaan: Mengapa event dengan status sukses dan kredensial valid bisa mengindikasikan pencurian akun?</em>
                 </div>
             </div>
 
             <div class="quiz-card">
                 <div class="quiz-question">
                     <span>3.</span>
-                    <span>Kembali ke analogi gedung perkantoran: Apa yang kira-kira akan terjadi pada kapten di "pusat komando" (SIEM) jika semua aktivitas normal—seperti karyawan yang masuk ruangan, pergi ke toilet, atau membuka jendela—dilaporkan sebagai peringatan darurat?</span>
+                    <span>Apa dampak operasional jika setiap aktivitas rutin (karyawan berpindah ruangan, membuka file publik, atau restart laptop) memicu peringatan darurat ke tim analis?</span>
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-left: 1.5rem;">
-                    <em>Pertanyaan: Mengapa alarm yang terlalu sering bunyi justru menjadi awal petaka keamanan siber?</em>
+                    <em>Pertanyaan: Mengapa volume alarm yang berlebihan justru meningkatkan risiko pembobolan sistem?</em>
                 </div>
             </div>
 
@@ -770,15 +770,15 @@
                 <!-- Jawaban 1 -->
                 <div class="card cyan">
                     <div class="card-header">
-                        <h3 class="card-title">1. Gambaran Besar (Korelasi)</h3>
-                        <span class="card-tag">JAWABAN 1</span>
+                        <h3 class="card-title">1. Korelasi Lintas Titik</h3>
+                        <span class="card-tag">ANALISIS 1</span>
                     </div>
                     <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Jika satu satpam (antivirus) menangkap maling di pintu belakang, itu bagus. Tapi bagaimana jika pada detik yang sama, SIEM menerima laporan dari <strong>50 satpam berbeda di 50 ruangan</strong> bahwa mereka juga baru saja menangkap maling?
+                        Satu alert antivirus di workstation adalah insiden lokal biasa. Namun saat <strong>50 workstation berbeda</strong> mendeteksi hash file serupa dalam kurun 60 detik, konteksnya berubah drastis.
                     </p>
                     <div class="box-highlight box-siem">
-                        <strong>Wawasan Analis:</strong>
-                        Antivirus hanya melihat 1 kejadian lokal, tetapi SIEM melihat bahwa gedung Anda sedang mengalami <strong>serangan terkoordinasi berskala besar</strong>.
+                        <strong>Wawasan Lapangan:</strong>
+                        Antivirus hanya mengetahui file di mesinnya sendiri. SIEM menghubungkan 50 titik tersebut dan menyimpulkan adanya <strong>lateral movement (penyebaran terkoordinasi)</strong>.
                     </div>
                 </div>
 
@@ -786,29 +786,29 @@
                 <div class="card danger">
                     <div class="card-header">
                         <h3 class="card-title">2. Impossible Travel</h3>
-                        <span class="card-tag">JAWABAN 2</span>
+                        <span class="card-tag">ANALISIS 2</span>
                     </div>
                     <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Di dunia keamanan siber, ini disebut aturan <strong>Impossible Travel (Perjalanan Mustahil)</strong>. Konsep penting: SIEM tidak hanya mencari kegagalan, tapi juga <strong>mencari keanehan pada hal-hal yang terlihat sukses</strong>.
+                        Aturan <strong>Impossible Travel</strong> mendeteksi anomali pada aktivitas yang berstatus sukses. Sistem keamanan tidak boleh hanya memantau percobaan gagal.
                     </p>
                     <div class="box-highlight box-danger">
-                        <strong>Wawasan Analis:</strong>
-                        SIEM tahu hukum fisika: manusia tidak bisa pindah antar benua dalam 5 menit. Kesimpulannya pasti satu: <strong>kredensial (password) orang tersebut telah dicuri!</strong>
+                        <strong>Wawasan Lapangan:</strong>
+                        Perpindahan fisik Jakarta ke London dalam 5 menit mustahil secara geografis. Kesimpulannya: <strong>kredensial pengguna telah dikompromikan</strong> oleh pihak ketiga.
                     </div>
                 </div>
 
                 <!-- Jawaban 3 -->
                 <div class="card warning">
                     <div class="card-header">
-                        <h3 class="card-title">3. False Positives & Alert Fatigue</h3>
-                        <span class="card-tag">JAWABAN 3</span>
+                        <h3 class="card-title">3. Alert Fatigue &amp; Tuning</h3>
+                        <span class="card-tag">ANALISIS 3</span>
                     </div>
                     <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">
-                        Di lapangan, kondisi ini bernama: <strong>False Positives (Positif Palsu)</strong> yang berujung pada <strong>Alert Fatigue (Kelelahan Peringatan)</strong>. Jika kapten mendengar alarm ribuan kali sehari hanya karena karyawan ke toilet, kapten akan stres, muak, dan akhirnya mematikan alarm.
+                        Tingginya <strong>False Positives (Positif Palsu)</strong> memicu <strong>Alert Fatigue</strong>. Saat analis dibanjiri ribuan alarm non-kritis setiap jam, kepekaan menurun dan notifikasi penting terabaikan.
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>Wawasan Analis:</strong>
-                        Saat maling sungguhan masuk, tidak ada yang peduli. Itulah kenapa SIEM <strong>wajib di-tuning (disetel)</strong> agar hanya membunyikan alarm untuk hal penting.
+                        <strong>Wawasan Lapangan:</strong>
+                        Aturan deteksi SIEM <strong>wajib melalui kalibrasi (tuning)</strong> berkala agar alert yang keluar selalu memiliki nilai aksi (actionable intelligence).
                     </div>
                 </div>
             </div>
@@ -817,44 +817,46 @@
         <!-- ==================== SLIDE 6: KASUS FINAL (POINT 2D) ==================== -->
         <section class="slide" id="slide-5">
             <div class="slide-header">
-                <span class="slide-tag">BAGIAN 2: THE ULTIMATE CHALLENGE</span>
-                <h2 class="slide-title">Kasus Uji Nyata: Toko Online Down (Diskon vs DDoS)</h2>
-                <p class="slide-subtitle">Sekarang kita sudah mengerti tentang Korelasi, Anomali, dan Tuning. Mari kita uji pemahaman dengan satu kasus nyata.</p>
+                <span class="slide-tag">BAGIAN 2: STUDI KASUS INVESTIGASI</span>
+                <h2 class="slide-title">Investigasi Lonjakan Trafik: Flash Sale vs DDoS</h2>
+                <p class="slide-subtitle">Membedakan aktivitas bisnis yang sah dari serangan siber Layer 7 berbasis telemetri terpadu.</p>
             </div>
 
             <div class="card warning" style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem;">📦 Kasus Nyata:</h3>
+                <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem;">📦 Skenario Insiden:</h3>
                 <p style="font-size: 1rem; color: var(--text-main); line-height: 1.7;">
-                    Sebuah toko online mendadak *down* atau sangat lambat karena menerima <strong>1 juta pengunjung dalam satu menit</strong>. Server web kewalahan.<br>
-                    Kapten di pusat komando (SIEM) harus segera memutuskan: <em>Apakah ini murni karena promo diskon besar-besaran (aktivitas normal), atau ini adalah serangan hacker (DDoS attack) yang sengaja mengirim robot untuk merusak server?</em>
+                    Aplikasi e-commerce mendadak lambat saat menerima lonjakan <strong>1 juta web request dalam 1 menit</strong>. Penggunaan CPU server menyentuh 98%.
+                    <br>
+                    Tim SOC harus menentukan keputusan dalam hitungan menit: Apakah ini lonjakan transaksi promo diskon, atau serangan penolakan layanan (DDoS Layer 7)?
                 </p>
                 <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 0.95rem; color: var(--accent-cyan);">
-                    <strong>❓ Pertanyaan untuk Kita:</strong> Sebagai kapten yang duduk di depan SIEM, log (laporan) dari satpam mana saja atau data apa saja yang akan kita silangkan/hubungkan untuk memastikan apakah ini pengunjung asli atau robot jahat? (Gunakan logika Anda!).
+                    <strong>🔍 Logika Korelasi:</strong> Data telemetri apa yang disilangkan untuk memisahkan pembeli manusia dari botnet penyerang?
                 </div>
             </div>
 
             <div class="grid-2">
                 <div class="card success">
                     <div class="card-header">
-                        <h3 class="card-title">1. Pembeli Asli (Diskon Besar)</h3>
-                        <span class="card-tag">PERILAKU MANUSIA</span>
+                        <h3 class="card-title">1. Pembeli Asli (Flash Sale Sah)</h3>
+                        <span class="card-tag">PERILAKU PENGGUNA SAH</span>
                     </div>
                     <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
-                        1 juta permintaan datang dari <strong>ratusan ribu Alamat IP yang berbeda</strong> di seluruh penjuru kota/negeri.<br>
-                        Kecepatan kliknya normal seperti manusia: ada jeda beberapa detik untuk membaca deskripsi produk, memilih varian, dan mengklik tombol checkout.
+                        Permintaan terdistribusi acak dari <strong>ratusan ribu IP unik dan ISP konsumen</strong>.
+                        <br>
+                        Pola inter-arrival time bervariasi: pengguna membaca deskripsi produk, memilih alamat, dan beralih ke payment gateway dengan jeda natural beberapa detik.
                     </p>
                 </div>
 
                 <div class="card danger">
                     <div class="card-header">
-                        <h3 class="card-title">2. Robot Hacker (DDoS Attack)</h3>
-                        <span class="card-tag">ANOMALI MESIN</span>
+                        <h3 class="card-title">2. Serangan DDoS (Botnet HTTP Flood)</h3>
+                        <span class="card-tag">ANOMALI OTOMASI</span>
                     </div>
                     <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
-                        SIEM melihat anomali fatal: <em>"Tunggu dulu, ratusan ribu permintaan ini hanya berasal dari <strong>5 Alamat IP yang sama</strong>, dan mereka menekan tombol refresh 1.000 kali dalam satu milidetik! Tidak mungkin ini manusia."</em>
+                        Volume 1 juta request terkonsentrasi dari <strong>rentang IP sempit</strong> dengan User-Agent identik atau kosong. Interval antar-request berada di bawah 2 milidetik tanpa alur navigasi halaman yang wajar.
                     </p>
                     <div class="box-highlight box-output" style="margin-top: 0.5rem;">
-                        <strong>Aksi Respon Otomatis:</strong> SIEM mendeteksi pola tidak wajar itu dan otomatis memerintahkan Firewall memasang <strong>CAPTCHA</strong> khusus ke IP mencurigakan tersebut!
+                        <strong>Tindakan Respons:</strong> SIEM memvalidasi anomali tersebut dan mengarahkan Web Application Firewall (WAF) menerapkan challenge CAPTCHA atau rate-limiting ke cluster IP penyerang.
                     </div>
                 </div>
             </div>
@@ -865,7 +867,7 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 3: SIMULASI SKENARIO (BAGIAN I)</span>
                 <h2 class="slide-title">Bedah Skenario 1 s/d 3: Sistem, Hardware & Deteksi</h2>
-                <p class="slide-subtitle">Bagaimana aktivitas dunia nyata memicu perangkat keras dan ditangkap oleh Mini-SIEM Command Center.</p>
+                <p class="slide-subtitle">Verifikasi korelasi telemetri perangkat keras dan aktivitas pengguna pada Mini-SIEM Command Center.</p>
             </div>
 
             <div class="grid-3">
@@ -876,16 +878,16 @@
                         <span class="card-tag">BASELINE</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>🏢 Cerita Sistem & Hardware:</strong>
-                        Kartu RFID ditempel di turnstile lobi (hardware membuka bip!) &rarr; HR mencatat hadir &rarr; lift memanggil otomatis ke lantai 4 &rarr; lampu meja menyala &rarr; laptop login intranet. Semua sistem harmonis.
+                        <strong>🏢 Telemetri Sistem & Akses:</strong>
+                        Pemindaian RFID pada turnstile gerbang diverifikasi kontrol akses, mencatat log kehadiran, memicu pemanggilan lift, dan mengotorisasi workstation pengguna. Seluruh aktivitas berada dalam parameter operasional wajar.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
-                        Log mengalir dengan jeda manusiawi (detik-menit) dari user berbeda.
+                        Log peristiwa mengalir dengan interval wajar antar pengguna yang berbeda.
                     </div>
                     <div class="box-highlight box-output">
                         <strong>🖥️ Output Dashboard:</strong>
-                        Status HTTP 201. Logs bertambah. <strong>Alarm: 0 (Hening, tidak ada false positive).</strong>
+                        Status HTTP 201 Created. Volume log bertambah stabil. <strong>Indikator Alarm: 0 (Baseline normal, zero false positive).</strong>
                     </div>
                 </div>
 
@@ -896,8 +898,8 @@
                         <span class="card-tag">RULE 1 - TINGGI</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>🚗 Cerita Sistem & Hardware:</strong>
-                        Pemancar sinyal liar menembak sensor palang parkir otomatis 15x berturut-turut hingga dinamo motor panas (overheat) dan palang macet terkunci. Mobil jalan raya macet total.
+                        <strong>🚗 Telemetri Sistem & Akses:</strong>
+                        Lonjakan volume request abnormal ditembakkan secara berulang ke endpoint API autentikasi dan gerbang akses, membebani thread pemrosesan server target dalam jendela waktu singkat.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
@@ -916,8 +918,8 @@
                         <span class="card-tag">RULE 2 - KRITIS</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>✈️ Cerita Sistem & Hardware:</strong>
-                        Pukul 09:00 kartu RFID Sarah membuka pintu lobi Jakarta. Pukul 09:01 akun Sarah membuka brankas fisik data center Frankfurt. Mustahil fisik manusia pindah benua dalam 60 detik!
+                        <strong>✈️ Telemetri Sistem & Akses:</strong>
+                        Pukul 09:00 WIB, kredensial pengguna 'sarah' diautentikasi di turnstile gerbang Jakarta. Pukul 09:01 WIB, kredensial yang sama digunakan untuk mengakses VPN korporat dari IP Frankfurt. Perbedaan geografis 11.000 km dalam 60 detik mengindikasikan anomali fisik.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
@@ -925,7 +927,7 @@
                     </div>
                     <div class="box-highlight box-danger">
                         <strong>🖥️ Output Dashboard:</strong>
-                        Alarm <strong>Merah Berkedip Cepat (KRITIS)</strong> menyala darurat memperingatkan kredensial curian.
+                        Alarm <strong>Merah (KRITIS)</strong> menyala memperingatkan dugaan kompromi kredensial akun.
                     </div>
                 </div>
             </div>
@@ -936,7 +938,7 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 3: SIMULASI SKENARIO (BAGIAN II)</span>
                 <h2 class="slide-title">Bedah Skenario 4 s/d 7: Brute Force, Exfiltration, Blind Spot & Drift</h2>
-                <p class="slide-subtitle">Dari komplotan pengetuk smart-lock hingga sensor rusak dan kabel pagar yang dicabut.</p>
+                <p class="slide-subtitle">Analisis serangan brute force terdistribusi, eksfiltrasi data terpusat, risiko blind spot whitelisting, dan validasi integritas skema.</p>
             </div>
 
             <div class="grid-2">
@@ -947,8 +949,8 @@
                         <span class="card-tag">RULE 3 - TINGGI</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>🔐 Cerita Sistem & Hardware:</strong>
-                        Pintu smart-lock brankas ditebak bergantian oleh 5 orang komplotan dari panel dan pintu darurat berbeda agar sensor lokal tidak mengunci akun.
+                        <strong>🔐 Pola Serangan Terdistribusi:</strong>
+                        Penyerang mendistribusikan percobaan autentikasi ke satu akun target melalui 5 proxy IP berbeda secara bergantian untuk menghindari batasan frekuensi IP tunggal.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
@@ -956,7 +958,7 @@
                     </div>
                     <div class="box-highlight box-output">
                         <strong>🖥️ Output Dashboard:</strong>
-                        Alarm <strong>Jingga (TINGGI)</strong> membeberkan seluruh daftar IP komplotan penyerang.
+                        Alarm <strong>Jingga (TINGGI)</strong> memetakan seluruh daftar IP sumber penyerang terdistribusi.
                     </div>
                 </div>
 
@@ -967,8 +969,8 @@
                         <span class="card-tag">RULE 5 - KRITIS</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>💾 Cerita Sistem & Hardware:</strong>
-                        Pukul 17:00 kipas pendingin ruang server menderu kencang (overheat) dan lampu LED harddisk berkedip non-stop karena ada orang dalam menyedot database massal.
+                        <strong>💾 Pola Eksfiltrasi Internal:</strong>
+                        Akun internal mengeksekusi query database massal secara berulang dalam durasi singkat, memicu pemindahan volume data anomali ke luar repositori resmi.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
@@ -976,7 +978,7 @@
                     </div>
                     <div class="box-highlight box-danger">
                         <strong>🖥️ Output Dashboard:</strong>
-                        Alarm <strong>Merah Berkedip (KRITIS)</strong>: `Data Exfiltration: 51 download dalam 60s`.
+                        Alarm <strong>Merah (KRITIS)</strong>: `Data Exfiltration: 51 download dalam 60s`.
                     </div>
                 </div>
 
@@ -987,8 +989,8 @@
                         <span class="card-tag">FATAL ERROR / BLIND SPOT</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>🐱 Cerita Sistem & Hardware:</strong>
-                        Sensor infra-merah pagar gudang dicabut kabelnya oleh satpam gara-gara kucing liar lewat. Malamnya perampok masuk lewat pagar itu dan alarm gedung diam membisu!
+                        <strong>⚠️ Kegagalan Tata Kelola Whitelist:</strong>
+                        Analis menambahkan subnet mencurigakan ke dalam whitelist pengecualian tanpa tinjauan berkala. Akibatnya, serangan DDoS berikutnya dari IP tersebut tidak memicu mekanisme deteksi.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
@@ -996,7 +998,7 @@
                     </div>
                     <div class="box-highlight box-danger">
                         <strong>🖥️ Output Dashboard:</strong>
-                        <strong>ALARM: 0 (Hening Total).</strong> Membuktikan bahaya fatal jika tim analis sembarangan membuka whitelist.
+                        <strong>Indikator Alarm: 0 (Hening).</strong> Membuktikan risiko operasional jika aturan whitelisting diterapkan tanpa validasi tata kelola.
                     </div>
                 </div>
 
@@ -1007,8 +1009,8 @@
                         <span class="card-tag">GATEKEEPER NEGATIVE TEST</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>⏳ Cerita Sistem & Hardware:</strong>
-                        Baterai jam mesin pabrik mati sehingga reset ke tahun 1970. Ban berjalan otomatis menyortir data rusak di pintu awal tanpa membuat seluruh mesin pabrik mogok.
+                        <strong>⏳ Integritas Payload & Telemetri:</strong>
+                        Telemetri log dikirim dengan skema rusak akibat desinkronisasi jam perangkat (time drift) atau field mandatori yang hilang pada pengirim log.
                     </div>
                     <div class="box-highlight box-siem">
                         <strong>🔍 Ditangkap SIEM:</strong>
@@ -1016,7 +1018,7 @@
                     </div>
                     <div class="box-highlight box-output">
                         <strong>🖥️ Output Dashboard:</strong>
-                        Status <strong>HTTP 422 (Ditolak Aman)</strong>. <strong>Sistem SIEM TIDAK CRASH</strong> dan server tetap stabil 100%.
+                        Status <strong>HTTP 422 (Ditolak Aman)</strong>. <strong>Sistem SIEM tetap beroperasi stabil</strong> tanpa mengalami kegagalan proses ingest.
                     </div>
                 </div>
             </div>
@@ -1026,30 +1028,30 @@
         <section class="slide" id="slide-8">
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 3C: ADVANCED THREAT SCENARIO</span>
-                <h2 class="slide-title">Skenario 8: The "Low & Slow" APT (Jebakan Hot vs. Cold Storage)</h2>
-                <p class="slide-subtitle">Studi Kasus Lintas Waktu: Reconnaissance Tanggal 1 vs Eksploitasi Tanggal 20 & Solusi Stateful Watchlist.</p>
+                <h2 class="slide-title">Skenario 8: The "Low & Slow" APT (Tantangan Hot vs. Cold Storage)</h2>
+                <p class="slide-subtitle">Studi Kasus Multi-Tahap: Reconnaissance Tanggal 1 vs Eksploitasi Tanggal 20 dan Implementasi Stateful Watchlist.</p>
             </div>
 
             <!-- Case Premise & Dilemma Card -->
             <div class="card purple" style="margin-bottom: 1.5rem;">
                 <div class="card-header">
-                    <h3 class="card-title">📖 Studi Kasus: Log Lifecycle Policy & Dilema Penyimpanan SIEM</h3>
+                    <h3 class="card-title">📖 Studi Kasus: Kebijakan Siklus Log & Dilema Penyimpanan SIEM</h3>
                     <span class="card-tag">TEMPORAL BLIND SPOT</span>
                 </div>
                 <div style="font-size: 0.92rem; color: var(--text-main); line-height: 1.7;">
                     <p style="margin-bottom: 0.75rem;">
-                        <strong>Kebijakan Perusahaan:</strong> SIEM mengatur <em>Log Lifecycle</em> untuk menyimpan data <strong>"Panas" (Hot Storage)</strong>—yang bisa dianalisis instan real-time oleh mesin korelasi—selama <strong>14 hari</strong>. Jika lewat dari 14 hari, log dipindahkan ke <strong>"Gudang Arsip Beku" (Cold Storage)</strong> yang terkompresi hemat biaya, namun tidak bisa dibaca otomatis oleh SIEM.
+                        <strong>Kebijakan Siklus Log:</strong> SIEM mengonfigurasi penyimpanan aktif <strong>Hot Storage</strong> (penyimpanan indeks cepat untuk korelasi stream) dengan masa retensi <strong>14 hari</strong>. Setelah 14 hari, log dipindahkan ke <strong>Cold Storage</strong> (arsip jangka panjang terkompresi hemat biaya yang tidak diindeks secara instan).
                     </p>
                     <p style="margin-bottom: 0.75rem;">
-                        <strong>Skenario Serangan Peretas (APT - Advanced Persistent Threat):</strong><br>
-                        &bull; <strong>Tanggal 1:</strong> Peretas melancarkan <em>Reconnaissance Probe</em> untuk mendeteksi apakah sistem rentan.<br>
-                        &bull; Mengetahui perusahaan memakai SIEM, peretas <strong>diam dan menunggu selama 19 hari</strong>.<br>
-                        &bull; <strong>Tanggal 20:</strong> Peretas baru melancarkan serangan eksploitasi aslinya berdasarkan informasi Tanggal 1.
+                        <strong>Skenario Serangan Lintas Waktu (APT):</strong><br>
+                        &bull; <strong>Tanggal 1:</strong> Penyerang mengeksekusi <em>Reconnaissance Probe</em> untuk mengidentifikasi celah kerentanan sistem.<br>
+                        &bull; Mengetahui batas retensi aktif SIEM, penyerang <strong>menghentikan aktivitas selama 19 hari</strong>.<br>
+                        &bull; <strong>Tanggal 20:</strong> Penyerang melancarkan serangan eksploitasi terarah berdasarkan hasil recon Tanggal 1.
                     </p>
                     <div class="box-highlight box-danger" style="margin-top: 0.75rem;">
-                        <strong>❓ Pertanyaan Kritis:</strong> Saat serangan terjadi di Tanggal 20, apakah SIEM biasa berhasil melakukan <em>Korelasi Showdown</em> dan menyadari bahwa ini serangan lanjutan dari Recon Tanggal 1?
+                        <strong>❓ Evaluasi Arsitektur:</strong> Saat serangan terjadi di Tanggal 20, apakah SIEM konvensional mampu mengorelasikan aktivitas ini dengan Recon Tanggal 1?
                         <br>
-                        <strong>Jawab: TIDAK BISA!</strong> Karena log Tanggal 1 sudah lewat 14 hari dan terlempar ke Cold Storage, mesin korelasi hanya melihat request Tanggal 20 sebagai <em>sebuah event biasa yang berdiri sendiri</em>. SIEM mengalami <strong>Titik Buta Temporal (Temporal Blind Spot)</strong>!
+                        <strong>Hasil: Tidak Terkorelasikan.</strong> Karena log Tanggal 1 telah melewati batas 14 hari dan dipindahkan ke Cold Storage, mesin korelasi hanya memproses request Tanggal 20 sebagai peristiwa terisolasi. SIEM mengalami <strong>Titik Buta Temporal (Temporal Blind Spot)</strong>.
                     </div>
                 </div>
             </div>
@@ -1057,13 +1059,13 @@
             <!-- Analogi Hardware & Non-IT -->
             <div class="card warning" style="margin-bottom: 1.5rem;">
                 <div class="card-header">
-                    <h3 class="card-title">🏢 Analogi Sistem & Hardware: Buku Tamu Lobi & Perampok Sabar</h3>
+                    <h3 class="card-title">🏢 Analogi Sistem & Kontrol Fisik: Buku Tamu Lobi & Akses Bertahap</h3>
                     <span class="card-tag">NON-IT ANALOGY</span>
                 </div>
                 <div class="box-highlight box-story">
-                    <strong>Cerita Gedung Perkantoran:</strong>
-                    Pada <strong>Tanggal 1</strong>, seorang pencuri pura-pura bertamu di lobi untuk memotret jenis gembok pintu darurat. Satpam lobi punya SOP ketat: <em>"Buku tamu di atas meja lobi hanya disimpan selama 14 hari. Hari ke-15 buku dibuang ke gudang arsip bawah tanah yang terkunci berdebu."</em><br>
-                    Pada <strong>Tanggal 20</strong>, pencuri datang kembali membawa kunci duplikat. Satpam meja lobi yang bertugas hari itu hanya melihat satu orang masuk wajar—ia tidak pernah tahu bahwa orang ini adalah orang yang sama yang memotret gembok 20 hari lalu, karena buku tamu Tanggal 1 sudah terkubur di gudang bawah tanah!
+                    <strong>Ilustrasi Prosedural:</strong>
+                    Pada <strong>Tanggal 1</strong>, seseorang mendokumentasikan spesifikasi kunci pintu darurat gedung. SOP resepsionis menetapkan: <em>"Buku tamu di meja depan hanya disimpan selama 14 hari. Pada hari ke-15, buku dipindahkan ke gudang arsip arsip fisik terpusat."</em><br>
+                    Pada <strong>Tanggal 20</strong>, individu tersebut kembali dengan kunci duplikat. Petugas jaga hari itu hanya melihat satu entri kunjungan tunggal; sistem tidak mengidentifikasi keterkaitan dengan dokumentasi kunci 20 hari sebelumnya karena catatan awal telah masuk gudang arsip.
                 </div>
             </div>
 
@@ -1072,40 +1074,40 @@
                 <!-- Babak 1: Masalah -->
                 <div class="card danger">
                     <div class="card-header">
-                        <h3 class="card-title">Babak 1: Titik Buta Temporal (Tanpa Solusi)</h3>
+                        <h3 class="card-title">Kondisi 1: Batasan Korelasi Temporal Tanpa State</h3>
                         <span class="card-tag">SIEM CORRELATION FAILS</span>
                     </div>
                     <div class="box-highlight box-story">
                         <strong>1️⃣ Tanggal 1 (Recon Probe):</strong><br>
-                        IP <code class="pres-code">198.51.100.77</code> menembak port DMZ. Log dicatat di Hot Storage sebagai event anomali tingkat menengah.
+                        IP <code class="pres-code">198.51.100.77</code> memindai port DMZ. Log dicatat di Hot Storage sebagai anomali berulang.
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>2️⃣ Hari ke-15 (Log Aging & Cold Archiving):</strong><br>
-                        Sistem memindahkan log Tanggal 1 ke Cold Storage. Memori aktif korelasi (sliding window) dikosongkan untuk menghemat RAM.
+                        <strong>2️⃣ Hari ke-15 (Archiving & Sliding Window Eviction):</strong><br>
+                        Sistem memindahkan log Tanggal 1 ke Cold Storage. Jendela geser korelasi aktif dikosongkan untuk menjaga utilisasi RAM.
                     </div>
                     <div class="box-highlight box-danger">
-                        <strong>3️⃣ Tanggal 20 (Eksploitasi Lolos Tanpa Alarm):</strong><br>
-                        Peretas melancarkan exploit. SIEM mencari korelasi di jendela aktif, namun riwayat recon sudah hilang. <strong>Alarm APT = 0 (Hening Total)!</strong>
+                        <strong>3️⃣ Tanggal 20 (Eksploitasi Mandiri):</strong><br>
+                        Penyerang mengeksekusi eksploitasi. Engine korelasi tidak menemukan catatan recon di sliding window. <strong>Alarm korelasi APT tidak terpicu.</strong>
                     </div>
                 </div>
 
                 <!-- Babak 2: Solusi -->
                 <div class="card success">
                     <div class="card-header">
-                        <h3 class="card-title">Babak 2: Solusi Stateful Watchlist & Rehidrasi</h3>
+                        <h3 class="card-title">Kondisi 2: Solusi Stateful Watchlist & Rehidrasi On-Demand</h3>
                         <span class="card-tag">ARCHITECTURAL SOLUTION</span>
                     </div>
                     <div class="box-highlight box-story">
                         <strong>1️⃣ Persistent Stateful Watchlist (Greylist):</strong><br>
-                        SIEM tidak perlu menyimpan seluruh log mentah. Cukup simpan <em>metadata entitas mencurigakan (IP + Alasan)</em> dalam tabel stateful ringan yang bertahan berbulan-bulan.
+                        SIEM mempertahankan metadata entitas mencurigakan (IP, skor risiko, alasan) dalam tabel stateful persisten berukuran ringkas lintas siklus retensi.
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>2️⃣ Korelasi Showdown Tanggal 20:</strong><br>
-                        Saat IP di Watchlist bergerak di Tanggal 20, SIEM seketika mendeteksi <em>match</em> dan membunyikan alarm <strong>[KRITIS] APT Low & Slow Threat</strong>!
+                        <strong>2️⃣ Deteksi Korelasi Berbasis State (Tanggal 20):</strong><br>
+                        Saat IP terdaftar di Watchlist melakukan request di Tanggal 20, sistem mencocokkan state dan memicu alarm <strong>[KRITIS] APT Low & Slow Threat</strong>.
                     </div>
                     <div class="box-highlight box-output">
                         <strong>3️⃣ On-Demand Cold Log Rehydration:</strong><br>
-                        SIEM secara otonom/on-demand menarik kembali log Tanggal 1 dari Cold Storage ke meja analis untuk pembuktian forensik utuh (<em>Kill Chain Reconstruction</em>).
+                        SIEM secara otomatis atau atas instruksi analis merehidrasi log Tanggal 1 dari Cold Storage untuk merekonstruksi linimasa serangan (<em>Kill Chain Reconstruction</em>).
                     </div>
                 </div>
             </div>
@@ -1136,7 +1138,7 @@
                                 <td><strong>Hari ke-15</strong></td>
                                 <td><code class="pres-code">POST /api/archive/cold</code></td>
                                 <td>Dipindah ke Cold Archive</td>
-                                <td>Metric Card: Cold Storage Archive = 1, buffer aktif dikosongkan</td>
+                                <td>Metric Card: Cold Storage Archive = 1, buffer aktif dibersihkan</td>
                             </tr>
                             <tr>
                                 <td><strong>Penerapan Solusi</strong></td>
@@ -1148,13 +1150,13 @@
                                 <td><strong>Tanggal 20</strong></td>
                                 <td><code class="pres-code">POST /api/ingest (web_request)</code></td>
                                 <td>Cross-Retention Correlated</td>
-                                <td>Alarm <span style="color:var(--danger-red); font-weight:bold;">[KRITIS]</span> APT Low & Slow / Persistent Threat Berkedip Cepat!</td>
+                                <td>Alarm <span style="color:var(--danger-red); font-weight:bold;">[KRITIS]</span> APT Low & Slow / Persistent Threat terverifikasi</td>
                             </tr>
                             <tr>
                                 <td><strong>Audit Forensik</strong></td>
                                 <td><code class="pres-code">POST /api/archive/rehydrate</code></td>
                                 <td>Cold Data Rehydrated</td>
-                                <td>Log Tanggal 1 ditarik kembali dari arsip beku ke stream investigasi aktif</td>
+                                <td>Log Tanggal 1 ditarik kembali dari arsip untuk linimasa investigasi aktif</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1166,65 +1168,65 @@
         <section class="slide" id="slide-9">
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 4: STRATEGIC ANALYSIS</span>
-                <h2 class="slide-title">Tantangan SIEM Self-Adapting: Keamanan, Bisnis, & Kepatuhan</h2>
-                <p class="slide-subtitle">Concern mendalam jika SIEM diizinkan "belajar sendiri dan membuat penanganan mandiri" tanpa pagar pengaman.</p>
+                <h2 class="slide-title">Tantangan SIEM Self-Adapting: Keamanan, Operasional, & Kepatuhan</h2>
+                <p class="slide-subtitle">Evaluasi risiko operasional ketika SIEM diizinkan memodifikasi aturan deteksi tanpa supervisi analis.</p>
             </div>
 
             <div class="grid-3">
                 <!-- Concern 1 -->
                 <div class="card danger">
                     <div class="card-header">
-                        <h3 class="card-title">1. Concern Keamanan</h3>
+                        <h3 class="card-title">1. Risiko Keamanan</h3>
                         <span class="card-tag">DATA POISONING</span>
                     </div>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Hacker dapat memanipulasi pembelajaran sistem secara perlahan (*Boiling the Frog*) agar anomali dianggap normal, atau memicu sistem membuat *Automated Blind Spot*.
+                        Penyerang dapat menyuntikkan anomali berfrekuensi rendah secara bertahap untuk mendegradasi baseline model (*concept drift poisoning*), sehingga serangan skala penuh diklasifikasikan sebagai trafik normal.
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>💡 Analogi:</strong>
-                        Katak ditaruh di air dingin lalu dipanaskan perlahan 1°C per hari hingga mati terebus tanpa pernah melompat keluar.
+                        <strong>💡 Prinsip Drift:</strong>
+                        Pergeseran ambang batas bertahap membuat deviasi signifikan tampak valid karena baseline toleransi bergeser perlahan.
                     </div>
                     <div class="box-highlight box-danger">
-                        <strong>🔥 Sample Case:</strong>
-                        Penyerang APT mencuri data perlahan (10 file/minggu naik ke 40). AI menganggap ini wajar, dan saat 500GB bocor tidak ada alarm!
+                        <strong>🔥 Kasus Uji:</strong>
+                        Penyerang APT mengekstraksi data secara inkremental (10 file/minggu hingga 500 file/minggu). Model mengklasifikasikan kenaikan volume ini sebagai tren operasional reguler.
                     </div>
                 </div>
 
                 <!-- Concern 2 -->
                 <div class="card warning">
                     <div class="card-header">
-                        <h3 class="card-title">2. Concern Bisnis</h3>
+                        <h3 class="card-title">2. Risiko Operasional</h3>
                         <span class="card-tag">SELF-INFLICTED DOS</span>
                     </div>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Sistem panik melihat lonjakan bisnis baru yang sah, lalu secara mandiri memblokir transaksi pelanggan atau memicu *Feedback Loop of Doom* antar server.
+                        Sistem merespons lonjakan trafik sah dari kampanye promosi atau rilis produk sebagai serangan DDoS, memicu mitigasi otomatis yang memblokir transaksi pelanggan.
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>💡 Analogi:</strong>
-                        Pemadam kebakaran menyemprotkan air ke tamu restoran mewah karena mengira atraksi masak steak (flambé) adalah kebakaran.
+                        <strong>💡 Prinsip False Alarm:</strong>
+                        Respon mitigasi agresif terhadap false positive berdampak setara dengan pemadaman layanan internal (*self-inflicted outage*).
                     </div>
                     <div class="box-highlight box-siem">
-                        <strong>🔥 Sample Case:</strong>
-                        Flash Sale 11.11 diblokir sepihak oleh AI karena disangka serangan DDoS. Perusahaan rugi miliaran rupiah dalam 10 menit.
+                        <strong>🔥 Kasus Uji:</strong>
+                        Lonjakan checkout transaksi kampanye promosi diblokir otomatis oleh rule adaptif, melumpuhkan gateway pembayaran selama periode puncak bisnis.
                     </div>
                 </div>
 
                 <!-- Concern 3 -->
                 <div class="card purple">
                     <div class="card-header">
-                        <h3 class="card-title">3. Concern Audit & Hukum</h3>
-                        <span class="card-tag">THE BLACK-BOX</span>
+                        <h3 class="card-title">3. Kepatuhan Audit & Regulasi</h3>
+                        <span class="card-tag">BLACK-BOX DECISION</span>
                     </div>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Standar ISO 27001 & PCI-DSS mewajibkan setiap pemblokiran dapat dijelaskan secara deterministik dan memiliki tiket persetujuan (*Change Ticket*).
+                        Standar tata kelola (ISO/IEC 27001 dan PCI-DSS) mewajibkan setiap perubahan aturan firewall atau akses memiliki riwayat deterministik dan tiket persetujuan formal (*change management*).
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>💡 Analogi:</strong>
-                        Polisi menilang pengendara tanpa pasal, hanya berdalih: *"Firasat AI saya bilang Anda mencurigakan"*.
+                        <strong>💡 Prinsip Tata Kelola:</strong>
+                        Setiap pembatasan akses sistem harus dapat diaudit dasar penetapannya dan memiliki verifikator penanggung jawab yang jelas.
                     </div>
                     <div class="box-highlight box-siem">
-                        <strong>🔥 Sample Case:</strong>
-                        Sertifikasi PCI-DSS dicabut auditor karena 50 aturan blokir dibuat otomatis oleh script AI tanpa approval manusia.
+                        <strong>🔥 Kasus Uji:</strong>
+                        Temuan audit PCI-DSS atas penerapan 50 aturan pemblokiran otomatis yang dibuat tanpa pencatatan tiket dan otorisasi tertulis personil berwenang.
                     </div>
                 </div>
             </div>
@@ -1235,7 +1237,7 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 4: BLUEPRINT & REKOMENDASI</span>
                 <h2 class="slide-title">Rekomendasi Arsitektur: "Human-Supervised Adaptation"</h2>
-                <p class="slide-subtitle">Solusi cerdas: AI menganalisis & merekomendasikan, Analis Manusia menyetujui.</p>
+                <p class="slide-subtitle">Model pengawasan terarah: AI memetakan anomali dan merekomendasikan aturan, Lead Analis mengotorisasi aktivasi produksi.</p>
             </div>
 
             <!-- Flow Diagram -->
@@ -1247,7 +1249,7 @@
                     <div class="flow-step">
                         <div class="flow-icon">📥</div>
                         <div class="flow-title">1. Gatekeeper Ingest</div>
-                        <div class="flow-desc">Validasi kaku (Drop 422 jika data cacat)</div>
+                        <div class="flow-desc">Validasi skema (Drop 422 jika data cacat)</div>
                     </div>
                     <div class="flow-arrow">➔</div>
                     <div class="flow-step">
@@ -1259,7 +1261,7 @@
                     <div class="flow-step">
                         <div class="flow-icon">🤖</div>
                         <div class="flow-title">3. AI Suggestion</div>
-                        <div class="flow-desc">Sintesis pola & buat Candidate Rule</div>
+                        <div class="flow-desc">Sintesis pola &amp; buat Candidate Rule</div>
                     </div>
                     <div class="flow-arrow">➔</div>
                     <div class="flow-step">
@@ -1271,7 +1273,7 @@
                     <div class="flow-step" style="border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1);">
                         <div class="flow-icon">👨‍✈️</div>
                         <div class="flow-title">5. HITL Approval</div>
-                        <div class="flow-desc">Kapten SOC menyetujui di Dashboard</div>
+                        <div class="flow-desc">Lead Analis menyetujui di konsol SOC</div>
                     </div>
                 </div>
             </div>
@@ -1283,11 +1285,11 @@
                         <span class="card-tag">HUMAN-IN-THE-LOOP</span>
                     </div>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Aturan baru buatan AI berjalan dalam mode bayangan (*shadow mode*). Tidak memblokir nyata sampai disetujui analis.
+                        Aturan baru hasil sintesis AI beroperasi dalam mode bayangan (*shadow mode*) untuk mencatat evaluasi tanpa memblokir trafik produksi sampai disetujui analis.
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>💡 Analogi:</strong>
-                        Dokter residen magang menulis resep, tetapi obat baru keluar setelah ditandatangani dokter spesialis konsulen.
+                        <strong>💡 Evaluasi Paralel:</strong>
+                        Verifikasi performa kandidat aturan secara berdampingan dengan rulebook aktif sebelum promosi ke tahap penindakan produksi.
                     </div>
                 </div>
 
@@ -1297,11 +1299,11 @@
                         <span class="card-tag">DATA ISOLATION</span>
                     </div>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Data cacat tidak diabaikan begitu saja, tapi masuk antrean karantina terpisah untuk dianalisis clustering AI tanpa membebani server utama.
+                        Log yang tidak memenuhi spesifikasi skema diisolasi ke antrean karantina terpisah untuk analisis klaster tanpa membebani pipeline ingest utama.
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>💡 Analogi:</strong>
-                        Ruang karantina X-Ray bagasi bandara untuk memeriksa paket mencurigakan tanpa menghentikan antrean penumpang lain.
+                        <strong>💡 Isolasi Karantina:</strong>
+                        Pemisahan payload anomali untuk analisis investigatif terpisah tanpa mengganggu throughput pemrosesan real-time.
                     </div>
                 </div>
 
@@ -1311,11 +1313,11 @@
                         <span class="card-tag">REGRESSION TEST</span>
                     </div>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Aturan baru diuji pada log historis 30 hari terakhir. Jika menghasilkan false positive > 2%, aturan otomatis dibatalkan (*auto-rollback*).
+                        Aturan baru diuji terhadap data historis 30 hari terakhir. Jika menghasilkan rasio false positive > 2%, aturan dibatalkan secara otomatis (*auto-rollback*).
                     </p>
                     <div class="box-highlight box-story">
-                        <strong>💡 Analogi:</strong>
-                        Simulasi uji tabrak jutaan kilometer di komputer sebelum mobil baru boleh diproduksi ke jalan raya.
+                        <strong>💡 Uji Regresi Historis:</strong>
+                        Simulasi beban data historis untuk memverifikasi tingkat akurasi deteksi sebelum diterapkan pada sistem produksi.
                     </div>
                 </div>
             </div>
@@ -1326,32 +1328,32 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 5: REAL-WORLD IMPLEMENTATION &amp; BRIDGING</span>
                 <h2 class="slide-title">Bagaimana Jika Mini-SIEM Ini Diimplementasikan?</h2>
-                <p class="slide-subtitle">Transisi dari prototipe uji lab ke instansi nyata: Siklus adopsi lapangan dan dua tantangan terbesar yang wajib diantisipasi.</p>
+                <p class="slide-subtitle">Transisi dari prototipe uji lab ke instansi nyata: Siklus adopsi lapangan dan dua tantangan utama arsitektur.</p>
             </div>
 
             <!-- Kartu Pertanyaan & Premis Utama -->
             <div class="card cyan" style="margin-bottom: 1.5rem;">
                 <div class="card-header">
-                    <h3 class="card-title">🏛️ Pertanyaan Strategis: "Bagaimana Jika Di-Apply di Suatu Instansi Nyata?"</h3>
+                    <h3 class="card-title">🏛️ Pertanyaan Strategis: "Bagaimana Jika Diterapkan di Instansi Nyata?"</h3>
                     <span class="card-tag">FIELD FEASIBILITY</span>
                 </div>
                 <p style="font-size: 0.95rem; line-height: 1.8; color: var(--text-main);">
-                    Setelah membuktikan kehandalan mesin korelasi real-time, perlindungan gatekeeper data cacat, dan arsitektur pengaman otonom, muncul pertanyaan krusial dari pimpinan instansi / pertahanan:
+                    Setelah memvalidasi kehandalan mesin korelasi streaming, perlindungan gatekeeper terhadap payload cacat, dan arsitektur pengawasan adaptif, tahap berikutnya berfokus pada kesiapan operasional lapangan:
                     <br>
-                    <em>"Jika Mini-SIEM ini benar-benar akan diterapkan di instansi kita untuk mengawal infrastruktur kritikal, apa saja tahapan yang harus dilalui dan apa tantangan terberatnya?"</em>
+                    <em>"Jika Mini-SIEM ini diterapkan di instansi untuk mengawal infrastruktur kritikal, bagaimana tahapan transisinya dan apa tantangan teknis terbesarnya?"</em>
                 </p>
             </div>
 
             <!-- Timeline Sederhana Implementasi Lapangan -->
             <div class="diagram-container" style="margin-bottom: 1.5rem;">
                 <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem;">
-                    🗺️ Roadmap &amp; Timeline Sederhana Adopsi Lapangan (5 Fase Eksekusi)
+                    🗺️ Roadmap Adopsi Lapangan (5 Fase Eksekusi)
                 </h4>
                 <div class="flow-diagram">
                     <div class="flow-step">
                         <div class="flow-icon">📋</div>
                         <div class="flow-title">Fase 1: Audit Aset</div>
-                        <div class="flow-desc">Petakan seluruh hardware (pintu, CCTV, sensor) &amp; aplikasi (DB, LDAP, OS) penghasil log</div>
+                        <div class="flow-desc">Petakan seluruh hardware (pintu gerbang, CCTV, sensor) &amp; aplikasi (DB, LDAP, OS) penghasil log</div>
                     </div>
                     <div class="flow-arrow">➔</div>
                     <div class="flow-step">
@@ -1369,7 +1371,7 @@
                     <div class="flow-step">
                         <div class="flow-icon">🧪</div>
                         <div class="flow-title">Fase 4: Canary Replay</div>
-                        <div class="flow-desc">Jalankan aturan pada data riil 30 hari dalam mode bayangan (HITL) tanpa auto-block sembrono</div>
+                        <div class="flow-desc">Jalankan aturan pada data riil 30 hari dalam mode bayangan (HITL) untuk verifikasi false positive</div>
                     </div>
                     <div class="flow-arrow">➔</div>
                     <div class="flow-step" style="border-color: var(--success-green); background: rgba(16, 185, 129, 0.1);">
@@ -1383,22 +1385,22 @@
             <!-- BRIDGING DUA PILAR TANTANGAN TERBESAR -->
             <div class="card warning">
                 <div class="card-header">
-                    <h3 class="card-title">⚡ Bridging Kunci: Dua Tantangan Fundamental yang Harus Diperhatikan</h3>
+                    <h3 class="card-title">⚡ Bridging Kunci: Dua Tantangan Fundamental Arsitektur</h3>
                     <span class="card-tag">CRITICAL CHALLENGES</span>
                 </div>
                 <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.7; margin-bottom: 1rem;">
-                    Berdasarkan pengalaman lapangan, keberhasilan implementasi Mini-SIEM di instansi nyata bertumpu pada kemampuan tim mengantisipasi <strong>Dua Tantangan Arsitektural Terbesar</strong> berikut:
+                    Berdasarkan evaluasi lapangan, keberhasilan adopsi Mini-SIEM bertumpu pada pengelolaan <strong>Dua Tantangan Arsitektural Utama</strong> berikut:
                 </p>
 
                 <div class="grid-2">
                     <!-- Tantangan 1 -->
                     <div class="card cyan" style="margin: 0; background: rgba(6, 182, 212, 0.05); border-color: rgba(6, 182, 212, 0.3);">
                         <div class="card-header">
-                            <h4 style="font-size: 1rem; color: var(--accent-cyan);">1. Challenge Sistem Integrasi (Slide 13)</h4>
+                            <h4 style="font-size: 1rem; color: var(--accent-cyan);">1. Tantangan Sistem Integrasi (Slide 13)</h4>
                             <span class="card-tag">INPUT &amp; NORMALISASI</span>
                         </div>
                         <p style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
-                            <strong>Tantangan di Pintu Masuk Data:</strong> Ratusan perangkat keras dan aplikasi berbicara dalam "bahasa" berbeda-beda—dari CSV mesin absensi, Syslog router jaringan, hingga Audit Log database militer terenkripsi.
+                            <strong>Keragaman Pintu Masuk Data:</strong> Ratusan perangkat keras dan aplikasi beroperasi dengan protokol dan skema berbeda: format CSV mesin absensi, Syslog router jaringan, hingga Audit Log database militer terenkripsi.
                         </p>
                         <div class="box-highlight box-siem" style="margin-top: 0.5rem; font-size: 0.82rem;">
                             👉 Dibahas tuntas pada <strong>Slide 13: Tantangan Sistem Integrasi</strong>.
@@ -1408,11 +1410,11 @@
                     <!-- Tantangan 2 -->
                     <div class="card purple" style="margin: 0; background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.3);">
                         <div class="card-header">
-                            <h4 style="font-size: 1rem; color: #a78bfa;">2. Challenge Storage: Hot vs Cold (Slide 14)</h4>
+                            <h4 style="font-size: 1rem; color: #a78bfa;">2. Tantangan Storage: Hot vs Cold (Slide 14)</h4>
                             <span class="card-tag">VOLUME &amp; RETENSI</span>
                         </div>
                         <p style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
-                            <strong>Tantangan di Ruang Penyimpanan:</strong> Banjir miliaran log per hari tidak bisa diselesaikan hanya dengan memperbesar disk, melainkan lewat Stateful Entity Tracking &amp; Cold Log Rehydration.
+                            <strong>Kapasitas &amp; Retensi:</strong> Menampung miliaran log per hari secara efisien membutuhkan arsitektur penyimpanan bertingkat: Stateful Entity Tracking dan On-Demand Cold Log Rehydration.
                         </p>
                         <div class="box-highlight box-story" style="margin-top: 0.5rem; font-size: 0.82rem;">
                             👉 Dibahas tuntas pada <strong>Slide 14: Tantangan Storage</strong>.
@@ -1427,24 +1429,24 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 5: SYSTEM INTEGRATION ARCHITECTURE</span>
                 <h2 class="slide-title">Tantangan Sistem Integrasi: Korelasi Lintas Aplikasi & Hardware</h2>
-                <p class="slide-subtitle">Menghubungkan data digital heterogen (CSV, Audit Log, Syslog) dari dunia fisik hingga aplikasi militer ke dalam Mini-SIEM.</p>
+                <p class="slide-subtitle">Menghubungkan data telemetri heterogen (CSV, Audit Log, Syslog) dari dunia fisik hingga aplikasi militer ke dalam Mini-SIEM.</p>
             </div>
 
             <!-- Pengantar -->
             <div class="card cyan" style="margin-bottom: 1.5rem;">
                 <p style="font-size: 0.95rem; line-height: 1.7; color: var(--text-main);">
-                    Fokus pada <strong>Sistem Integrasi</strong> adalah kunci paling krusial dalam keberhasilan sebuah SIEM di instansi pertahanan.<br>
-                    Tantangan terbesarnya: <strong>Setiap aplikasi dan perangkat keras militer berbicara dengan "bahasa" (format) yang berbeda-beda</strong>—mulai dari file teks <code class="pres-code">.csv</code> mesin absensi jadul, <em>audit log</em> database terenkripsi, <em>Syslog</em> router perbatasan, hingga log perangkat taktis lapangan.
+                    Integrasi sistem menentukan keberhasilan implementasi SIEM pada infrastruktur heterogen.<br>
+                    Tantangan utamanya mencakup keragaman format log: file teks <code class="pres-code">.csv</code> kontrol akses fisik, <em>audit log</em> database terenkripsi, <em>Syslog</em> router perimeter, dan telemetri perangkat taktis.
                 </p>
             </div>
 
             <!-- 1. Arsitektur Jalur Integrasi -->
-            <div class="diagram-container">
+            <div class="diagram-container" style="margin-bottom: 1.5rem;">
                 <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                    🏛️ 1. Arsitektur Jalur Integrasi (Universal Ingestion Pipeline)
+                    🏛️ Arsitektur Jalur Integrasi (Universal Ingestion Pipeline)
                 </h3>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-                    Agar Mini-SIEM berbasis <code class="pres-code">POST /api/ingest</code> dapat menerima log dari perangkat apa pun tanpa mengubah arsitektur intinya, kita menempatkan <strong>Log Collector & Adapter Layer</strong> di depan Gatekeeper:
+                    Agar Mini-SIEM berbasis <code class="pres-code">POST /api/ingest</code> dapat menerima log dari perangkat apa pun tanpa mengubah arsitektur intinya, sistem menempatkan <strong>Log Collector & Adapter Layer</strong> di depan Gatekeeper:
                 </p>
                 <div class="flow-diagram">
                     <div class="flow-step">
@@ -1473,162 +1475,100 @@
                 </div>
             </div>
 
-            <!-- 2. Matriks Integrasi -->
-            <div class="card purple" style="margin-bottom: 1.5rem;">
-                <h3 class="card-title" style="margin-bottom: 0.5rem;">📊 2. Matriks Integrasi: Hardware vs Aplikasi vs Format Log</h3>
-                <p style="font-size: 0.88rem; color: var(--text-muted);">
-                    Di instansi pertahanan, berikut adalah pemetaan perangkat yang mengeluarkan log digital dan cara adaptor mengubahnya:
-                </p>
-                <div class="table-container">
-                    <table class="pres-table">
-                        <thead>
-                            <tr>
-                                <th>Kategori Sumber</th>
-                                <th>Perangkat / Aplikasi</th>
-                                <th>Format Asli</th>
-                                <th>Cara Pengambilan Data</th>
-                                <th>Pemetaan ke Mini-SIEM Data Contract</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong style="color: #fff;">Hardware Akses Fisik</strong></td>
-                                <td>Pintu Gerbang RFID Markas, Smart-Lock Brankas Amunisi</td>
-                                <td><span class="pres-code">File .CSV</span> (Diekspor lokal per menit)</td>
-                                <td>Log Forwarder memantau file <code class="pres-code">.csv</code> (tailing baris baru).</td>
-                                <td>
-                                    <code class="pres-code">timestamp</code> &larr; Kolom Waktu<br>
-                                    <code class="pres-code">user_id</code> &larr; Kolom ID Prajurit<br>
-                                    <code class="pres-code">location</code> &larr; "Gerbang Markas A"<br>
-                                    <code class="pres-code">event_type</code> &larr; login_attempt
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong style="color: #fff;">Aplikasi Militer</strong></td>
-                                <td>Sistem Informasi Personel (HRD Militer), Portal C2 (Command & Control)</td>
-                                <td><span class="pres-code">Audit Log JSON / Database CDC</span></td>
-                                <td>Webhook / API Listener langsung ke SIEM.</td>
-                                <td>
-                                    <code class="pres-code">event_type</code> &larr; login_attempt / web_request<br>
-                                    <code class="pres-code">ip_address</code> &larr; IP Komputer Kerja
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong style="color: #fff;">Perangkat Jaringan</strong></td>
-                                <td>Firewall Perbatasan, VPN Militer, Enkriptor Taktis</td>
-                                <td><span class="pres-code">Syslog / CEF (RFC 5424)</span></td>
-                                <td>Daemon Syslog (UDP/TCP Port 514) menerima paket data.</td>
-                                <td>
-                                    <code class="pres-code">ip_address</code> &larr; Src IP Packet<br>
-                                    <code class="pres-code">status</code> &larr; Success / Drop
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong style="color: #fff;">Penyimpanan Rahasia</strong></td>
-                                <td>Server Database Intelijen, Dokumen Rahasia Doktrin</td>
-                                <td><span class="pres-code">Database Audit Trail (SQL Log)</span></td>
-                                <td>Audit plugin (Postgres/Oracle Audit Log).</td>
-                                <td>
-                                    <code class="pres-code">event_type</code> &larr; database_download<br>
-                                    <code class="pres-code">user_id</code> &larr; Akun Database
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 3. Contoh Skenario Nyata Korelasi -->
-            <div class="card cyan" style="margin-bottom: 1.5rem;">
-                <h3 class="card-title" style="margin-bottom: 0.25rem;">
-                    🧠 3. Contoh Skenario Nyata Korelasi Antara File .CSV Hardware & Audit Log Aplikasi
+            <!-- 2. Silabus Persiapan Implementasi SIEM -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    📚 Silabus Persiapan Implementasi SIEM
                 </h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-                    Inilah kekuatan sejati korelasi sistem integrasi: <strong>Satu sistem sendirian tidak tahu ada bahaya, tetapi ketika data CSV hardware disilangkan dengan audit log aplikasi, ancaman langsung terbongkar!</strong>
-                </p>
 
                 <div class="grid-2">
-                    <!-- Kasus 1 -->
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1.25rem; border-left: 3px solid var(--danger-red);">
-                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;">
-                            Kasus 1: Korelasi CSV Pintu Markas + Audit Log VPN (Membongkar Akun Terbajak)
-                        </h4>
-                        <div class="box-highlight box-story">
-                            <strong>🚪 Kejadian Hardware (Sumber 1 - File CSV):</strong>
-                            Pukul 08:00 WIB, sensor pintu putar markas mencatat pada file <code class="pres-code">gate_access.csv</code>:<br>
-                            <code class="pres-code">2026-10-20 08:00:15,KOLONEL_HENDRO,PINTU_LOBI_MABES,ACCESS_GRANTED</code><br>
-                            <em>(Artinya: Secara fisik, Kolonel Hendro sudah masuk ke dalam markas di Jakarta).</em>
+                    <!-- Tahap 1 -->
+                    <div class="card cyan" style="margin: 0;">
+                        <div class="card-header">
+                            <h4 style="font-size: 0.98rem; color: var(--accent-cyan);">Tahap 1: Fondasi Bahan Baku (Memahami Log)</h4>
+                            <span class="card-tag">LOG FOUNDATION</span>
                         </div>
-                        <div class="box-highlight box-siem">
-                            <strong>🌐 Kejadian Aplikasi (Sumber 2 - Audit Log VPN Firewall):</strong>
-                            Pukul 08:05 WIB (5 menit kemudian), log firewall VPN mencatat:<br>
-                            <code class="pres-code">{"time": "08:05:00", "user": "KOLONEL_HENDRO", "src_ip": "185.220.101.5", "country": "NETHERLANDS", "status": "SUCCESS"}</code>
-                        </div>
-                        <div class="box-highlight box-danger">
-                            <strong>⚡ Korelasi & Output di Mini-SIEM:</strong>
-                            Mesin korelasi menyilangkan: <em>"User KOLONEL_HENDRO tercatat di file CSV sedang berada di Lobi Mabes Jakarta, mengapa akun yang sama login VPN dari Belanda 5 menit kemudian?"</em><br>
-                            <strong>Output:</strong> Terpicu <strong>Rule 2: Impossible Travel (Level: KRITIS)</strong>! Pusat komando langsung memutus sesi VPN tersebut karena akun sang kolonel dipastikan telah dibobol hacker luar negeri.
-                        </div>
+                        <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 0.75rem; font-style: italic;">
+                            Sebelum membangun mesin penganalisis, tim keamanan harus memahami karakteristik data yang akan dianalisis:
+                        </p>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.86rem; color: var(--text-main);">
+                            <li>
+                                <strong>&bull; Anatomi Log Mentah:</strong> Memahami perbedaan mendasar antara Event (kejadian yang tercatat), Payload (isi data utama), dan Metadata (atribut keterangan tambahan).
+                            </li>
+                            <li>
+                                <strong>&bull; Siklus Hidup Log (Log Lifecycle):</strong> Merencanakan titik lahir log (Endpoint/Network), mekanisme pengiriman (Forwarding), penampungan antrean sementara (Buffering/Queueing), hingga kebijakan retensi dan pengarsipan (Cold Storage).
+                            </li>
+                            <li>
+                                <strong>&bull; Kalkulasi EPS (Events Per Second):</strong> Menghitung kapasitas volume log masuk. Mengirimkan beban 10.000 EPS tanpa perencanaan kapasitas akan melumpuhkan performa engine korelasi sejak hari pertama.
+                            </li>
+                        </ul>
                     </div>
 
-                    <!-- Kasus 2 -->
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1.25rem; border-left: 3px solid var(--warning-orange);">
-                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;">
-                            Kasus 2: Korelasi Audit Log Database + CSV Sensor Suhu Ruang Server (Eksfiltrasi Rahasia)
-                        </h4>
-                        <div class="box-highlight box-story">
-                            <strong>🗄️ Kejadian Aplikasi (Sumber 1 - Audit Log Database):</strong>
-                            Sebuah akun analis intelijen melakukan kueri <code class="pres-code">SELECT * FROM peta_posisi_pasukan</code> sebanyak 60 kali berturut-turut pada jam istirahat.
+                    <!-- Tahap 2 -->
+                    <div class="card purple" style="margin: 0;">
+                        <div class="card-header">
+                            <h4 style="font-size: 0.98rem; color: #a78bfa;">Tahap 2: Aturan &amp; Bahasa Internasional (Standarisasi)</h4>
+                            <span class="card-tag">STANDARDIZATION</span>
                         </div>
-                        <div class="box-highlight box-siem">
-                            <strong>🌡️ Kejadian Hardware (Sumber 2 - CSV Sensor IoT Lingkungan):</strong>
-                            Sensor suhu dan konsumsi listrik rak server mencatat lonjakan beban daya dan panas prosesor secara mendadak.
-                        </div>
-                        <div class="box-highlight box-output">
-                            <strong>⚡ Korelasi & Output di Mini-SIEM:</strong>
-                            Menghubungkan lonjakan kueri data dengan frekuensi unduhan massal.<br>
-                            <strong>Output:</strong> Terpicu <strong>Rule 5: Data Exfiltration (Level: KRITIS)</strong>! SIEM memerintahkan firewall internal untuk memutus kabel jaringan port analis tersebut dan menyalakan alarm merah berkedip di layar monitor komandan jaga.
-                        </div>
+                        <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 0.75rem; font-style: italic;">
+                            Mengubah ribuan format log heterogen menjadi satu bahasa terpadu yang dapat diproses secara deterministik:
+                        </p>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.86rem; color: var(--text-main);">
+                            <li>
+                                <strong>&bull; Standar Protokol (RFC 5424):</strong> Menerapkan format pembungkus pesan Syslog standar yang memuat komponen Timestamp, Hostname, Severity Level, dan Message Payload.
+                            </li>
+                            <li>
+                                <strong>&bull; Standar Kepatuhan (NIST SP 800-92 &amp; ISO 27002):</strong> Pedoman tata kelola yang menetapkan jenis peristiwa wajib catat: seluruh kegagalan login, eskalasi hak akses (privilege escalation), dan error sistem.
+                            </li>
+                            <li>
+                                <strong>&bull; Skema Data Universal (OCSF / CIM):</strong> Menyeragamkan penamaan field lintas vendor (Cisco, Windows, Linux) ke atribut yang identik, seperti menyatukan field <code>SrcIP</code> dan <code>Client_Address</code> menjadi <code>src_endpoint.ip</code>.
+                            </li>
+                        </ul>
                     </div>
-                </div>
-            </div>
 
-            <!-- 4. Penanganan Data Cacat CSV Jadul & Kesimpulan -->
-            <div class="grid-2">
-                <div class="card warning">
-                    <h3 class="card-title">🛠️ 4. Bagaimana Cara Menangani Data Cacat dari File CSV Jadul?</h3>
-                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.5rem;">
-                        Hardware pertahanan sering kali berusia tua dan file CSV yang dihasilkan terkadang bermasalah:
-                    </p>
-                    <div class="box-highlight box-story">
-                        <strong>1. Kasus Kolom Kosong (<code class="pres-code">ip_address: ""</code> atau <code class="pres-code">null</code>):</strong>
-                        Jika mesin absensi fisik tidak memiliki konsep IP (hanya ID pintu), adapter bertugas mengisi IP statis pintu tersebut (misal: 10.10.1.15). Namun jika adapter gagal dan data tetap null, <strong>Gatekeeper Mini-SIEM kita langsung menolaknya dengan HTTP 422</strong>, sehingga memori sistem tidak akan pernah rusak.
+                    <!-- Tahap 3 -->
+                    <div class="card warning" style="margin: 0;">
+                        <div class="card-header">
+                            <h4 style="font-size: 0.98rem; color: var(--accent-gold);">Tahap 3: Prasyarat Infrastruktur (Perpipaan &amp; Sinkronisasi)</h4>
+                            <span class="card-tag">INFRASTRUCTURE</span>
+                        </div>
+                        <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 0.75rem; font-style: italic;">
+                            Penyesuaian teknis pada arsitektur jaringan yang wajib disiapkan sebelum SIEM dihubungkan:
+                        </p>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.86rem; color: var(--text-main);">
+                            <li>
+                                <strong>&bull; Sinkronisasi Waktu Sentral (NTP - Network Time Protocol):</strong> Syarat mutlak utama. Seluruh server, router, dan firewall lintas cabang wajib merujuk pada sumber waktu atom yang sama (misal UTC). Deviasi waktu sekecil 1 detik merusak keakuratan korelasi urutan kejadian.
+                            </li>
+                            <li>
+                                <strong>&bull; Arsitektur Agregator (Log Forwarder):</strong> Menempatkan stasiun pengumpul log terdistribusi (seperti Logstash atau Fluentd) di tiap segmen atau cabang jaringan, menghindari lonjakan koneksi langsung dari ribuan workstation ke server SIEM pusat.
+                            </li>
+                            <li>
+                                <strong>&bull; Penyaringan Kebisingan (Noise Filtering):</strong> Memfilter log repetitif non-kritis (seperti ping rutin jaringan internal) pada level forwarder sebelum membebani kapasitas kuota dan media penyimpanan SIEM.
+                            </li>
+                        </ul>
                     </div>
-                    <div class="box-highlight box-danger">
-                        <strong>2. Kasus Jam Reset (Baterai CMOS Pintu Habis &rarr; 1970):</strong>
-                        Jika mesin pintu mengirim CSV dengan stempel waktu 1970, Gatekeeper Mini-SIEM mendeteksi <em>Time Drift Error</em> (> 24 jam) dan seketika melempar <strong>HTTP 422 Drop</strong>. Log masuk ke antrean Dead-Letter Queue (DLQ) dan teknisi pemeliharaan markas otomatis mendapat tiket ganti baterai.
-                    </div>
-                </div>
 
-                <div class="card success">
-                    <h3 class="card-title">🎯 Kesimpulan untuk Instansi Pertahanan</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.7;">
-                        Dengan memfokuskan integrasi pada <strong>Adapter Log Parser &rarr; Gatekeeper Skema &rarr; Correlation Brain</strong>, Mini-SIEM mampu:
-                    </p>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; font-size: 0.9rem;">
-                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                            <span style="color: var(--success-green); font-weight: bold;">1.</span>
-                            <span><strong>Menelan data dari perangkat apa pun:</strong> CSV mesin absensi, Syslog router perbatasan, Audit Log database terenkripsi, hingga jaringan militer.</span>
-                        </li>
-                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                            <span style="color: var(--success-green); font-weight: bold;">2.</span>
-                            <span><strong>Menghilangkan titik buta (Blind Spot):</strong> Menghubungkan dunia fisik (pintu/hardware) dan dunia siber (aplikasi/jaringan) secara real-time.</span>
-                        </li>
-                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                            <span style="color: var(--success-green); font-weight: bold;">3.</span>
-                            <span><strong>Melindungi dirinya sendiri dari data sampah:</strong> Menolak data kotor secara mandiri tanpa pernah mengalami <em>crash</em>.</span>
-                        </li>
-                    </ul>
+                    <!-- Tahap 4 -->
+                    <div class="card success" style="margin: 0;">
+                        <div class="card-header">
+                            <h4 style="font-size: 0.98rem; color: var(--success-green);">Tahap 4: Prasyarat Bisnis &amp; Proses (Konteks)</h4>
+                            <span class="card-tag">BUSINESS CONTEXT</span>
+                        </div>
+                        <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 0.75rem; font-style: italic;">
+                            Menyelaraskan kapabilitas teknis SIEM dengan prioritas dan konteks operasional organisasi:
+                        </p>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.86rem; color: var(--text-main);">
+                            <li>
+                                <strong>&bull; Inventarisasi Aset (Asset Management):</strong> Memetakan klasifikasi aset, membedakan IP server pembayaran inti (Kritis) dari akses WiFi publik (Rendah) agar sistem dapat menentukan tingkat keparahan alarm (Severity) secara proporsional.
+                            </li>
+                            <li>
+                                <strong>&bull; Definisi Use Case (Skenario Ancaman):</strong> Menetapkan skenario deteksi spesifik sebelum sistem beroperasi, misalnya: memicu alert kritis jika terdeteksi 5 kali kegagalan login VPN dari luar negeri di luar jam kerja resmi.
+                            </li>
+                            <li>
+                                <strong>&bull; Pemetaan Tanggung Jawab (Playbook / SOP Dasar):</strong> Menetapkan prosedur eskalasi yang jelas: mendefinisikan tim penanggung jawab yang harus ditugaskan saat alarm berstatus kritis terpicu (Tim Jaringan, Tim Aplikasi, atau Lead Analis SOC).
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1638,7 +1578,7 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 5B: STORAGE ARCHITECTURE &amp; DATA LIFECYCLE (CHALLENGE #2)</span>
                 <h2 class="slide-title">Tantangan Storage: Hot Storage vs. Cold Storage</h2>
-                <p class="slide-subtitle">Mengapa solusi ultimate bukan sekadar memperbesar storage, melainkan penerapan Stateful Entity Tracking dan On-Demand Cold Log Rehydration.</p>
+                <p class="slide-subtitle">Optimalisasi siklus data: Arsitektur Stateful Entity Tracking untuk korelasi instan dan On-Demand Cold Log Rehydration untuk efisiensi biaya.</p>
             </div>
 
             <!-- Grid 1: Perbandingan Dua Dunia Penyimpanan -->
@@ -1650,9 +1590,9 @@
                         <span class="card-tag">REAL-TIME INGESTION</span>
                     </div>
                     <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-main);">
-                        <li><strong>⚡ Keunggulan:</strong> Kecepatan query sub-detik (&lt; 10ms) untuk korelasi stream instan (Sliding Window, RAM, NVMe SSD).</li>
-                        <li><strong>💸 Kendala Biaya:</strong> Sangat mahal per Gigabyte. Bila menampung miliaran log/hari selama berbulan-bulan, anggaran infrastruktur meledak.</li>
-                        <li><strong>⏳ Siklus Retensi:</strong> Dibatasi (misal 14 hari) agar kapasitas memori dan engine korelasi tidak runtuh (<em>out-of-memory</em>).</li>
+                        <li><strong>⚡ Keunggulan:</strong> Kecepatan kueri sub-detik (&lt; 10ms) untuk korelasi stream instan (Sliding Window, RAM, NVMe SSD).</li>
+                        <li><strong>💸 Kendala Biaya:</strong> Biaya per Gigabyte tinggi. Menampung miliaran log harian untuk jangka panjang membebani infrastruktur data.</li>
+                        <li><strong>⏳ Siklus Retensi:</strong> Dibatasi (misal 14 hari) untuk menjaga performa memori dan kestabilan engine korelasi.</li>
                     </ul>
                 </div>
 
@@ -1663,9 +1603,9 @@
                         <span class="card-tag">COMPLIANCE &amp; ARCHIVE</span>
                     </div>
                     <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-main);">
-                        <li><strong>💰 Keunggulan:</strong> Sangat hemat biaya (10x - 50x lebih murah via S3 Glacier, Parquet, atau Tape) untuk kepatuhan regulasi bertahun-tahun.</li>
-                        <li><strong>🧊 Sifat Pasif (Inert):</strong> Data dikompresi rapat, tidak terindeks instan, dan <em>tidak bisa dibaca otomatis oleh mesin korelasi SIEM</em>.</li>
-                        <li><strong>⏱️ Waktu Akses:</strong> Memerlukan waktu menit hingga jam untuk proses dekompresi dan pemindahan (<em>rehydration</em>).</li>
+                        <li><strong>💰 Keunggulan:</strong> Rasio efisiensi biaya tinggi (10x - 50x lebih hemat melalui format Parquet/kompresi berkas) untuk pemenuhan regulasi audit bertahun-tahun.</li>
+                        <li><strong>🧊 Karakteristik Pasif:</strong> Data terkompresi tanpa indeks aktif real-time, membutuhkan alur ekstraksi khusus untuk pembacaan analitik.</li>
+                        <li><strong>⏱️ Latensi Akses:</strong> Memerlukan waktu pemrosesan (menit) saat proses dekompresi dan pemindahan (*rehydration*).</li>
                     </ul>
                 </div>
             </div>
@@ -1673,26 +1613,26 @@
             <!-- Peringatan Kritis: The Brute-Force Fallacy -->
             <div class="card danger" style="margin-bottom: 1.5rem;">
                 <div class="card-header">
-                    <h3 class="card-title">⚠️ Mengapa "Memperbesar Storage" BUKAN Solusi Ultimate?</h3>
+                    <h3 class="card-title">⚠️ Limitasi Pendekatan Skalabilitas Linier (Storage Scaling)</h3>
                     <span class="card-tag">THE BRUTE-FORCE FALLACY</span>
                 </div>
                 <div style="font-size: 0.92rem; color: var(--text-main); line-height: 1.7;">
                     <p style="margin-bottom: 0.65rem;">
-                        Banyak pihak beranggapan: <em>"Jika peretas menyerang di Hari ke-20, perbesar saja Hot Storage menjadi 30 atau 90 hari!"</em><br>
-                        Ini adalah <strong>jebakan logika fatal</strong> dalam arsitektur keamanan modern karena tiga alasan utama:
+                        Asumsi konvensional sering mengusulkan: <em>"Jika peretas menyerang di Hari ke-20, perbesar masa retensi Hot Storage menjadi 30 atau 90 hari."</em><br>
+                        Pendekatan ini memicu kendala teknis dan finansial pada operasional SIEM karena tiga faktor utama:
                     </p>
                     <div class="grid-3" style="margin-top: 0.75rem;">
                         <div class="box-highlight box-danger" style="margin: 0;">
                             <strong>1. Biaya Eksponensial</strong>
-                            Menyimpan petabyte log mentah di tier instan memboroskan ratusan juta hingga miliaran rupiah anggaran IT setiap bulan.
+                            Menyimpan petabyte log mentah di tier instan menaikkan biaya infrastruktur database secara tidak proporsional.
                         </div>
                         <div class="box-highlight box-danger" style="margin: 0;">
-                            <strong>2. Query Latency Drop</strong>
-                            Semakin gemuk index pencarian aktif, latensi korelasi merosot dari milidetik menjadi puluhan detik. SIEM tercekik (<em>bottleneck</em>).
+                            <strong>2. Degradasi Latensi Kueri</strong>
+                            Volume indeks pencarian yang membengkak menurunkan performa evaluasi aturan korelasi secara signifikan.
                         </div>
                         <div class="box-highlight box-danger" style="margin: 0;">
-                            <strong>3. Noise-to-Signal Trap</strong>
-                            99.9% dari miliaran log adalah aktivitas wajar (noise). Membayar storage mahal demi mencari 1 jarum di tumpukan jerami adalah pemborosan.
+                            <strong>3. Noise-to-Signal Tinggi</strong>
+                            Mayoritas volume data merupakan telemetri rutin; mengalokasikan penyimpanan tier premium untuk data non-kritis menurunkan efisiensi sistem.
                         </div>
                     </div>
                 </div>
@@ -1708,14 +1648,14 @@
                     </div>
                     <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
                         <p style="margin-bottom: 0.5rem;">
-                            <strong>Inti Pendekatan:</strong> SIEM <strong>tidak perlu menyimpan seluruh log mentah</strong>. Cukup menyimpan <em>"status/skor kecurigaan"</em> dari IP atau akun tersebut di database persisten (Long-term Watchlist/Greylist).
+                            <strong>Inti Pendekatan:</strong> SIEM mempertahankan skor risiko dan status entitas mencurigakan pada tabel stateful persisten, tanpa harus menyimpan seluruh payload mentah.
                         </p>
                         <div class="box-highlight box-story">
-                            <strong>💡 Penghematan Data &gt; 99.99%:</strong>
-                            Alih-alih menahan 50 GB rekaman trafik HTTP mentah di Hot Memory, SIEM hanya menyimpan 1 baris JSON metadata: <code class="pres-code">{"ip": "198.51.100.77", "risk": "HIGH", "score": 85, "reason": "recon_day_1"}</code>.
+                            <strong>💡 Rasio Kompresi Metadata:</strong>
+                            Alih-alih menahan puluhan gigabyte rekaman request di memori aktif, sistem menyimpan satu baris JSON status: <code class="pres-code">{"ip": "198.51.100.77", "risk": "HIGH", "score": 85, "reason": "recon_day_1"}</code>.
                         </div>
                         <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--text-muted);">
-                            Status ini dapat bertahan berbulan-bulan dengan konsumsi memori hanya beberapa Kilobyte, siap menjerat peretas yang datang kembali di Hari ke-20!
+                            Status ini dipertahankan lintas siklus retensi dengan jejak memori minimal, siap dicocokkan saat entitas bersangkutan aktif kembali pada Hari ke-20.
                         </p>
                     </div>
                 </div>
@@ -1723,19 +1663,19 @@
                 <!-- Solusi 2: Cold Log Rehydration -->
                 <div class="card purple">
                     <div class="card-header">
-                        <h3 class="card-title">2. Cold Log Rehydration (On-Demand Deep Forensic)</h3>
+                        <h3 class="card-title">2. Cold Log Rehydration (On-Demand Forensic)</h3>
                         <span class="card-tag">TARGETED HISTORICAL RESTORATION</span>
                     </div>
                     <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
                         <p style="margin-bottom: 0.5rem;">
-                            <strong>Inti Pendekatan:</strong> Saat insiden terjadi di Hari ke-20, sistem secara otomatis <em>"mencairkan" (rehydrate)</em> log terkait dari arsip beku untuk merajut kembali linimasa penyerangan utuh (<em>Kill Chain Reconstruction</em>).
+                            <strong>Inti Pendekatan:</strong> Saat insiden terverifikasi pada Hari ke-20, sistem secara terarah mengekstraksi log terkait dari arsip dingin untuk rekonstruksi linimasa serangan (*Kill Chain Reconstruction*).
                         </p>
                         <div class="box-highlight box-siem">
-                            <strong>🔍 Tidak Perlu Full-Table Scan:</strong>
-                            Sistem tidak membakar sumber daya untuk membaca seluruh Cold Storage, melainkan hanya menarik paket log milik entitas bersangkutan yang relevan dengan rentang waktu insiden.
+                            <strong>🔍 Kueri Partisi Selektif:</strong>
+                            Sistem secara spesifik menarik paket log milik entitas target berdasarkan rentang waktu insiden, tanpa mengeksekusi full-table scan pada seluruh arsip.
                         </div>
                         <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--text-muted);">
-                            Hasil rehidrasi langsung disajikan ke hadapan analis forensik untuk pembuktian hukum dan investigasi mendalam tanpa membebani engine real-time.
+                            Hasil rehidrasi disajikan pada workspace analis untuk pembuktian forensik dan audit kepatuhan tanpa membebani engine pemrosesan real-time.
                         </p>
                     </div>
                 </div>
@@ -1744,10 +1684,10 @@
             <!-- Setup Lokasi Hot & Cold Storage pada SIEM -->
             <div class="diagram-container">
                 <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                    ⚙️ Setup Lokasi Hot &amp; Cold Storage: Kunci Mendapatkan Konteks "Correlation Showdown"
+                    ⚙️ Setup Lokasi Hot &amp; Cold Storage: Fondasi Korelasi Multi-Tahap Lintas Retensi
                 </h3>
                 <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.7;">
-                    Agar fitur <em>On-Demand Rehydration</em> dapat bekerja presisi saat Hari ke-20, SIEM wajib mengonfigurasikan <strong>katalog pemetaan lokasi (Storage Tiering Setup)</strong> antara Hot Buffer dan Cold Archive:
+                    Agar fitur <em>On-Demand Rehydration</em> dapat beroperasi secara presisi saat deteksi Hari ke-20 terpicu, SIEM mengonfigurasi katalog pemetaan lokasi antara Hot Buffer dan Cold Archive:
                 </p>
 
                 <div class="flow-diagram">
@@ -1765,19 +1705,19 @@
                     <div class="flow-arrow">➔</div>
                     <div class="flow-step" style="border-color: var(--danger-red); background: rgba(239, 68, 68, 0.08);">
                         <div class="flow-icon">🚨</div>
-                        <div class="flow-title">3. Hari ke-20 Trigger</div>
-                        <div class="flow-desc">IP di Watchlist menyerang &rarr; Alarm Kritis APT menyala via Stateful Table</div>
+                        <div class="flow-title">3. Pemicu Deteksi Hari ke-20</div>
+                        <div class="flow-desc">IP terdaftar di Watchlist melakukan request &rarr; Alarm Kritis APT terpicu via Stateful Table</div>
                     </div>
                     <div class="flow-arrow">➔</div>
                     <div class="flow-step" style="border-color: var(--success-green); background: rgba(16, 185, 129, 0.08);">
                         <div class="flow-icon">🔄</div>
-                        <div class="flow-title">4. Correlation Showdown</div>
-                        <div class="flow-desc">SIEM merujuk koordinat katalog, menarik log Tanggal 1 &amp; merajut bukti forensik instan!</div>
+                        <div class="flow-title">4. Korelasi Lintas Retensi</div>
+                        <div class="flow-desc">SIEM merujuk koordinat katalog, menarik telemetri Tanggal 1, dan menyusun linimasa forensik terpadu</div>
                     </div>
                 </div>
 
                 <div class="box-highlight box-output" style="margin-top: 1rem;">
-                    <strong>🎯 Kesimpulan Arsitektur:</strong> Dengan setup pemetaan lokasi yang terstruktur, SIEM mendapatkan <em>kecepatan instan</em> dari Hot Storage, <em>efisiensi biaya</em> dari Cold Storage, dan <em>kecerdasan korelasi lintas waktu</em> dari Stateful Entity Tracking.
+                    <strong>🎯 Kesimpulan Arsitektur:</strong> Integrasi hierarki storage memungkinkan penanganan real-time pada Hot Tier, efisiensi jangka panjang pada Cold Tier, dan korelasi multi-tahap melalui Stateful Entity Tracking.
                 </div>
             </div>
         </section>
@@ -1787,7 +1727,7 @@
             <div class="slide-header">
                 <span class="slide-tag">BAGIAN 6: PRODUCT MANAGEMENT &amp; DEVELOPMENT ROADMAP</span>
                 <h2 class="slide-title">Timeline Ecosystem SIEM</h2>
-                <p class="slide-subtitle">Peta Jalan Pengembangan Fitur Berbasis Dependensi Teknis &amp; Logika Bisnis: Dari Pondasi Dasar (MVP v1), Otak Korelasi (Phase 2), hingga AI &amp; Otomasi Respons (Phase 3).</p>
+                <p class="slide-subtitle">Peta jalan pengembangan fitur berbasis dependensi teknis dan logika operasional: Dari Pondasi Dasar (MVP v1), Otak Korelasi (Phase 2), hingga AI &amp; Otomasi Respons (Phase 3).</p>
             </div>
 
             <!-- Summary 3 Fase Utama -->
@@ -1798,10 +1738,10 @@
                         <span class="card-tag">FITUR 1 - 6</span>
                     </div>
                     <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
-                        <strong>Fokus Pondasi:</strong> Membangun indera pendengaran sistem (Ingestion), menyeragamkan bahasa data (Normalization), rumah data cepat (Hot Storage), pencarian manual analis, dan peringatan dasar.
+                        <strong>Fokus Pondasi:</strong> Membangun pipeline ingest data telemetri, standarisasi skema (Normalization), penyimpanan cepat (Hot Storage), kueri investigasi analis, dan peringatan deterministik.
                     </p>
                     <div class="box-highlight box-siem" style="margin-top: 0.6rem; font-size: 0.8rem;">
-                        🎯 <em>Milestone:</em> Analis bisa mencari log &amp; menerima alert statis sederhana.
+                        🎯 <em>Milestone:</em> Analis dapat mengeksekusi pencarian log dan menerima notifikasi alert dasar.
                     </div>
                 </div>
 
@@ -1811,10 +1751,10 @@
                         <span class="card-tag">FITUR 7 - 10</span>
                     </div>
                     <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
-                        <strong>Fokus Kecerdasan:</strong> Mengaktifkan mesin korelasi lintas waktu (Stateful Tracking), memasukkan "daftar buronan" (Threat Intel), manajemen tiket insiden terpusat, dan efisiensi biaya arsip beku.
+                        <strong>Fokus Deteksi &amp; Tata Kelola:</strong> Mengaktifkan mesin korelasi lintas waktu (Stateful Tracking), integrasi threat intelligence eksternal, manajemen tiket insiden, dan tier arsip dingin hemat biaya.
                     </p>
                     <div class="box-highlight box-story" style="margin-top: 0.6rem; font-size: 0.8rem;">
-                        🎯 <em>Milestone:</em> Menghubungkan titik Recon ke Attack &amp; kerja analis terstruktur.
+                        🎯 <em>Milestone:</em> Korelasi serangan bertahap (Recon ke Eksploitasi) dan standardisasi penanganan insiden.
                     </div>
                 </div>
 
@@ -1824,10 +1764,10 @@
                         <span class="card-tag">FITUR 11 - 13</span>
                     </div>
                     <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
-                        <strong>Fokus Otomasi &amp; AI:</strong> Menangkap orang dalam via UEBA (Machine Learning), merespons instan lewat SOAR Playbooks, serta AI Adaptive Rule Generator terkendali (HITL &amp; Canary Replay).
+                        <strong>Fokus Otomasi &amp; AI:</strong> Deteksi perilaku anomali via UEBA, orkestrasian respons otomatis via SOAR playbooks, serta perumusan aturan adaptif terawasi (HITL dan Canary Replay).
                     </p>
                     <div class="box-highlight box-danger" style="margin-top: 0.6rem; font-size: 0.8rem;">
-                        🎯 <em>Milestone:</em> Dari sekadar "Alarm Pasif" menjadi "Satpam yang Memukul Balik Secara Terukur".
+                        🎯 <em>Milestone:</em> Transisi dari sistem alert pasif menuju mitigasi insiden otomatis dan terukur.
                     </div>
                 </div>
             </div>
@@ -1841,13 +1781,13 @@
                     <table class="pres-table">
                         <thead>
                             <tr>
-                                <th style="width: 14%;">Phase</th>
-                                <th style="width: 5%; text-align: center;">Order</th>
-                                <th style="width: 17%;">Feature Name</th>
-                                <th style="width: 25%;">Description</th>
-                                <th style="width: 13%;">Dependency</th>
-                                <th style="width: 8%; text-align: center;">Priority</th>
-                                <th style="width: 18%;">PM Logic / Impact</th>
+                                <th>Fase</th>
+                                <th style="text-align: center;">Urutan</th>
+                                <th>Nama Fitur</th>
+                                <th>Deskripsi Teknis</th>
+                                <th>Dependensi</th>
+                                <th style="text-align: center;">Prioritas</th>
+                                <th>Justifikasi PM &amp; Dampak</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1856,60 +1796,60 @@
                                 <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">1</td>
                                 <td><strong>Log Ingestion Engine</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Syslog, API, and Webhook listeners to receive raw data.</td>
-                                <td><code class="pres-code" style="font-size: 0.75rem;">None (Foundation)</code></td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Syslog, REST API, dan Webhook listeners untuk menerima raw payload.</td>
+                                <td><code class="pres-code" style="font-size: 0.75rem;">None (Pondasi)</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(239, 68, 68, 0.2); color: var(--danger-red); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Critical</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Tanpa log, SIEM buta. Ini fitur pertama yang harus dibangun.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Sumber data primer. Seluruh engine pemrosesan membutuhkan aliran log masuk.</em></td>
                             </tr>
                             <!-- Order 2 -->
                             <tr>
                                 <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">2</td>
                                 <td><strong>Data Parsing &amp; Normalization</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Standardize raw logs (Cisco, Windows, Linux) into a unified JSON format.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Standardisasi log heterogen ke dalam skema terpadu JSON Data Contract.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Log Ingestion</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(239, 68, 68, 0.2); color: var(--danger-red); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Critical</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Data mentah tidak bisa dicari. Harus diseragamkan dulu agar bahasa log sama.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Format terstandarisasi memastikan integritas kueri dan evaluasi rule deteksi.</em></td>
                             </tr>
                             <!-- Order 3 -->
                             <tr>
                                 <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">3</td>
                                 <td><strong>Hot Storage &amp; Indexing</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Store parsed data in fast-retrieval database (Elastic/OpenSearch) for 14-30 days.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Penyimpanan cepat berbasis indeks terbalik untuk jendela retensi aktif 14-30 hari.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Normalization</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(239, 68, 68, 0.2); color: var(--danger-red); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Critical</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Data yang sudah rapi butuh rumah yang bisa dicari dengan kecepatan kilat.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Memungkinkan evaluasi kueri analitik dan korelasi berlatensi rendah (&lt; 10ms).</em></td>
                             </tr>
                             <!-- Order 4 -->
                             <tr>
                                 <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">4</td>
                                 <td><strong>Search &amp; Query Interface</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">UI/CLI for analysts to manually search logs using a specific query language.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Antarmuka pengguna/API untuk kueri filter telemetri dan investigasi insiden manual.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Hot Storage</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Analis butuh 'Google Search'-nya sendiri untuk investigasi insiden.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Menyediakan visibilitas investigasi bagi analis keamanan saat menangani anomali.</em></td>
                             </tr>
                             <!-- Order 5 -->
                             <tr>
                                 <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">5</td>
                                 <td><strong>Rule-Based Alerting</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Trigger alerts based on static rules (e.g., '5 failed logins in 1 minute').</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Mekanisme notifikasi berbasis aturan ambang batas statis (misal: 5 login gagal per menit).</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Search Interface</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Membuat SIEM bekerja otomatis memberi tahu analis jika ada pola sederhana.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Otomasi peringatan dini untuk pola ancaman deterministik berfrekuensi tinggi.</em></td>
                             </tr>
                             <!-- Order 6 -->
                             <tr>
                                 <td><span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">MVP v1 (Foundation)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-cyan);">6</td>
                                 <td><strong>Basic Dashboard &amp; Reporting</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Visual charts for EPS (Events Per Second), top log sources, and top alerts.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Visualisasi matriks EPS (Events Per Second), distribusi sumber log, dan ringkasan alert.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Search Interface</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Medium</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Visibilitas untuk manajemen (C-Level) dan SOC Manager.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Memberikan visibilitas operasional bagi SOC Manager dan pemangku kepentingan.</em></td>
                             </tr>
 
                             <!-- Order 7 -->
@@ -1917,40 +1857,40 @@
                                 <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: #a78bfa;">7</td>
                                 <td><strong>Correlation Engine</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Detect complex attacks across multiple log sources over time (Stateful tracking).</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Deteksi pola serangan kompleks lintas sumber dan rentang waktu (Stateful tracking).</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Rule-Based Alerting</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Inti dari SIEM modern. Menghubungkan Recon ke Attack. Butuh alerting dasar mature dulu.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Komponen inti deteksi ancaman berantai (recon ke eksploitasi) lintas siklus retensi.</em></td>
                             </tr>
                             <!-- Order 8 -->
                             <tr style="background: rgba(139, 92, 246, 0.04);">
                                 <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: #a78bfa;">8</td>
                                 <td><strong>Threat Intel (TI) Integration</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Ingest IOC feeds (bad IPs/Domains) to match against incoming logs.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Pencocokan feed reputasi IoC (IP buruk, domain C2, hash malware) pada log streaming.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Correlation Engine</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Menambahkan 'Daftar Buronan' ke dalam otak korelasi SIEM.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Memperkaya telemetri internal dengan basis data ancaman global.</em></td>
                             </tr>
                             <!-- Order 9 -->
                             <tr style="background: rgba(139, 92, 246, 0.04);">
                                 <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: #a78bfa;">9</td>
                                 <td><strong>Incident &amp; Case Management</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Built-in ticketing to assign, track, and annotate alerts/investigations.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Sistem pencatatan tiket terpadu untuk alokasi, pelacakan, dan audit investigasi insiden.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Alerting</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Medium</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Menggantikan Excel/Email agar SOC Analyst kerja lebih terstruktur.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Standardisasi tata kelola eskalasi dan dokumentasi audit kepatuhan.</em></td>
                             </tr>
                             <!-- Order 10 -->
                             <tr style="background: rgba(139, 92, 246, 0.04);">
                                 <td><span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 2 (Intelligence)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: #a78bfa;">10</td>
                                 <td><strong>Cold Storage / Archiving</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Compress logs to cheaper storage for 1-7 years for compliance.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Arsip terkompresi berbiaya rendah untuk retensi kepatuhan regulasi jangka panjang.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Hot Storage</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Medium</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Efisiensi biaya. Hot storage mahal, log lama harus dibekukan.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Efisiensi anggaran penyimpanan jangka panjang (1 sampai 7 tahun).</em></td>
                             </tr>
 
                             <!-- Order 11 -->
@@ -1958,30 +1898,30 @@
                                 <td><span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 3 (Advanced)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-gold);">11</td>
                                 <td><strong>UEBA (User &amp; Entity Behavior)</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Machine learning to detect anomalous baseline behavior (Insider Threat).</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Model pembelajaran mesin untuk mendeteksi anomali perilaku kredensial sah.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Correlation, Historical Data</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Mendeteksi peretas yang memakai kredensial sah, butuh data log minimal 30 hari untuk belajar 'normal' itu apa.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Identifikasi ancaman internal (insider threat) berbasis baseline data historis.</em></td>
                             </tr>
                             <!-- Order 12 -->
                             <tr style="background: rgba(245, 158, 11, 0.04);">
                                 <td><span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 3 (Advanced)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-gold);">12</td>
                                 <td><strong>SOAR (Automated Response)</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Automated playbooks (e.g., auto-block IP on Firewall upon critical alert).</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Eksekusi playbook respon terprogram (seperti isolasi IP pada firewall perimeter).</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Case Management, TI</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Mengubah SIEM dari sekadar 'Alarm' menjadi 'Satpam yang bisa memukul balik'.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Memangkas Mean Time to Remediate (MTTR) melalui mitigasi otomatis terverifikasi.</em></td>
                             </tr>
                             <!-- Order 13 -->
                             <tr style="background: rgba(245, 158, 11, 0.04);">
                                 <td><span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">Phase 3 (Advanced)</span></td>
                                 <td style="text-align: center; font-weight: bold; color: var(--accent-gold);">13</td>
                                 <td><strong>AI Adaptive Rule Generator (Human-Supervised)</strong></td>
-                                <td style="font-size: 0.82rem; color: var(--text-muted);">Mengisolasi anomali ke DLQ, AI mensintesis aturan deteksi baru (Shadow Rule), melakukan Canary Replay pada log 30 hari terakhir, dan menunggu HITL (Human-in-the-Loop) Approval.</td>
+                                <td style="font-size: 0.82rem; color: var(--text-muted);">Isolasi payload anomali ke DLQ, sintesis Shadow Rule via AI, validasi Canary Replay pada data 30 hari, dan otorisasi HITL.</td>
                                 <td><code class="pres-code" style="font-size: 0.75rem;">Correlation Engine, Hot Storage (30 Hari), Threat Intel</code></td>
                                 <td style="text-align: center;"><span style="background: rgba(249, 115, 22, 0.2); color: var(--high-orange); padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">High</span></td>
-                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Mencegah False Positive massal. AI merekomendasikan dan menguji mundur (Canary), Manusia (Kapten SOC) yang menyetujui sebelum aturan aktif.</em></td>
+                                <td style="font-size: 0.82rem; line-height: 1.5;"><em>Pencegahan false positive massal melalui validasi historis dan otorisasi lead analis.</em></td>
                             </tr>
                         </tbody>
                     </table>
@@ -1991,21 +1931,21 @@
             <!-- Strategic Product Management Takeaways -->
             <div class="card success" style="margin-top: 1.5rem;">
                 <div class="card-header">
-                    <h3 class="card-title">💡 Strategic PM Insights: Mengapa Urutan Ini Mutlak?</h3>
+                    <h3 class="card-title">💡 Justifikasi Rantai Dependensi Produk</h3>
                     <span class="card-tag">DEPENDENCY CHAIN LOGIC</span>
                 </div>
                 <div class="grid-3" style="margin-top: 0.5rem;">
                     <div class="box-highlight box-story" style="margin: 0; font-size: 0.88rem;">
-                        <strong>1. Fondasi Dulu, AI Belakangan</strong>
-                        Jangan pernah melompat ke AI/UEBA sebelum Ingestion, Parsing, dan Hot Storage 30 hari stabil. Tanpa data historis yang bersih, machine learning hanya akan belajar dari data halusinasi / sampah.
+                        <strong>1. Fondasi Data Sebelum Analitik Lanjut</strong>
+                        Fase Ingestion, Normalisasi, dan Penyimpanan 30 hari harus stabil sebelum mengaktifkan UEBA. Tanpa data historis terstandarisasi, model perilaku tidak memiliki baseline yang andal.
                     </div>
                     <div class="box-highlight box-siem" style="margin: 0; font-size: 0.88rem;">
-                        <strong>2. Safety Before Automation</strong>
-                        SOAR diletakkan di Phase 3 setelah Case Management dan Threat Intel matang. Menjalankan auto-block di awal tanpa akurasi tinggi berisiko melumpuhkan operasional bisnis (Self-inflicted DoS).
+                        <strong>2. Pengendalian Risiko Sebelum Otomasi Penuh</strong>
+                        SOAR diimplementasikan pada Phase 3 setelah Case Management dan Threat Intel terverifikasi. Mitigasi otomatis tanpa akurasi tinggi berisiko memblokir trafik operasional yang sah.
                     </div>
                     <div class="box-highlight box-output" style="margin: 0; font-size: 0.88rem;">
-                        <strong>3. Keseimbangan Biaya &amp; Efisiensi</strong>
-                        Pemisahan Hot Storage (Phase 1) dan Cold Archiving (Phase 2) menjamin SIEM tetap lincah di kecepatan tinggi tanpa membakar anggaran penyimpanan perusahaan.
+                        <strong>3. Keseimbangan Performa &amp; Efisiensi Biaya</strong>
+                        Pemisahan Hot Storage (Phase 1) dan Cold Archive (Phase 2) menjaga performa korelasi real-time tetap optimal sekaligus mengendalikan biaya penyimpanan jangka panjang.
                     </div>
                 </div>
             </div>
