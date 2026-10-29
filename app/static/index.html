@@ -80,6 +80,10 @@
                 <span class="metric-label">🔒 Quarantined Hosts (SOAR)</span>
                 <span class="metric-value" id="valIsolatedCount">0</span>
             </div>
+            <div class="metric-card" style="border-left-color: #ef4444;">
+                <span class="metric-label">🚫 Suspended Users (SOAR)</span>
+                <span class="metric-value" id="valSuspendedUsersCount">0</span>
+            </div>
             <div class="metric-card" style="border-left-color: #10b981;">
                 <span class="metric-label">🛡️ Blocked Traffic (SOAR)</span>
                 <span class="metric-value" id="valBlockedCount">0</span>
@@ -240,6 +244,29 @@
                                     <tbody id="isolatedTableBody">
                                         <tr>
                                             <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada host dalam karantina</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Suspended Accounts Section -->
+                        <div style="margin-top: 1.25rem;">
+                            <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                🚫 Suspended User Accounts (Compromised Identity)
+                            </h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>User ID</th>
+                                            <th>Reason</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="suspendedUsersTableBody">
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada akun user yang dibekukan</td>
                                         </tr>
                                     </tbody>
                                 </table>

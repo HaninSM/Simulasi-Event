@@ -5,7 +5,8 @@ from collections import defaultdict
 
 from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
-    IsolateHostRequest, ReleaseHostRequest
+    IsolateHostRequest, ReleaseHostRequest,
+    SuspendUserRequest, UnsuspendUserRequest
 )
 
 
@@ -18,9 +19,11 @@ class CorrelationEngine:
         # ip_address -> dict(risk_level, reason, added_at, probe_count)
         self.watchlist: Dict[str, dict] = {}
 
-        # SOAR State: Active Network Quarantine / Isolated Hosts
+        # SOAR State: Active Network Quarantine / Isolated Hosts & Suspended Users
         # ip_address -> dict(ip_address, reason, analyst, isolated_at)
         self.isolated_hosts: Dict[str, dict] = {}
+        # user_id -> dict(user_id, reason, analyst, suspended_at)
+        self.suspended_users: Dict[str, dict] = {}
         self.soar_audit_trail: List[dict] = []
         self.blocked_containment_count: int = 0
 
@@ -116,6 +119,17 @@ class CorrelationEngine:
             if a.ip_address == ip_address and a.status == "NEW":
                 a.status = "CONTAINED"
 
+        # Invalidate/purge isolated host from active sliding correlation buffers
+        self.web_requests_by_ip.pop(ip_address, None)
+        for u in list(self.successful_logins_by_user.keys()):
+            self.successful_logins_by_user[u] = [
+                e for e in self.successful_logins_by_user[u] if e[1].ip_address != ip_address
+            ]
+        for u in list(self.failed_logins_by_user.keys()):
+            self.failed_logins_by_user[u] = [
+                e for e in self.failed_logins_by_user[u] if e[1].ip_address != ip_address
+            ]
+
         # Record in SOAR audit trail
         audit_entry = {
             "id": str(uuid.uuid4())[:8],
@@ -157,6 +171,72 @@ class CorrelationEngine:
 
     def get_isolated_hosts(self) -> List[dict]:
         return list(self.isolated_hosts.values())
+
+    # --- SOAR User Account Suspension Methods (Identity Defense) ---
+
+    def suspend_user(
+        self,
+        user_id: str,
+        reason: str = "Account suspended by SOC Playbook due to identity compromise / impossible travel",
+        analyst: str = "SOC Analyst Tier-1"
+    ) -> dict:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        entry = {
+            "user_id": user_id,
+            "reason": reason,
+            "analyst": analyst,
+            "suspended_at": now_iso
+        }
+        self.suspended_users[user_id] = entry
+
+        # Transition active alerts for this user to CONTAINED
+        for a in self.alerts:
+            if a.user_id == user_id and a.status == "NEW":
+                a.status = "CONTAINED"
+
+        # Invalidate/purge suspended user from active correlation buffers
+        self.successful_logins_by_user.pop(user_id, None)
+        self.failed_logins_by_user.pop(user_id, None)
+        self.db_downloads_by_user.pop(user_id, None)
+
+        # Record in SOAR audit trail
+        audit_entry = {
+            "id": str(uuid.uuid4())[:8],
+            "action": "SUSPEND_USER",
+            "target": user_id,
+            "reason": reason,
+            "analyst": analyst,
+            "timestamp": now_iso
+        }
+        self.soar_audit_trail.append(audit_entry)
+        if len(self.soar_audit_trail) > 200:
+            self.soar_audit_trail.pop(0)
+
+        return entry
+
+    def unsuspend_user(self, user_id: str, analyst: str = "SOC Analyst Tier-1") -> bool:
+        if user_id in self.suspended_users:
+            del self.suspended_users[user_id]
+            now_iso = datetime.now(timezone.utc).isoformat()
+            audit_entry = {
+                "id": str(uuid.uuid4())[:8],
+                "action": "UNSUSPEND_USER",
+                "target": user_id,
+                "reason": "Account suspension lifted / restored",
+                "analyst": analyst,
+                "timestamp": now_iso
+            }
+            self.soar_audit_trail.append(audit_entry)
+            if len(self.soar_audit_trail) > 200:
+                self.soar_audit_trail.pop(0)
+            return True
+        return False
+
+    def is_user_suspended(self, user_id: str) -> bool:
+        return user_id in self.suspended_users
+
+    def get_suspended_users(self) -> List[dict]:
+        return list(self.suspended_users.values())
 
     def get_soar_audit_trail(self) -> List[dict]:
         return list(reversed(self.soar_audit_trail))
@@ -211,6 +291,7 @@ class CorrelationEngine:
         self.cold_archive.clear()
         self.watchlist.clear()
         self.isolated_hosts.clear()
+        self.suspended_users.clear()
         self.soar_audit_trail.clear()
         self.blocked_containment_count = 0
         self.web_requests_by_ip.clear()
@@ -220,6 +301,13 @@ class CorrelationEngine:
         self.alert_cooldowns.clear()
 
     def process_log(self, event: LogEvent) -> List[Alert]:
+        # SOAR Containment Enforcement:
+        # If host is isolated or user account is suspended, DROP traffic immediately.
+        # Do not store in raw logs, do not feed to correlation rules, and do not trigger alerts!
+        if self.is_host_isolated(event.ip_address) or self.is_user_suspended(event.user_id):
+            self.record_blocked_containment(event.ip_address)
+            return []
+
         # Always store the raw log in ingestion history
         self.raw_logs.append(event)
         
@@ -326,7 +414,7 @@ class CorrelationEngine:
             cutoff = ts_utc - timedelta(hours=1)
             # Find any recent login within < 1 hour with different location
             for prev_ts, prev_event in reversed(user_logins):
-                if prev_ts >= cutoff:
+                if prev_ts >= cutoff and not self.is_host_isolated(prev_event.ip_address):
                     if prev_event.location.strip().lower() != event.location.strip().lower():
                         time_diff = abs((ts_utc - prev_ts).total_seconds())
                         alert = self._create_alert(

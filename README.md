@@ -270,9 +270,11 @@ test_siem.py::test_api_simulator_replay_scenarios PASSED                 [ 83%]
 test_siem.py::test_soar_isolate_host_blocks_subsequent_ingestion_http_403 PASSED [ 87%]
 test_siem.py::test_soar_release_host_restores_ingestion PASSED           [ 91%]
 test_siem.py::test_soar_alert_status_transitions_to_contained PASSED     [ 95%]
-test_siem.py::test_soar_stats_and_audit_trail PASSED                     [100%]
+test_siem.py::test_soar_stats_and_audit_trail PASSED                     [ 92%]
+test_siem.py::test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay PASSED [ 96%]
+test_siem.py::test_soar_user_suspension_blocks_logins_and_replays PASSED [100%]
 
-======================== 24 passed, 1 warning in 2.00s ========================
+======================== 26 passed, 1 warning in 1.10s ========================
 ```
 
 ---
@@ -292,6 +294,9 @@ test_siem.py::test_soar_stats_and_audit_trail PASSED                     [100%]
 | `POST` | `/api/soar/isolate` | **SOAR Action:** Mengisolasi host mencurigakan dan memutus trafficnya | `200 OK` |
 | `POST` | `/api/soar/release` | **SOAR Action:** Melepas status karantina host | `200 OK` / `404 Not Found` |
 | `GET` | `/api/soar/isolated` | Mengambil daftar seluruh host yang sedang dikarantina | `200 OK` |
+| `POST` | `/api/soar/suspend-user` | **SOAR Action:** Membekukan akun user yang terkompromi (Identity Defense) | `200 OK` |
+| `POST` | `/api/soar/unsuspend-user` | **SOAR Action:** Mengaktifkan kembali akun user yang dibekukan | `200 OK` / `404 Not Found` |
+| `GET` | `/api/soar/suspended-users` | Mengambil daftar akun user yang sedang dibekukan | `200 OK` |
 | `GET` | `/api/soar/audit` | Mengambil riwayat audit log tindakan penanganan SOAR | `200 OK` |
 | `POST` | `/api/simulator/replay` | Menjalankan replay otomatis berkas log fisik dari `sample_logs/` (parameter `scenario=1..8`) | `200 OK` / `400 Bad Request` |
 | `POST` | `/api/reset` | Mereset seluruh log, alert, whitelist, dan karantina SOAR in-memory | `200 OK` |
@@ -323,7 +328,7 @@ CommandCenter/
 │   └── apt_recon_and_exploit.log     # Format Jejak APT multi-fase (20 hari)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
 ├── simulator.py             # Script simulator interaktif 8 skenario & demo SOAR containment
-├── test_siem.py             # Test suite 24 unit & integration test otomatis (100% passed)
+├── test_siem.py             # Test suite 26 unit & integration test otomatis (100% passed)
 ├── requirements.txt         # Daftar dependensi Python
 ├── run_server.bat           # Launcher server satu-klik
 ├── run_simulator.bat        # Launcher simulator satu-klik

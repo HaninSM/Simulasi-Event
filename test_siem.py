@@ -601,3 +601,74 @@ def test_soar_stats_and_audit_trail():
     stats = client.get("/api/stats").json()
     assert stats["isolated_hosts_count"] == 0
     assert stats["blocked_containment_count"] == 0
+
+
+def test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay():
+    client.post("/api/reset")
+    # 1. Replay Scenario 3 first time: triggers Impossible Travel alert
+    r1 = client.post("/api/simulator/replay?scenario=3")
+    assert r1.status_code == 200
+    assert r1.json()["alerts_triggered"] == 1
+    frankfurt_ip = "185.190.140.2"
+
+    # 2. Isolate the Frankfurt host (SOAR Action)
+    iso_res = client.post("/api/soar/isolate", json={
+        "ip_address": frankfurt_ip,
+        "reason": "Impossible travel VPN host"
+    })
+    assert iso_res.status_code == 200
+
+    # 3. Replay Scenario 3 again: Frankfurt host is isolated, so event is blocked!
+    r2 = client.post("/api/simulator/replay?scenario=3")
+    assert r2.status_code == 200
+    assert r2.json()["logs_blocked_by_soar"] >= 1
+    assert r2.json()["soar_containment_active"] is True
+    # Crucial assertion: NO new alert is triggered because the second leg was blocked!
+    assert r2.json()["alerts_triggered"] == 0
+
+
+def test_soar_user_suspension_blocks_logins_and_replays():
+    client.post("/api/reset")
+    target_user = "sarah_security"
+
+    # 1. Suspend the compromised user account via SOAR
+    sus_res = client.post("/api/soar/suspend-user", json={
+        "user_id": target_user,
+        "reason": "Compromised credentials flagged by impossible travel"
+    })
+    assert sus_res.status_code == 200
+    assert sus_res.json()["status"] == "success"
+
+    # 2. Ingestion attempt by this user is rejected with HTTP 403 USER_SUSPENDED
+    ingest_res = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "login_attempt",
+        "user_id": target_user,
+        "ip_address": "103.24.56.12",
+        "location": "Jakarta ID",
+        "status": "success"
+    })
+    assert ingest_res.status_code == 403
+    assert "SUSPENDED" in ingest_res.json()["detail"]
+
+    # 3. Replay Scenario 3: all events belong to sarah_security, so both are blocked!
+    replay_res = client.post("/api/simulator/replay?scenario=3")
+    assert replay_res.status_code == 200
+    assert replay_res.json()["logs_blocked_by_soar"] == 2
+    assert replay_res.json()["alerts_triggered"] == 0
+
+    # 4. Unsuspend the user
+    unsus_res = client.post("/api/soar/unsuspend-user", json={"user_id": target_user})
+    assert unsus_res.status_code == 200
+
+    # 5. Normal login restores
+    restore_res = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "login_attempt",
+        "user_id": target_user,
+        "ip_address": "103.24.56.12",
+        "location": "Jakarta ID",
+        "status": "success"
+    })
+    assert restore_res.status_code == 201
+

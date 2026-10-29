@@ -8,7 +8,8 @@ import json
 
 from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
-    IsolateHostRequest, ReleaseHostRequest
+    IsolateHostRequest, ReleaseHostRequest,
+    SuspendUserRequest, UnsuspendUserRequest
 )
 from app.engine import CorrelationEngine
 from app.log_adapter import LogAdapter
@@ -56,11 +57,21 @@ def get_presentation():
 def ingest_log(event: LogEvent):
     """
     Ingests security event logs with schema & time drift validation.
-    Enforces SOAR Host Containment: drops traffic from quarantined hosts (HTTP 403).
+    Enforces SOAR Active Defense:
+    1. Blocks traffic if user account is suspended (HTTP 403 USER_SUSPENDED).
+    2. Drops traffic if source host is isolated (HTTP 403 HOST_ISOLATED).
     Returns HTTP 201 when accepted, or triggers alerts if correlation rules match.
     Returns HTTP 422 automatically if validation fails.
     """
-    # Gatekeeper SOAR Enforcement: Check if source host is isolated
+    # Gatekeeper SOAR Enforcement 1: Check if user account is suspended
+    if engine.is_user_suspended(event.user_id):
+        engine.record_blocked_containment(event.ip_address)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"SECURITY CONTAINMENT: User account '{event.user_id}' is SUSPENDED by SOC Playbook. Authentication dropped at Gatekeeper."
+        )
+
+    # Gatekeeper SOAR Enforcement 2: Check if source host is isolated
     if engine.is_host_isolated(event.ip_address):
         engine.record_blocked_containment(event.ip_address)
         raise HTTPException(
@@ -229,6 +240,46 @@ def list_soar_audit(limit: int = Query(50, ge=1, le=200)):
     return engine.get_soar_audit_trail()[:limit]
 
 
+@app.post("/api/soar/suspend-user")
+def suspend_user(req: SuspendUserRequest):
+    """
+    SOAR Active Defense: Suspends a compromised user identity.
+    Subsequent logins or actions by this user are immediately dropped at Gatekeeper (HTTP 403).
+    """
+    entry = engine.suspend_user(
+        user_id=req.user_id,
+        reason=req.reason or "Account suspended by SOC Playbook due to identity compromise / impossible travel",
+        analyst=req.analyst or "SOC Analyst Tier-1"
+    )
+    return {
+        "status": "success",
+        "message": f"User account '{req.user_id}' has been SUSPENDED by SOC Playbook.",
+        "data": entry
+    }
+
+
+@app.post("/api/soar/unsuspend-user")
+def unsuspend_user(req: UnsuspendUserRequest):
+    """
+    SOAR Active Defense: Lifts suspension on a user identity.
+    """
+    restored = engine.unsuspend_user(req.user_id, analyst=req.analyst or "SOC Analyst Tier-1")
+    if not restored:
+        raise HTTPException(status_code=404, detail=f"User '{req.user_id}' is not currently suspended.")
+    return {
+        "status": "success",
+        "message": f"User account '{req.user_id}' suspension lifted / restored."
+    }
+
+
+@app.get("/api/soar/suspended-users")
+def list_suspended_users():
+    """
+    Returns list of all currently suspended user accounts.
+    """
+    return engine.get_suspended_users()
+
+
 @app.get("/api/stats")
 def get_stats():
     """
@@ -253,6 +304,7 @@ def get_stats():
         "watchlist_count": len(engine.watchlist),
         "cold_archive_count": len(engine.cold_archive),
         "isolated_hosts_count": len(engine.isolated_hosts),
+        "suspended_users_count": len(engine.suspended_users),
         "blocked_containment_count": engine.blocked_containment_count
     }
 
@@ -376,16 +428,35 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
 
     # Standard scenarios: 1, 2, 3, 4, 5
     all_alerts = []
+    blocked_count = 0
+    accepted_count = 0
+
     for ev in events:
         ev_clean = {k: v for k, v in ev.items() if k in LogEvent.model_fields}
         log_model = LogEvent(**ev_clean)
+
+        # Check if log is blocked by SOAR active containment (isolated host or suspended user)
+        if engine.is_host_isolated(log_model.ip_address) or engine.is_user_suspended(log_model.user_id):
+            engine.record_blocked_containment(log_model.ip_address)
+            blocked_count += 1
+            continue
+
         al = engine.process_log(log_model)
         all_alerts.extend(al)
+        accepted_count += 1
 
     return {
         "scenario": scenario,
         "source_file": source_files.get(scenario, "sample_logs/"),
         "logs_processed": len(events),
+        "logs_accepted": accepted_count,
+        "logs_blocked_by_soar": blocked_count,
+        "soar_containment_active": blocked_count > 0,
         "alerts_triggered": len(all_alerts),
-        "alerts": all_alerts
+        "alerts": all_alerts,
+        "message": (
+            f"SOAR Active Defense dropped {blocked_count} attack log(s) due to active quarantine/suspension."
+            if blocked_count > 0 else None
+        )
     }
+

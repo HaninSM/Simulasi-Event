@@ -5,6 +5,7 @@ const API_BASE = "";
 // State
 let lastAlertIds = new Set();
 let isolatedIpsSet = new Set();
+let suspendedUsersSet = new Set();
 
 // Elements
 const alertList = document.getElementById("alertList");
@@ -15,9 +16,11 @@ const btnReset = document.getElementById("btnReset");
 
 // SOAR Elements
 const valIsolatedCount = document.getElementById("valIsolatedCount");
+const valSuspendedUsersCount = document.getElementById("valSuspendedUsersCount");
 const valBlockedCount = document.getElementById("valBlockedCount");
 const isolatedCountBadge = document.getElementById("isolatedCountBadge");
 const isolatedTableBody = document.getElementById("isolatedTableBody");
+const suspendedUsersTableBody = document.getElementById("suspendedUsersTableBody");
 const isolateForm = document.getElementById("isolateForm");
 const soarAuditList = document.getElementById("soarAuditList");
 
@@ -70,23 +73,43 @@ function renderAlerts(alerts) {
 
     alertList.innerHTML = alerts.map(a => {
         const isCritical = a.severity === "KRITIS";
-        const isContained = a.status === "CONTAINED" || (a.ip_address && isolatedIpsSet.has(a.ip_address));
+        const isHostContained = a.ip_address && isolatedIpsSet.has(a.ip_address);
+        const isUserSuspended = a.user_id && suspendedUsersSet.has(a.user_id);
+        const isContained = a.status === "CONTAINED" || isHostContained || isUserSuspended;
+
         const metaDetails = a.details ? Object.entries(a.details)
             .map(([k, v]) => `<span class="meta-item"><strong>${k}:</strong> ${typeof v === 'object' ? JSON.stringify(v) : v}</span>`)
             .join("") : "";
 
-        let soarActionButton = "";
+        let soarHostButton = "";
         if (a.ip_address) {
-            if (isContained) {
-                soarActionButton = `
+            if (isHostContained) {
+                soarHostButton = `
                     <button class="btn-action-release" onclick="releaseHost('${escapeHtml(a.ip_address)}')">
                         🔓 Release Host
                     </button>
                 `;
             } else {
-                soarActionButton = `
+                soarHostButton = `
                     <button class="btn-action-isolate" onclick="isolateHost('${escapeHtml(a.ip_address)}', 'Containment for alert ${a.id}')">
                         🔒 Isolate Host
+                    </button>
+                `;
+            }
+        }
+
+        let soarUserButton = "";
+        if (a.user_id) {
+            if (isUserSuspended) {
+                soarUserButton = `
+                    <button class="btn-action-release" onclick="unsuspendUser('${escapeHtml(a.user_id)}')">
+                        🔓 Unsuspend User
+                    </button>
+                `;
+            } else {
+                soarUserButton = `
+                    <button class="btn-action-suspend" onclick="suspendUser('${escapeHtml(a.user_id)}', 'Identity lockdown for alert ${a.id}')">
+                        🚫 Suspend User
                     </button>
                 `;
             }
@@ -95,13 +118,15 @@ function renderAlerts(alerts) {
         return `
             <div class="alert-card ${a.severity} ${isContained ? 'CONTAINED' : ''}" id="alert-${a.id}">
                 <div class="alert-header">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                         <span class="alert-badge ${a.severity}">${a.severity}</span>
-                        ${isContained ? `<span class="badge-contained">🔒 CONTAINED</span>` : ""}
+                        ${isHostContained ? `<span class="badge-contained">🔒 HOST ISOLATED</span>` : ""}
+                        ${isUserSuspended ? `<span class="badge-contained" style="border-color:#ef4444; color:#f87171;">🚫 USER SUSPENDED</span>` : ""}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
                         <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
-                        ${soarActionButton}
+                        ${soarHostButton}
+                        ${soarUserButton}
                     </div>
                 </div>
                 <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
@@ -127,11 +152,13 @@ async function fetchStats() {
         if (valWatchlistCount) valWatchlistCount.textContent = stats.watchlist_count || 0;
         if (valColdCount) valColdCount.textContent = stats.cold_archive_count || 0;
         if (valIsolatedCount) valIsolatedCount.textContent = stats.isolated_hosts_count || 0;
+        if (valSuspendedUsersCount) valSuspendedUsersCount.textContent = stats.suspended_users_count || 0;
         if (valBlockedCount) valBlockedCount.textContent = stats.blocked_containment_count || 0;
     } catch (err) {
         console.error("Error fetching stats:", err);
     }
 }
+
 
 
 // 3. Fetch Recent Ingestion Logs
@@ -389,6 +416,102 @@ window.releaseHost = async function(ip) {
     }
 };
 
+// Fetch Suspended Users
+async function fetchSuspendedUsers() {
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/suspended-users`);
+        if (!res.ok) return;
+        const list = await res.json();
+        suspendedUsersSet = new Set(list.map(item => item.user_id));
+        renderSuspendedUsers(list);
+    } catch (err) {
+        console.error("Error fetching suspended users:", err);
+    }
+}
+
+function renderSuspendedUsers(list) {
+    if (!suspendedUsersTableBody) return;
+
+    if (!list || list.length === 0) {
+        suspendedUsersTableBody.innerHTML = `
+            <tr>
+                <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada akun user yang dibekukan</td>
+            </tr>`;
+        return;
+    }
+
+    suspendedUsersTableBody.innerHTML = list.map(item => `
+        <tr>
+            <td><strong style="color: #f87171;">🚫 ${escapeHtml(item.user_id)}</strong></td>
+            <td><span style="font-size: 0.72rem;">${escapeHtml(item.reason || "Account compromised")}</span></td>
+            <td>
+                <button class="btn-action-release" onclick="unsuspendUser('${escapeHtml(item.user_id)}')">
+                    🔓 Unsuspend
+                </button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+// Global Suspend User Action
+window.suspendUser = async function(userId, reason) {
+    const actionReason = reason || prompt(`Alasan pembekuan akun ${userId}:`, "Compromised credentials / impossible travel anomaly");
+    if (!actionReason) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/suspend-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user_id: userId,
+                reason: actionReason,
+                analyst: "SOC Analyst Tier-1"
+            })
+        });
+
+        if (res.ok) {
+            fetchSuspendedUsers();
+            fetchAlerts();
+            fetchStats();
+            fetchSoarAudit();
+        } else {
+            const err = await res.json();
+            alert(`Gagal membekukan akun user: ${JSON.stringify(err.detail || err)}`);
+        }
+    } catch (err) {
+        alert(`Error executing user suspension: ${err.message}`);
+    }
+};
+
+// Global Unsuspend User Action
+window.unsuspendUser = async function(userId) {
+    if (!confirm(`Pulihkan dan aktifkan kembali akun user ${userId}?`)) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/unsuspend-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user_id: userId,
+                analyst: "SOC Analyst Tier-1"
+            })
+        });
+
+        if (res.ok) {
+            fetchSuspendedUsers();
+            fetchAlerts();
+            fetchStats();
+            fetchSoarAudit();
+        } else {
+            const err = await res.json();
+            alert(`Gagal memulihkan akun user: ${JSON.stringify(err.detail || err)}`);
+        }
+    } catch (err) {
+        alert(`Error restoring user account: ${err.message}`);
+    }
+};
+
+
 // Isolate Form Submission
 if (isolateForm) {
     isolateForm.addEventListener("submit", async (e) => {
@@ -413,6 +536,7 @@ btnReset.addEventListener("click", async () => {
             fetchLogs();
             fetchWhitelist();
             fetchIsolatedHosts();
+            fetchSuspendedUsers();
             fetchSoarAudit();
         }
     } catch (err) {
@@ -444,6 +568,7 @@ async function runScenarioFromBrowser(scNum) {
         alertMsg += `Skenario: ${scNum} - ${data.title || "Attack Telemetry"}\n`;
         alertMsg += `Berkas Sumber: ${data.source_file}\n`;
         if (data.logs_processed !== undefined) alertMsg += `Jumlah Log Diproses: ${data.logs_processed}\n`;
+        if (data.logs_blocked_by_soar) alertMsg += `Log Diblokir SOAR (Karantina/Suspensi): ${data.logs_blocked_by_soar}\n`;
         if (data.alerts_triggered !== undefined) alertMsg += `Alarm Dipicu: ${data.alerts_triggered}\n`;
         if (data.message) alertMsg += `\nKeterangan:\n${data.message}`;
 
@@ -463,6 +588,7 @@ async function runScenarioFromBrowser(scNum) {
         fetchLogs();
         fetchWhitelist();
         fetchIsolatedHosts();
+        fetchSuspendedUsers();
         fetchSoarAudit();
     }, 300);
 }
@@ -484,6 +610,7 @@ function pollCycle() {
     fetchStats();
     fetchLogs();
     fetchIsolatedHosts();
+    fetchSuspendedUsers();
     fetchSoarAudit();
 }
 

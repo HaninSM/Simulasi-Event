@@ -55,13 +55,16 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 5. **Data Exfiltration / Insider Threat (Level: KRITIS):** 1 `user_id` melakukan `database_download` > 50 kali dalam rentang 1 menit.
 6. **Advanced Persistent Threat (APT) / Temporal Correlation:** Korelasi jejak *reconnaissance* dari *Cold Storage* yang diaktifkan kembali (*rehydrated*) terhadap *exploit request* di *Hot Storage* menggunakan tabel stateful *Suspicious Greylist/Watchlist*.
 
-### Fitur D: SOAR Active Defense (Host Containment Playbook)
-* **Karantina Jaringan (`POST /api/soar/isolate`):**
+### Fitur D: SOAR Active Defense (Host & Identity Containment Playbook)
+* **Karantina Host Jaringan (`POST /api/soar/isolate`):**
   * Analis dapat mengisolasi host target dengan satu klik langsung dari kartu alert atau panel SOAR.
   * Status alert bertransisi dari `NEW` menjadi `CONTAINED` (animasi kedip darurat dimatikan).
-  * Penindakan dicatat dalam log audit SOAR lengkap dengan stempel waktu, nama analis, dan alasan.
-* **Pemulihan Akses (`POST /api/soar/release`):**
-  * Analis dapat melepas status isolasi setelah ancaman dinetralisir, mengembalikan aliran trafik ke kondisi normal.
+  * Data host yang diisolasi dipurged dari buffer window aktif untuk mencegah ghost correlation.
+* **Pembekuan Akun Pengguna (`POST /api/soar/suspend-user`):**
+  * Analis dapat membekukan akun user yang terkompromi (misalnya user `sarah_security` pada insiden Impossible Travel).
+  * Seluruh aktivitas login lanjutan dari akun tersebut ditolak otomatis di Gatekeeper (**HTTP 403 USER_SUSPENDED**).
+* **Pemulihan Akses (`POST /api/soar/release` & `POST /api/soar/unsuspend-user`):**
+  * Analis dapat melepas status isolasi host atau mengaktifkan kembali akun user setelah ancaman dinetralisir.
 * **Audit Trail Feed (`GET /api/soar/audit`):**
   * Menyajikan riwayat jejak audit eksekusi playbook SOAR untuk akuntabilitas operasional SOC.
 
@@ -89,4 +92,4 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 * **Adapter & Ingestion:** Universal Log Adapter (`app/log_adapter.py`) dengan regex parser multi-format.
 * **Penyimpanan Telemetri:** *In-memory stateful store* (Event cache, Active Alerts, Whitelist, Suspicious Greylist, Isolated Hosts, SOAR Audit Trail).
 * **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, SOAR Active Panel, tanpa dependencies eksternal).
-* **Simulator & Testing:** Python Requests, Pytest test suite (24 automated test cases).
+* **Simulator & Testing:** Python Requests, Pytest test suite (26 automated test cases).
