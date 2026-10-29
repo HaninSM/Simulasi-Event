@@ -18,10 +18,11 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 1. [Spesifikasi Kontrak Data](#-spesifikasi-kontrak-data)
 2. [5 Aturan Mesin Korelasi & Logika APT](#-5-aturan-mesin-korelasi--logika-apt)
 3. [SOAR Active Defense & Host Containment](#-soar-active-defense--host-containment)
-4. [Arsitektur Log Adapter & Berkas Sample Logs](#-arsitektur-log-adapter--berkas-sample-logs)
-5. [Instalasi & Persiapan Lingkungan](#-instalasi--persiapan-lingkungan)
-6. [Menjalankan Server & Dashboard](#-menjalankan-server--dashboard)
-7. [Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 8](#-panduan-step-by-step-menjalankan-poc-skenario-1-sd-8)
+4. [Topologi Penempatan SIEM & Peran Lapisan dalam Ekosistem](#-topologi-penempatan-siem--peran-lapisan-dalam-ekosistem)
+5. [Arsitektur Log Adapter & Matriks 24 Varian Berkas Sample Logs](#-arsitektur-log-adapter--matriks-24-varian-berkas-sample-logs)
+6. [Instalasi & Persiapan Lingkungan](#-instalasi--persiapan-lingkungan)
+7. [Menjalankan Server & Dashboard](#-menjalankan-server--dashboard)
+8. [Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 8](#-panduan-step-by-step-menjalankan-poc-skenario-1-sd-8)
    - [Skenario 1: Trafik Normal (Baseline)](#skenario-1-trafik-normal-baseline)
    - [Skenario 2: DDoS / Botnet Attack (Rule 1 - TINGGI)](#skenario-2-ddos--botnet-attack-rule-1---tinggi)
    - [Skenario 3: Impossible Travel (Rule 2 - KRITIS)](#skenario-3-impossible-travel-rule-2---kritis)
@@ -31,9 +32,9 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
    - [Skenario 7: Data Cacat & Time Drift (Gatekeeper Negative Testing)](#skenario-7-data-cacat--time-drift-gatekeeper-negative-testing)
    - [Skenario 8: The Low & Slow APT (Hot vs Cold Storage & Greylist Demo)](#skenario-8-the-low--slow-apt-hot-vs-cold-storage--greylist-demo)
    - [Demo SOAR: Host Isolation & Active Traffic Dropping](#demo-soar-host-isolation--active-traffic-dropping)
-8. [Otomasi Pengujian (Automated Unit & Integration Tests - 24 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---24-passed)
-9. [Daftar Endpoint API SIEM & SOAR](#-daftar-endpoint-api-siem--soar)
-10. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
+9. [Otomasi Pengujian (Automated Unit & Integration Tests - 26 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---26-passed)
+10. [Daftar Endpoint API SIEM & SOAR](#-daftar-endpoint-api-siem--soar)
+11. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
 
 ---
 
@@ -78,6 +79,116 @@ Mini-SIEM mengintegrasikan kapabilitas **SOAR (Security Orchestration, Automatio
 3. **Audit Trail & Recovery:**
    * Setiap penindakan dicatat dalam riwayat audit SOAR (`GET /api/soar/audit`).
    * Host dapat dilepaskan dari karantina melalui tombol **"🔓 Release Host"** (`POST /api/soar/release`) setelah proses remediasi selesai.
+
+---
+
+## 🌐 Topologi Penempatan SIEM & Peran Lapisan dalam Ekosistem
+Dalam arsitektur enterprise modern, **SIEM (Security Information and Event Management)** diposisikan pada **Control Plane / Management Zone (Out-of-Band)**, bukan berada di jalur data (*inline data path*). Pola ini diterapkan agar SIEM dapat memantau seluruh telemetri aplikasi tanpa membebani performa (*zero latency penalty*) pada lalu lintas pengguna. Di sisi lain, modul **SOAR (Security Orchestration, Automation, and Response)** bertindak sebagai jembatan aksi balik (*feedback loop*) dari SIEM ke infrastruktur jaringan dan identitas.
+
+### Diagram Topologi Arsitektur SIEM di Antara Aplikasi
+
+```mermaid
+flowchart TD
+    subgraph DataPlane["1. DATA & APPLICATION PLANE (Sumber Telemetri)"]
+        direction TB
+        subgraph WebTier["Perimeter & Web Layer"]
+            WAF["WAF / Reverse Proxy\n(Nginx / Cloudflare)"]
+            WEB["Web & API Servers\n(Node.js, FastAPI, Java)"]
+        end
+
+        subgraph AccessTier["Identity & Physical Access"]
+            GATE["Hardware Gate\n(RFID Access Reader)"]
+            VPN["VPN Gateway\n(WireGuard / OpenVPN)"]
+            IAM["IdP / Directory\n(Active Directory / Keycloak)"]
+        end
+
+        subgraph HostTier["Compute & Database Layer"]
+            LINUX["Linux / K8s Nodes\n(SSH, Kernel Audit)"]
+            DB["Database Cluster\n(PostgreSQL PGAudit)"]
+            IOT["IoT / Network Devices\n(Routers, SCADA, Switch)"]
+        end
+    end
+
+    subgraph CollectorTier["2. TELEMETRY AGGREGATION & SHIPPING"]
+        FWD["Log Forwarders & Shippers\n(Vector, Fluentbit, Rsyslog, Promtail)"]
+    end
+
+    subgraph SiemZone["3. SECURITY MANAGEMENT ZONE (SIEM Core)"]
+        direction TB
+        GK["Gatekeeper & Validator\n(Schema Check, IPv4, Time Drift Sanity)"]
+        ENG["Rule Correlation Engine\n(Stateful Sliding Windows)"]
+        
+        subgraph StateTables["Active State Memory"]
+            WL["IP Whitelist"]
+            GL["Greylist / Watchlist"]
+            ISO["Isolated Hosts"]
+            SUS["Suspended Users"]
+        end
+
+        subgraph StorageTier["Tiered Storage"]
+            HOT["Hot Storage (In-Memory / Elastic)\nRetensi 7-14 Hari untuk Korelasi Real-time"]
+            COLD["Cold Storage (S3 / Parquet Archive)\nRetensi 1-3 Tahun & Rehydration"]
+        end
+    end
+
+    subgraph SocTier["4. SOC OPERATIONS & DASHBOARD"]
+        DASH["Live SOC Dashboard\n(Command Center UI)"]
+        TIER1["SOC Analysts\n(Triage & Incident Response)"]
+    end
+
+    subgraph SoarTier["5. SOAR ACTIVE DEFENSE (Feedback Loop)"]
+        SOAR["SOAR Execution Engine\n(Playbooks & Containment)"]
+    end
+
+    %% Ingestion Pipeline
+    WebTier -->|Access Logs via Syslog/HTTPS| FWD
+    AccessTier -->|Auth Events via Webhook/Syslog| FWD
+    HostTier -->|PGAudit, auth.log, Metrics| FWD
+    FWD -->|Buffered JSON / HTTPS POST| GK
+
+    GK --> ENG
+    ENG <--> StateTables
+    ENG --> HOT
+    HOT -.->|Rotasi Log > 14 Hari| COLD
+    COLD -.->|Rehidrasi Investigasi Forensik| HOT
+
+    %% Monitoring Pipeline
+    ENG -->|Push / Poll Alerts| DASH
+    DASH <--> TIER1
+
+    %% Active Response Pipeline
+    TIER1 -->|Trigger Isolate / Suspend| SOAR
+    SOAR -.->|1. Drop Traffic / IP Block| WAF
+    SOAR -.->|2. Revoke Session / Lock Account| IAM
+    SOAR -.->|3. Host Isolation| LINUX
+```
+
+### Peran Masing-Masing Lapisan dalam Ekosistem
+
+1. **Data & Application Plane (Lalu Lintas Produksi)**
+   * **Perimeter Web (Nginx/WAF):** Menghasilkan log *HTTP request*, kode status, dan IP klien. Pada skenario serangan L7 DDoS, titik ini menjadi target banjir trafik.
+   * **Identity & Physical Access (RFID & VPN):** Menghasilkan telemetri otentikasi. Data perpindahan lokasi fisik dan login VPN masuk dari lapisan ini untuk mendeteksi anomali *Impossible Travel*.
+   * **Host & Database (Linux SSH, PostgreSQL):** Menghasilkan log autentikasi sistem (`/var/log/auth.log`) dan audit query (`pgaudit`). Titik ini memunculkan anomali *Distributed Brute Force* serta *Data Exfiltration*.
+
+2. **Telemetry Aggregation & Shipping Layer (Log Forwarder)**
+   Aplikasi produksi tidak disarankan mengirim log langsung satu per satu ke database SIEM. Diperlukan agen pengumpul ringan (*lightweight shipper*) seperti **Vector**, **Fluentbit**, atau **Rsyslog**:
+   * Menjalankan *buffering* lokal saat koneksi ke SIEM terganggu, mencegah data log hilang.
+   * Menjalankan *pre-filtering* atau masking data sensitif (seperti nomor kartu kredit atau kata sandi) sebelum masuk ke SIEM.
+
+3. **Security Management Zone (Inti SIEM)**
+   Zona terisolasi yang hanya dapat diakses oleh tim keamanan informasi:
+   * **Gatekeeper (Validasi Skema):** Memastikan format data canonical, mencegah data cacat (*corrupted payload*) merusak mesin analisa, dan menolak anomali *time drift*.
+   * **Correlation Engine:** Menghitung window waktu (*sliding window*) untuk mengaitkan log dari berbagai sumber berbeda (contoh: korelasi antara pintu kantor fisik Jakarta dan koneksi VPN Frankfurt).
+   * **Tiered Storage (Hot vs Cold):** Data panas (*Hot*) disimpan di memori/indeks cepat untuk deteksi ancaman berjalan; data dingin (*Cold*) dialihkan ke penyimpanan terkompresi berbiaya rendah untuk kepatuhan regulasi, dengan opsi *rehidrasi forensik* saat investigasi *Low & Slow APT*.
+
+4. **SOC Operations Layer (Command Center UI)**
+   Dashboard terpusat yang memvisualisasikan matriks insiden, status keparahan (*Low*, *Medium*, *High*, *Critical*), serta menyediakan tombol kendali aksi langsung bagi analis keamanan.
+
+5. **SOAR Active Defense Layer (Feedback Loop)**
+   Kelemahan SIEM tradisional adalah hanya berfungsi sebagai perekam pasif. Pada arsitektur ini, SOAR bertindak sebagai tangan eksekutor aktif:
+   * **Ke WAF / Firewall:** Mengirimkan aturan blokir IP otomatis saat alarm DDoS atau *Careless Whitelisting* berhasil diidentifikasi.
+   * **Ke IAM / Active Directory:** Membekukan akun pengguna yang terindikasi dicuri kredensialnya sebelum data dieksfiltrasi lebih jauh.
+   * **Ke Host / Endpoint:** Memerintahkan isolasi kartu jaringan (*network containment*) pada mesin yang menunjukkan aktivitas kompromi.
 
 ---
 
