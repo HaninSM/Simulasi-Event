@@ -878,7 +878,8 @@
                         <span class="card-tag">BASELINE</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>🏢 Telemetri Sistem & Akses:</strong>
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/web_access_normal.log</code> (Nginx/Apache Combined Log)<br>
+                        <strong>🏢 Telemetri Sistem &amp; Akses:</strong>
                         Pemindaian RFID pada turnstile gerbang diverifikasi kontrol akses, mencatat log kehadiran, memicu pemanggilan lift, dan mengotorisasi workstation pengguna. Seluruh aktivitas berada dalam parameter operasional wajar.
                     </div>
                     <div class="box-highlight box-siem">
@@ -898,7 +899,8 @@
                         <span class="card-tag">RULE 1 - TINGGI</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>🚗 Telemetri Sistem & Akses:</strong>
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/nginx_ddos_flood.log</code> (Nginx Access Log)<br>
+                        <strong>🚗 Telemetri Sistem &amp; Akses:</strong>
                         Lonjakan volume request abnormal ditembakkan secara berulang ke endpoint API autentikasi dan gerbang akses, membebani thread pemrosesan server target dalam jendela waktu singkat.
                     </div>
                     <div class="box-highlight box-siem">
@@ -918,7 +920,8 @@
                         <span class="card-tag">RULE 2 - KRITIS</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>✈️ Telemetri Sistem & Akses:</strong>
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/vpn_and_gate_access.csv</code> (RFID Pintu + VPN Audit)<br>
+                        <strong>✈️ Telemetri Sistem &amp; Akses:</strong>
                         Pukul 09:00 WIB, kredensial pengguna 'sarah' diautentikasi di turnstile gerbang Jakarta. Pukul 09:01 WIB, kredensial yang sama digunakan untuk mengakses VPN korporat dari IP Frankfurt. Perbedaan geografis 11.000 km dalam 60 detik mengindikasikan anomali fisik.
                     </div>
                     <div class="box-highlight box-siem">
@@ -949,6 +952,7 @@
                         <span class="card-tag">RULE 3 - TINGGI</span>
                     </div>
                     <div class="box-highlight box-story">
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/auth_sshd_bruteforce.log</code> (Linux /var/log/auth.log Syslog)<br>
                         <strong>🔐 Pola Serangan Terdistribusi:</strong>
                         Penyerang mendistribusikan percobaan autentikasi ke satu akun target melalui 5 proxy IP berbeda secara bergantian untuk menghindari batasan frekuensi IP tunggal.
                     </div>
@@ -969,6 +973,7 @@
                         <span class="card-tag">RULE 5 - KRITIS</span>
                     </div>
                     <div class="box-highlight box-story">
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/postgres_audit_exfiltration.jsonl</code> (PostgreSQL PGAudit Log)<br>
                         <strong>💾 Pola Eksfiltrasi Internal:</strong>
                         Akun internal mengeksekusi query database massal secara berulang dalam durasi singkat, memicu pemindahan volume data anomali ke luar repositori resmi.
                     </div>
@@ -989,6 +994,7 @@
                         <span class="card-tag">FATAL ERROR / BLIND SPOT</span>
                     </div>
                     <div class="box-highlight box-story">
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/careless_whitelist_attack.log</code> (Nginx Access Log)<br>
                         <strong>⚠️ Kegagalan Tata Kelola Whitelist:</strong>
                         Analis menambahkan subnet mencurigakan ke dalam whitelist pengecualian tanpa tinjauan berkala. Akibatnya, serangan DDoS berikutnya dari IP tersebut tidak memicu mekanisme deteksi.
                     </div>
@@ -1009,7 +1015,8 @@
                         <span class="card-tag">GATEKEEPER NEGATIVE TEST</span>
                     </div>
                     <div class="box-highlight box-story">
-                        <strong>⏳ Integritas Payload & Telemetri:</strong>
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/legacy_corrupted_device.log</code> (Malformed &amp; Drift Payload)<br>
+                        <strong>⏳ Integritas Payload &amp; Telemetri:</strong>
                         Telemetri log dikirim dengan skema rusak akibat desinkronisasi jam perangkat (time drift) atau field mandatori yang hilang pada pengirim log.
                     </div>
                     <div class="box-highlight box-siem">
@@ -1047,6 +1054,9 @@
                         &bull; <strong>Tanggal 1:</strong> Penyerang mengeksekusi <em>Reconnaissance Probe</em> untuk mengidentifikasi celah kerentanan sistem.<br>
                         &bull; Mengetahui batas retensi aktif SIEM, penyerang <strong>menghentikan aktivitas selama 19 hari</strong>.<br>
                         &bull; <strong>Tanggal 20:</strong> Penyerang melancarkan serangan eksploitasi terarah berdasarkan hasil recon Tanggal 1.
+                    </p>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <strong>📁 Berkas Sumber:</strong> <code class="pres-code" style="font-size:0.75rem;">sample_logs/apt_recon_and_exploit.log</code> (Telemetri Recon Stage 1 &amp; Exploit Stage 2)
                     </p>
                     <div class="box-highlight box-danger" style="margin-top: 0.75rem;">
                         <strong>❓ Evaluasi Arsitektur:</strong> Saat serangan terjadi di Tanggal 20, apakah SIEM konvensional mampu mengorelasikan aktivitas ini dengan Recon Tanggal 1?

@@ -1,0 +1,6 @@
+{"test_case": "null_ip", "raw_payload": {"timestamp": "2026-10-29T13:00:00Z", "event_type": "web_request", "user_id": "legacy_server_bug_01", "ip_address": null, "location": "Server Room A", "status": "success"}}
+{"test_case": "truncated_json", "raw_payload": "{\"timestamp\": \"2026-10-20T03:00:00Z\", \"event_type\": \"web_request\", \"user_id\": \"legacy_server"}
+{"test_case": "missing_ip", "raw_payload": {"timestamp": "2026-10-29T13:00:00Z", "event_type": "web_request", "user_id": "legacy_server_bug_02", "location": "Server Room B", "status": "success"}}
+{"test_case": "invalid_ip_format", "raw_payload": {"timestamp": "2026-10-29T13:00:00Z", "event_type": "web_request", "user_id": "test_user", "ip_address": "999.999.999.999", "location": "Jakarta", "status": "success"}}
+{"test_case": "cmos_1970", "raw_payload": {"timestamp": "1970-01-01T00:00:00Z", "event_type": "login_attempt", "user_id": "hrd_staff_budi", "ip_address": "192.168.1.50", "location": "Kantor HRD", "status": "success"}}
+{"test_case": "future_time_drift", "raw_payload": {"timestamp": "2027-10-29T13:00:00Z", "event_type": "login_attempt", "user_id": "future_sender", "ip_address": "192.168.1.50", "location": "Jakarta", "status": "success"}}

@@ -10,6 +10,8 @@ import argparse
 from datetime import datetime, timezone, timedelta
 import requests
 
+from app.log_adapter import LogAdapter
+
 # Ensure UTF-8 output on Windows terminal
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     try:
@@ -64,148 +66,103 @@ def fetch_alerts(api_base):
 # ---------------- SCENARIO 1: TRAFIK NORMAL ----------------
 def scenario_1_normal_traffic(api_base):
     print(f"\n{BOLD}{CYAN}>>> Skenario 1: Trafik Normal (Karyawan bekerja normal){RESET}")
-    print("Mengirimkan event web_request dan login_attempt wajar...")
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/web_access_normal.log (Nginx/Apache Combined Log){RESET}")
+    events = LogAdapter.load_scenario_from_file(1)
+    print(f"  Memproses {len(events)} entri log wajar dari berkas fisik...")
 
-    employees = [
-        {"user": "alice_hr", "ip": "192.168.1.101", "type": "login_attempt"},
-        {"user": "bob_eng", "ip": "192.168.1.102", "type": "web_request"},
-        {"user": "charlie_sales", "ip": "192.168.1.103", "type": "web_request"},
-        {"user": "alice_hr", "ip": "192.168.1.101", "type": "web_request"},
-    ]
-
-    for emp in employees:
-        payload = {
-            "timestamp": get_current_utc_iso(),
-            "event_type": emp["type"],
-            "user_id": emp["user"],
-            "ip_address": emp["ip"],
-            "location": "Jakarta, ID",
-            "status": "success"
-        }
+    for emp in events:
+        payload = {k: v for k, v in emp.items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
         res = post_log(api_base, payload)
         if res:
-            print(f"  [+] Log {emp['user']} ({emp['type']}) -> HTTP {res.status_code}")
-        time.sleep(0.3)
+            raw = emp.get("raw_line", "")
+            raw_preview = f" [{raw[:55]}...]" if raw else ""
+            print(f"  [+] Log {emp['user_id']} ({emp['event_type']}) -> HTTP {res.status_code}{raw_preview}")
+        time.sleep(0.2)
 
     alerts = fetch_alerts(api_base)
-    print(f"{GREEN}[OK] Hasil Skenario 1: Trafik diterima dengan baik. Tidak ada alarm palsu triggered.{RESET}")
+    print(f"{GREEN}[OK] Hasil Skenario 1: Trafik riil dari file log berhasil diproses. Tidak ada alarm palsu triggered.{RESET}")
 
 
 # ---------------- SCENARIO 2: DDOS ATTACK ----------------
 def scenario_2_ddos_attack(api_base):
     print(f"\n{BOLD}{YELLOW}>>> Skenario 2: DDoS / Botnet Attack (Memicu Rule 1){RESET}")
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/nginx_ddos_flood.log (Nginx Access Log HTTP Flood){RESET}")
+    events = LogAdapter.load_scenario_from_file(2)
     print("Kriteria Rule 1: > 10 web_request dari 1 IP yang sama dalam 10 detik.")
-    attacker_ip = "45.33.32.156"
-    print(f"Mengirim rentetan request agresif dari IP target: {attacker_ip}...")
+    print(f"Memproses {len(events)} rentetan request agresif dari berkas log...")
 
-    total_sent = 15
-    for i in range(1, total_sent + 1):
-        payload = {
-            "timestamp": get_current_utc_iso(),
-            "event_type": "web_request",
-            "user_id": f"botnet_agent_{i}",
-            "ip_address": attacker_ip,
-            "location": "Unknown",
-            "status": "success"
-        }
+    for i, emp in enumerate(events, start=1):
+        payload = {k: v for k, v in emp.items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
         res = post_log(api_base, payload)
         if res and res.status_code == 201:
             data = res.json()
             if data.get("alerts_triggered", 0) > 0:
-                print(f"  {RED}[!] Request #{i}: SIEM memicu {data['alerts_triggered']} ALARM DDoS (Level: TINGGI)!{RESET}")
+                print(f"  {RED}[!] Request #{i} ({emp['ip_address']}): SIEM memicu {data['alerts_triggered']} ALARM DDoS (Level: TINGGI)!{RESET}")
             else:
                 print(f"  [+] Request #{i} terkirim...")
         time.sleep(0.08)
 
-    print(f"{GREEN}[OK] Hasil Skenario 2: Rule 1 (DDoS / Botnet) terdeteksi dan tercatat di dashboard.{RESET}")
+    print(f"{GREEN}[OK] Hasil Skenario 2: Rule 1 (DDoS / Botnet) terdeteksi dari berkas log riil dan tercatat di dashboard.{RESET}")
 
 
 # ---------------- SCENARIO 3: IMPOSSIBLE TRAVEL ----------------
 def scenario_3_impossible_travel(api_base):
     print(f"\n{BOLD}{RED}>>> Skenario 3: Impossible Travel (Memicu Rule 2){RESET}")
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/vpn_and_gate_access.csv (Physical Access Gate RFID + VPN Audit){RESET}")
+    events = LogAdapter.load_scenario_from_file(3)
     print("Kriteria Rule 2: 2 login_attempt sukses user yang sama di lokasi berbeda dalam < 1 jam.")
-    target_user = "sarah_security"
 
-    # Login 1: Jakarta, Indonesia
-    payload_1 = {
-        "timestamp": get_current_utc_iso(),
-        "event_type": "login_attempt",
-        "user_id": target_user,
-        "ip_address": "103.24.56.12",
-        "location": "Jakarta, ID",
-        "status": "success"
-    }
-    print(f"  [1] Login Sukses User '{target_user}' dari Jakarta, ID...")
-    post_log(api_base, payload_1)
-    time.sleep(1)
+    if len(events) >= 2:
+        # Event 1: Jakarta
+        p1 = {k: v for k, v in events[0].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
+        print(f"  [1] Event Hardware: Akses Pintu Fisik User '{p1['user_id']}' di {p1['location']} ({p1['ip_address']})...")
+        post_log(api_base, p1)
+        time.sleep(1)
 
-    # Login 2: Frankfurt, Germany (hanya berselang beberapa detik)
-    payload_2 = {
-        "timestamp": get_current_utc_iso(),
-        "event_type": "login_attempt",
-        "user_id": target_user,
-        "ip_address": "185.190.140.2",
-        "location": "Frankfurt, DE",
-        "status": "success"
-    }
-    print(f"  [2] Login Sukses User '{target_user}' dari Frankfurt, DE (selang 1 detik)...")
-    res = post_log(api_base, payload_2)
-    if res and res.status_code == 201:
-        data = res.json()
-        print(f"  {RED}[!] ALARM KRITIS TERCATAT: {data.get('alerts_triggered')} alarm dipicu! (Impossible Travel){RESET}")
+        # Event 2: Frankfurt
+        p2 = {k: v for k, v in events[1].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
+        print(f"  [2] Event Jaringan: Login VPN User '{p2['user_id']}' dari {p2['location']} ({p2['ip_address']}) selang 1 detik...")
+        res = post_log(api_base, p2)
+        if res and res.status_code == 201:
+            data = res.json()
+            print(f"  {RED}[!] ALARM KRITIS TERCATAT: {data.get('alerts_triggered')} alarm dipicu! (Impossible Travel){RESET}")
 
-    print(f"{GREEN}[OK] Hasil Skenario 3: Rule 2 (Impossible Travel) berhasil dideteksi dengan level KRITIS.{RESET}")
+    print(f"{GREEN}[OK] Hasil Skenario 3: Rule 2 (Impossible Travel) berhasil dideteksi dari berkas CSV multi-sumber.{RESET}")
 
 
 # ---------------- SCENARIO 4: DISTRIBUTED BRUTE FORCE ----------------
 def scenario_4_distributed_brute_force(api_base):
     print(f"\n{BOLD}{YELLOW}>>> Skenario 4: Distributed Brute Force (Memicu Rule 3){RESET}")
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/auth_sshd_bruteforce.log (Linux /var/log/auth.log Syslog){RESET}")
+    events = LogAdapter.load_scenario_from_file(4)
     print("Kriteria Rule 3: > 5 login gagal untuk 1 user dari > 3 IP berbeda dalam 1 menit.")
-    target_user = "admin_vault"
-    ips = ["198.51.100.11", "198.51.100.12", "198.51.100.13", "198.51.100.14", "198.51.100.15"]
+    print(f"Memproses {len(events)} entri kegagalan SSH autentikasi terdistribusi...")
 
-    for i, ip in enumerate(ips * 2, start=1):
-        if i > 8:
-            break
-        payload = {
-            "timestamp": get_current_utc_iso(),
-            "event_type": "login_attempt",
-            "user_id": target_user,
-            "ip_address": ip,
-            "location": f"Tor Node {ip}",
-            "status": "failed"
-        }
+    for i, emp in enumerate(events, start=1):
+        payload = {k: v for k, v in emp.items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
         res = post_log(api_base, payload)
         if res and res.status_code == 201:
             data = res.json()
             if data.get("alerts_triggered", 0) > 0:
-                print(f"  {RED}[!] Percobaan #{i} dari {ip}: ALARM TINGGI Distributed Brute Force terpicu!{RESET}")
+                print(f"  {RED}[!] Percobaan #{i} dari {payload['ip_address']}: ALARM TINGGI Distributed Brute Force terpicu!{RESET}")
             else:
-                print(f"  [-] Percobaan #{i} dari {ip}: Login gagal tercatat...")
-        time.sleep(0.15)
+                print(f"  [-] Percobaan #{i} dari {payload['ip_address']}: Login gagal tercatat...")
+        time.sleep(0.12)
 
-    print(f"{GREEN}[OK] Hasil Skenario 4: Rule 3 (Distributed Brute Force) berhasil ditangkap.{RESET}")
+    print(f"{GREEN}[OK] Hasil Skenario 4: Rule 3 (Distributed Brute Force) berhasil ditangkap dari file auth.log riil.{RESET}")
 
 
 # ---------------- SCENARIO 5: DATA EXFILTRATION ----------------
 def scenario_5_data_exfiltration(api_base):
     print(f"\n{BOLD}{RED}>>> Skenario 5: Data Exfiltration / Insider Threat (Memicu Rule 5){RESET}")
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/postgres_audit_exfiltration.jsonl (PostgreSQL PGAudit Log){RESET}")
+    events = LogAdapter.load_scenario_from_file(5)
     print("Kriteria Rule 5: 1 user melakukan database_download > 50 kali dalam 1 menit.")
-    insider = "rogue_dev_alex"
-    insider_ip = "10.0.8.21"
-
-    print(f"Mengirim 55 unduhan database massal oleh '{insider}'...")
+    print(f"Memproses {len(events)} unduhan database massal dari log audit SQL...")
     alert_triggered = False
 
-    for i in range(1, 56):
-        payload = {
-            "timestamp": get_current_utc_iso(),
-            "event_type": "database_download",
-            "user_id": insider,
-            "ip_address": insider_ip,
-            "location": "Internal Office",
-            "status": "success"
-        }
+    for i, emp in enumerate(events, start=1):
+        payload = {k: v for k, v in emp.items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
         res = post_log(api_base, payload)
         if res and res.status_code == 201:
             data = res.json()
@@ -214,13 +171,15 @@ def scenario_5_data_exfiltration(api_base):
                 alert_triggered = True
         time.sleep(0.04)
 
-    print(f"{GREEN}[OK] Hasil Skenario 5: Rule 5 (Data Exfiltration) berhasil mendeteksi ancaman orang dalam.{RESET}")
+    print(f"{GREEN}[OK] Hasil Skenario 5: Rule 5 (Data Exfiltration) berhasil mendeteksi ancaman dari file PGAudit.{RESET}")
 
 
 # ---------------- SCENARIO 6: CARELESS WHITELISTING ----------------
 def scenario_6_careless_whitelisting(api_base):
     print(f"\n{BOLD}{CYAN}>>> Skenario 6: Careless Whitelisting (Fatal Error / Blind Spot Demo){RESET}")
-    attacker_ip = "203.0.113.88"
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/careless_whitelist_attack.log (Nginx Web Attack Log){RESET}")
+    events = LogAdapter.load_scenario_from_file(6)
+    attacker_ip = events[0]["ip_address"] if events else "203.0.113.88"
     print(f"1. Memasukkan IP {attacker_ip} ke Whitelist SIEM (dalih: IP VIP/Vendor)...")
 
     # POST to /api/whitelist
@@ -232,23 +191,16 @@ def scenario_6_careless_whitelisting(api_base):
     if w_res.status_code in [200, 201]:
         print(f"  {GREEN}[+] IP {attacker_ip} sekarang resmi di-whitelist.{RESET}")
 
-    print(f"2. Hacker sekarang menyerang melalui IP {attacker_ip} (mengirim rentetan serangan DDoS)...")
+    print(f"2. Memproses {len(events)} request serangan melalui IP {attacker_ip}...")
     alerts_count = 0
-    for i in range(15):
-        payload = {
-            "timestamp": get_current_utc_iso(),
-            "event_type": "web_request",
-            "user_id": "covert_attacker",
-            "ip_address": attacker_ip,
-            "location": "Unknown",
-            "status": "success"
-        }
+    for emp in events:
+        payload = {k: v for k, v in emp.items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
         res = post_log(api_base, payload)
         if res and res.status_code == 201:
             alerts_count += res.json().get("alerts_triggered", 0)
 
     print(f"\n  {YELLOW}Hasil Pengecekan Mesin Korelasi:{RESET}")
-    print(f"  Total Serangan Terkirim: 15 request cepat")
+    print(f"  Total Serangan Terkirim: {len(events)} request cepat dari file log")
     print(f"  Total Alarm yang Dipicu SIEM: {BOLD}{alerts_count}{RESET} alarm")
     print(f"  {RED}[FATAL ERROR CONFIRMED] Mesin Korelasi sepenuhnya BUTA karena IP di-whitelist!{RESET}")
     print(f"{GREEN}[OK] Skenario 6 berhasil mendemonstrasikan bahaya Careless Whitelisting.{RESET}")
@@ -257,109 +209,29 @@ def scenario_6_careless_whitelisting(api_base):
 # ---------------- SCENARIO 7: DATA CACAT / TIME DRIFT ----------------
 def scenario_7_corrupted_data_and_time_drift(api_base):
     print(f"\n{BOLD}{RED}>>> Skenario 7: Malformed Log (Format Cacat/Hilang) & Time Drift{RESET}")
-    print("Masalah: Server lama mengalami bug / koneksi putus, mengirim log tanpa atribut penting atau JSON rusak.")
-    print("Tantangan: Jika SIEM tidak memiliki schema validator, backend akan crash saat membaca log.ip_address.")
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/legacy_corrupted_device.log (Legacy Corrupted Telemetry){RESET}")
+    print("Masalah: Perangkat legacy mengirim log tanpa atribut penting, JSON terpotong, atau stempel waktu rusak.")
     print("Penanganan: Lapisan Validasi Skema (Gatekeeper) menolak log dengan HTTP 422, SIEM tetap berjalan normal.")
 
     url = f"{api_base}/api/ingest"
     all_passed = True
+    test_items = LogAdapter.load_scenario_from_file(7)
 
-    # Test 1: ip_address: null
-    print(f"\n  [Test 1] Server lama mengirim log dengan 'ip_address: null'...")
-    res1 = requests.post(url, json={
-        "timestamp": get_current_utc_iso(),
-        "event_type": "web_request",
-        "user_id": "legacy_server_bug_01",
-        "ip_address": None,
-        "location": "Server Room A",
-        "status": "success"
-    }, timeout=5)
-    if res1.status_code == 422:
-        print(f"  {GREEN}[PASS] Log dengan ip_address: null -> HTTP 422 (Ditolak / Dropped Aman){RESET}")
-    else:
-        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res1.status_code}{RESET}")
-        all_passed = False
+    for i, item in enumerate(test_items, start=1):
+        tc = item.get("test_case")
+        raw = item.get("raw_payload")
+        print(f"\n  [Uji {i}] Kasus Uji: {tc}...")
 
-    # Test 2: JSON terpotong / malformed syntax (jaringan putus di tengah jalan)
-    print(f"\n  [Test 2] Koneksi terputus di tengah pengiriman (JSON terpotong / sintaks rusak)...")
-    res2 = requests.post(
-        url,
-        data='{"timestamp": "2026-10-20T03:00:00Z", "event_type": "web_request", "user_id": "legacy_server',
-        headers={"Content-Type": "application/json"},
-        timeout=5
-    )
-    if res2.status_code == 422:
-        print(f"  {GREEN}[PASS] JSON Terpotong/Cacat -> HTTP 422 (Ditolak Parser Gatekeeper){RESET}")
-    else:
-        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res2.status_code}{RESET}")
-        all_passed = False
+        if tc == "truncated_json":
+            res = requests.post(url, data=raw, headers={"Content-Type": "application/json"}, timeout=5)
+        else:
+            res = requests.post(url, json=raw, timeout=5)
 
-    # Test 3: Missing attribute 'ip_address' completely
-    print(f"\n  [Test 3] Log tanpa key 'ip_address' sama sekali...")
-    res3 = requests.post(url, json={
-        "timestamp": get_current_utc_iso(),
-        "event_type": "web_request",
-        "user_id": "legacy_server_bug_02",
-        "location": "Server Room B",
-        "status": "success"
-    }, timeout=5)
-    if res3.status_code == 422:
-        print(f"  {GREEN}[PASS] Atribut ip_address Hilang -> HTTP 422 (Ditolak Gatekeeper){RESET}")
-    else:
-        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res3.status_code}{RESET}")
-        all_passed = False
-
-    # Test 4: Format IP bukan IPv4 valid
-    print(f"\n  [Test 4] Format IP bukan IPv4 ('999.999.999.999')...")
-    res4 = requests.post(url, json={
-        "timestamp": get_current_utc_iso(),
-        "event_type": "web_request",
-        "user_id": "test_user",
-        "ip_address": "999.999.999.999",
-        "location": "Jakarta",
-        "status": "success"
-    }, timeout=5)
-    if res4.status_code == 422:
-        print(f"  {GREEN}[PASS] Format IP Salah -> HTTP 422 (Ditolak Gatekeeper){RESET}")
-    else:
-        print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res4.status_code}{RESET}")
-        all_passed = False
-
-    # Test 5: Skenario Negatif Time Drift - Baterai CMOS Server HRD habis (Reset ke 1970)
-    print(f"\n  [Test 5] Skenario Negatif Time Drift: Baterai CMOS Server HRD habis...")
-    print(f"           Jam server me-reset ke tahun 1970 (timestamp='1970-01-01T00:00:00Z').")
-    print(f"           Tantangan: Log kuno ini berpotensi merusak windowing korelasi waktu SIEM.")
-    res5 = requests.post(url, json={
-        "timestamp": "1970-01-01T00:00:00Z",
-        "event_type": "login_attempt",
-        "user_id": "hrd_staff_budi",
-        "ip_address": "192.168.1.50",
-        "location": "Kantor HRD",
-        "status": "success"
-    }, timeout=5)
-    if res5.status_code == 422 and "Time Drift Error" in res5.text:
-        print(f"  {GREEN}[PASS] Log 1970 Ditolak Gatekeeper -> HTTP 422 ('Time Drift Error'){RESET}")
-        print(f"         Mesin korelasi terlindungi dari distorsi data waktu lampau.")
-    else:
-        print(f"  {RED}[FAIL] Expected HTTP 422 Time Drift, got HTTP {res5.status_code}{RESET}")
-        all_passed = False
-
-    # Test 6: Skenario Negatif Time Drift - Jam Server Mengalami NTP Drift ke Masa Depan (+1 Tahun)
-    print(f"\n  [Test 6] Skenario Negatif Time Drift: NTP Desinkronisasi ke Masa Depan (+1 Tahun)...")
-    future_time = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
-    res6 = requests.post(url, json={
-        "timestamp": future_time,
-        "event_type": "login_attempt",
-        "user_id": "future_sender",
-        "ip_address": "192.168.1.50",
-        "location": "Jakarta",
-        "status": "success"
-    }, timeout=5)
-    if res6.status_code == 422 and "Time Drift Error" in res6.text:
-        print(f"  {GREEN}[PASS] Timestamp Masa Depan -> HTTP 422 ('Time Drift Error' Ditolak){RESET}")
-    else:
-        print(f"  {RED}[FAIL] Expected HTTP 422 Time Drift, got HTTP {res6.status_code}{RESET}")
-        all_passed = False
+        if res.status_code == 422:
+            print(f"  {GREEN}[PASS] {tc} -> HTTP 422 (Ditolak Aman oleh Gatekeeper){RESET}")
+        else:
+            print(f"  {RED}[FAIL] Expected HTTP 422, got HTTP {res.status_code}{RESET}")
+            all_passed = False
 
     # Check if SIEM backend is still alive and didn't crash
     print(f"\n  [Health Check] Memeriksa status kesehatan backend SIEM...")
@@ -377,20 +249,14 @@ def scenario_7_corrupted_data_and_time_drift(api_base):
 # ---------------- SCENARIO 8: LOW & SLOW APT / HOT VS COLD STORAGE ----------------
 def scenario_8_low_and_slow_apt(api_base):
     print(f"\n{BOLD}{RED}>>> Skenario 8: The Low & Slow APT (Jebakan Hot vs Cold Storage & Solusi Persistent Watchlist){RESET}")
-    print("Studi Kasus APT: Siklus Retensi Hot Storage 14 Hari vs Eksploitasi Tanggal 20.")
-    attacker_ip = "198.51.100.77"
+    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/apt_recon_and_exploit.log (APT Multi-Stage Attack Log){RESET}")
+    events = LogAdapter.load_scenario_from_file(8)
+    attacker_ip = events[0]["ip_address"] if events else "198.51.100.77"
 
     # --- BABAK 1: RECONNAISSANCE TANGGAL 1 ---
-    print(f"\n{CYAN}[BABAK 1 - TANGGAL 1] Peretas APT melancarkan Recon Probe (Pengecekan Celah)...{RESET}")
-    payload_recon = {
-        "timestamp": get_current_utc_iso(),
-        "event_type": "recon_probe",
-        "user_id": "api_gateway_target",
-        "ip_address": attacker_ip,
-        "location": "DMZ Edge Gateway",
-        "status": "success"
-    }
-    res_recon = post_log(api_base, payload_recon)
+    print(f"\n{CYAN}[BABAK 1 - TANGGAL 1] Peretas APT melancarkan Recon Probe dari berkas log...{RESET}")
+    recon_payload = {k: v for k, v in events[0].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
+    res_recon = post_log(api_base, recon_payload)
     if res_recon and res_recon.status_code == 201:
         print(f"  [+] Log Reconnaissance Ingested -> HTTP 201 Created")
         alerts = res_recon.json().get("alerts", [])
@@ -411,17 +277,10 @@ def scenario_8_low_and_slow_apt(api_base):
 
     # --- BABAK 1B: MASALAH - EKSPLOITASI TANGGAL 20 TANPA WATCHLIST ---
     print(f"\n{RED}[BABAK 1B - TANGGAL 20: MASALAH / TEMPORAL BLIND SPOT]{RESET}")
-    print(f"  Peretas mengeksekusi serangan dari IP {attacker_ip}...")
+    print(f"  Peretas mengeksekusi serangan eksploitasi dari IP {attacker_ip}...")
     print("  Karena log Tanggal 1 sudah beku di Cold Storage, SIEM standar TIDAK BISA mengaitkan korelasi!")
-    payload_day20_fail = {
-        "timestamp": get_current_utc_iso(),
-        "event_type": "web_request",
-        "user_id": "admin_service",
-        "ip_address": attacker_ip,
-        "location": "DMZ Edge Gateway",
-        "status": "success"
-    }
-    res_fail = post_log(api_base, payload_day20_fail)
+    exploit_payload = {k: v for k, v in events[1].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
+    res_fail = post_log(api_base, exploit_payload)
     if res_fail and res_fail.status_code == 201:
         alerts = res_fail.json().get("alerts", [])
         apt_alerts = [a for a in alerts if a["rule_name"] == "APT Low & Slow / Persistent Threat"]
@@ -446,15 +305,9 @@ def scenario_8_low_and_slow_apt(api_base):
 
     print(f"\n{RED}[BABAK 2B - TANGGAL 20: KORELASI SHOWDOWN BERHASIL!]{RESET}")
     print("  Peretas kembali melancarkan request eksploitasi...")
-    payload_day20_success = {
-        "timestamp": get_current_utc_iso(),
-        "event_type": "web_request",
-        "user_id": "admin_service",
-        "ip_address": attacker_ip,
-        "location": "DMZ Edge Gateway",
-        "status": "success"
-    }
-    res_success = post_log(api_base, payload_day20_success)
+    exploit_payload_2 = {k: v for k, v in events[1].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
+    exploit_payload_2["timestamp"] = get_current_utc_iso(0)
+    res_success = post_log(api_base, exploit_payload_2)
     if res_success and res_success.status_code == 201:
         alerts = res_success.json().get("alerts", [])
         apt_alerts = [a for a in alerts if a["rule_name"] == "APT Low & Slow / Persistent Threat"]
@@ -473,7 +326,7 @@ def scenario_8_low_and_slow_apt(api_base):
     except Exception as e:
         print(f"  {RED}[!] Gagal rehidrasi log dingin: {e}{RESET}")
 
-    print(f"\n{GREEN}[OK] Hasil Skenario 8: Terbukti berhasil mengatasi jebakan Low & Slow APT!{RESET}")
+    print(f"\n{GREEN}[OK] Hasil Skenario 8: Terbukti berhasil mengatasi jebakan Low & Slow APT dari file log riil!{RESET}")
 
 
 # ---------------- UTILITY: RESET ----------------

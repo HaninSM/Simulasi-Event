@@ -440,3 +440,45 @@ def test_stats_and_reset_endpoints():
     stats_after = client.get("/api/stats").json()
     assert stats_after["total_logs_ingested"] == 0
     assert stats_after["total_alerts"] == 0
+
+
+def test_log_adapter_parses_real_sample_files():
+    from app.log_adapter import LogAdapter
+    for sc in range(1, 9):
+        events = LogAdapter.load_scenario_from_file(sc)
+        assert len(events) > 0, f"Scenario {sc} sample log failed to load"
+
+
+def test_api_simulator_replay_scenarios():
+    # Test Scenario 1 (Normal)
+    client.post("/api/reset")
+    r1 = client.post("/api/simulator/replay?scenario=1")
+    assert r1.status_code == 200
+    assert r1.json()["logs_processed"] == 5
+    assert r1.json()["alerts_triggered"] == 0
+
+    # Test Scenario 2 (DDoS from nginx_ddos_flood.log)
+    client.post("/api/reset")
+    r2 = client.post("/api/simulator/replay?scenario=2")
+    assert r2.status_code == 200
+    assert r2.json()["logs_processed"] == 15
+    assert r2.json()["alerts_triggered"] >= 1
+    assert any("DDoS" in a["rule_name"] for a in r2.json()["alerts"])
+
+    # Test Scenario 6 (Careless Whitelisting)
+    client.post("/api/reset")
+    r6 = client.post("/api/simulator/replay?scenario=6")
+    assert r6.status_code == 200
+    assert r6.json()["blind_spot_confirmed"] is True
+    assert r6.json()["alerts_triggered"] == 0
+
+    # Test Scenario 7 (Corrupted Device Validation)
+    r7 = client.post("/api/simulator/replay?scenario=7")
+    assert r7.status_code == 200
+    assert r7.json()["all_dropped_safely"] is True
+
+    # Test Scenario 8 (APT)
+    client.post("/api/reset")
+    r8 = client.post("/api/simulator/replay?scenario=8")
+    assert r8.status_code == 200
+    assert r8.json()["apt_detected"] is True

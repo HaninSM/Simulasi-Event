@@ -238,211 +238,31 @@ document.querySelectorAll(".btn-scenario").forEach(btn => {
 });
 
 async function runScenarioFromBrowser(scNum) {
-    const nowIso = () => new Date().toISOString();
+    try {
+        const btn = document.querySelector(`.btn-scenario[data-scenario="${scNum}"]`);
+        if (btn) btn.style.opacity = "0.6";
 
-    const postLog = async (data) => {
-        try {
-            return await fetch(`${API_BASE}/api/ingest`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
-        } catch (e) {
-            console.error("Ingest failed:", e);
+        const res = await fetch(`${API_BASE}/api/simulator/replay?scenario=${scNum}`, {
+            method: "POST"
+        });
+        const data = await res.json();
+
+        if (btn) btn.style.opacity = "1";
+
+        let alertMsg = `[LOG REPLAY DARI BERKAS FISIK]\n`;
+        alertMsg += `Skenario: ${scNum} - ${data.title || "Attack Telemetry"}\n`;
+        alertMsg += `Berkas Sumber: ${data.source_file}\n`;
+        if (data.logs_processed !== undefined) alertMsg += `Jumlah Log Diproses: ${data.logs_processed}\n`;
+        if (data.alerts_triggered !== undefined) alertMsg += `Alarm Dipicu: ${data.alerts_triggered}\n`;
+        if (data.message) alertMsg += `\nKeterangan:\n${data.message}`;
+
+        if (scNum === "6" || scNum === "7" || scNum === "8") {
+            alert(alertMsg);
+        } else {
+            console.log(alertMsg);
         }
-    };
-
-    if (scNum === "1") {
-        // Normal Traffic
-        for (let i = 0; i < 5; i++) {
-            await postLog({
-                timestamp: nowIso(),
-                event_type: "web_request",
-                user_id: `alice_${i}`,
-                ip_address: `192.168.1.${10 + i}`,
-                location: "Jakarta, ID",
-                status: "success"
-            });
-        }
-    } else if (scNum === "2") {
-        // DDoS Attack: > 10 web requests from 1 IP in 10s
-        for (let i = 0; i < 15; i++) {
-            await postLog({
-                timestamp: nowIso(),
-                event_type: "web_request",
-                user_id: "anonymous_bot",
-                ip_address: "45.33.32.156",
-                location: "Unknown",
-                status: "success"
-            });
-        }
-    } else if (scNum === "3") {
-        // Impossible Travel: Same user, 2 successful logins in different locations < 1 hour
-        await postLog({
-            timestamp: nowIso(),
-            event_type: "login_attempt",
-            user_id: "john_doe",
-            ip_address: "103.24.56.12",
-            location: "Jakarta, ID",
-            status: "success"
-        });
-        await new Promise(r => setTimeout(r, 200));
-        await postLog({
-            timestamp: nowIso(),
-            event_type: "login_attempt",
-            user_id: "john_doe",
-            ip_address: "185.190.140.2",
-            location: "Frankfurt, DE",
-            status: "success"
-        });
-    } else if (scNum === "4") {
-        // Distributed Brute Force: > 5 failed logins for 1 user from > 3 IPs in 60s
-        const ips = ["198.51.100.1", "198.51.100.2", "198.51.100.3", "198.51.100.4"];
-        for (let i = 0; i < 7; i++) {
-            await postLog({
-                timestamp: nowIso(),
-                event_type: "login_attempt",
-                user_id: "admin_finance",
-                ip_address: ips[i % ips.length],
-                location: "Remote Proxy",
-                status: "failed"
-            });
-        }
-    } else if (scNum === "5") {
-        // Data Exfiltration: > 50 database_downloads in 60s
-        for (let i = 0; i < 55; i++) {
-            await postLog({
-                timestamp: nowIso(),
-                event_type: "database_download",
-                user_id: "insider_dave",
-                ip_address: "10.0.4.88",
-                location: "Internal LAN",
-                status: "success"
-            });
-        }
-    } else if (scNum === "6") {
-        // Careless Whitelisting: Whitelist attacker IP first, then launch attack. 0 alerts triggered!
-        const attackerIp = "198.51.100.99";
-        await fetch(`${API_BASE}/api/whitelist`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ip_address: attackerIp, reason: "Bypass test for VIP" })
-        });
-        // Attack via whitelisted IP
-        for (let i = 0; i < 15; i++) {
-            await postLog({
-                timestamp: nowIso(),
-                event_type: "web_request",
-                user_id: "stealth_hacker",
-                ip_address: attackerIp,
-                location: "External",
-                status: "success"
-            });
-        }
-        fetchWhitelist();
-    } else if (scNum === "7") {
-        // Skenario Negatif 1: Malformed Log (Format Cacat/Hilang) & Time Drift
-        // Test 1: ip_address: null (Server lama mengalami bug)
-        const resNull = await postLog({
-            timestamp: nowIso(),
-            event_type: "web_request",
-            user_id: "legacy_server_bug_01",
-            ip_address: null,
-            location: "Server Room A",
-            status: "success"
-        });
-
-        // Test 2: JSON terpotong / malformed syntax (koneksi putus di tengah jalan)
-        let resTruncatedStatus = "422";
-        try {
-            const rawRes = await fetch(`${API_BASE}/api/ingest`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: '{"timestamp": "2026-10-20T03:00:00Z", "event_type": "web_request", "user_id": "legacy'
-            });
-            resTruncatedStatus = rawRes.status;
-        } catch (e) {
-            console.warn(e);
-        }
-
-        // Test 3: Missing attribute 'ip_address' completely
-        const resMissing = await postLog({
-            timestamp: nowIso(),
-            event_type: "web_request",
-            user_id: "legacy_server_bug_02",
-            location: "Server Room B",
-            status: "success"
-        });
-
-        // Test 4: Skenario Negatif Time Drift (Baterai CMOS Server HRD habis, reset ke 1970)
-        const resTimeDrift = await postLog({
-            timestamp: "1970-01-01T00:00:00Z",
-            event_type: "login_attempt",
-            user_id: "hrd_staff_budi",
-            ip_address: "192.168.1.50",
-            location: "Kantor HRD",
-            status: "success"
-        });
-
-        alert(
-            `Hasil Pengujian Skenario Negatif (Gatekeeper Protection):\n` +
-            `1. Malformed Log (ip_address: null)  -> HTTP ${resNull?.status} (Ditolak)\n` +
-            `2. Malformed Log (JSON terpotong)    -> HTTP ${resTruncatedStatus} (Ditolak)\n` +
-            `3. Malformed Log (Field IP hilang)  -> HTTP ${resMissing?.status} (Ditolak)\n` +
-            `4. Time Drift (CMOS HRD Tahun 1970)  -> HTTP ${resTimeDrift?.status} (Time Drift Error Ditolak)\n\n` +
-            `Hasil: Lapisan Validasi Skema (Gatekeeper) menolak data kotor secara aman.\n` +
-            `Mesin korelasi terlindungi dari distorsi waktu & backend TIDAK CRASH!`
-        );
-    } else if (scNum === "8") {
-        // Skenario 8: The Low & Slow APT (Hot vs Cold Storage Dilemma & Stateful Watchlist)
-        const attackerIp = "198.51.100.77";
-
-        // Step 1: Day 1 Recon Probe
-        await postLog({
-            timestamp: nowIso(),
-            event_type: "recon_probe",
-            user_id: "api_gateway_target",
-            ip_address: attackerIp,
-            location: "DMZ Edge Gateway",
-            status: "success"
-        });
-
-        // Step 2: 14-day Log Lifecycle -> Move to Cold Storage Archive
-        await fetch(`${API_BASE}/api/archive/cold?ip_address=${attackerIp}`, { method: "POST" });
-
-        // Step 3: Flag IP to Stateful Persistent Watchlist
-        await fetch(`${API_BASE}/api/watchlist`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ip_address: attackerIp,
-                risk_level: "HIGH",
-                reason: "Reconnaissance probe detected on Day 1"
-            })
-        });
-
-        // Step 4: Day 20 Exploit -> Triggers [KRITIS] APT Low & Slow alert!
-        await postLog({
-            timestamp: nowIso(),
-            event_type: "web_request",
-            user_id: "admin_portal",
-            ip_address: attackerIp,
-            location: "DMZ Edge Gateway",
-            status: "success"
-        });
-
-        // Step 5: Cold Log Rehydration for deep forensics
-        const rehydrateRes = await fetch(`${API_BASE}/api/archive/rehydrate?ip_address=${attackerIp}`, { method: "POST" });
-        const rehydrateData = await rehydrateRes.json();
-
-        alert(
-            `Hasil Pengujian Skenario 8 (The Low & Slow APT):\n` +
-            `1. [Tanggal 1] Recon Probe dikirim dari IP ${attackerIp} -> Menghasilkan Alert MENENGAH.\n` +
-            `2. [Log Lifecycle 14 Hari] Log dipindahkan ke Gudang Arsip Beku (Cold Storage).\n` +
-            `3. [Solusi Arsitektur] IP ${attackerIp} didaftarkan ke Stateful Persistent Watchlist.\n` +
-            `4. [Tanggal 20] Exploit dilancarkan -> Korelasi Showdown BERHASIL! Alert KRITIS APT dipicu!\n` +
-            `5. [Forensic Rehydration] ${rehydrateData.rehydrated_count} log berhasil ditarik dari Cold Storage untuk investigasi forensik.`
-        );
+    } catch (e) {
+        console.error("Replay scenario failed:", e);
     }
 
     // Refresh immediately
@@ -450,7 +270,8 @@ async function runScenarioFromBrowser(scNum) {
         fetchAlerts();
         fetchStats();
         fetchLogs();
-    }, 400);
+        fetchWhitelist();
+    }, 300);
 }
 
 // Escape HTML utility
