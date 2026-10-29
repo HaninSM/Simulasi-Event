@@ -81,21 +81,36 @@ Mini-SIEM mengintegrasikan kapabilitas **SOAR (Security Orchestration, Automatio
 
 ---
 
-## 🔄 Arsitektur Log Adapter & Berkas Sample Logs
-Mini-SIEM mengintegrasikan modul **Universal Log Adapter** (`app/log_adapter.py`) yang membaca berkas telemetri autentik dari folder `sample_logs/` dan mengubahnya menjadi format kontrak SIEM:
+## 🔄 Arsitektur Log Adapter & Matriks 24 Varian Berkas Sample Logs
+Mini-SIEM mengintegrasikan modul **Universal Log Adapter** (`app/log_adapter.py`) yang membaca berkas telemetri autentik dari folder `sample_logs/`. Untuk memperluas cakupan simulasi real-world, setiap skenario (1 s/d 8) dilengkapi dengan **3 varian berkas log unik** (total 24 berkas):
+
+| Skenario | Format Telemetri | Varian 1 | Varian 2 | Varian 3 |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Trafik Normal** | Nginx/Apache Combined | `web_access_normal_1.log` (E-Commerce) | `web_access_normal_2.log` (HR Portal) | `web_access_normal_3.log` (Support Desk) |
+| **2. DDoS Attack** | Nginx HTTP Flood | `nginx_ddos_flood_1.log` (IP `45.33.32.156`) | `nginx_ddos_flood_2.log` (IP `194.26.29.112`) | `nginx_ddos_flood_3.log` (IP `185.220.101.45`) |
+| **3. Impossible Travel** | RFID Gate + VPN CSV | `vpn_and_gate_access_1.csv` (Sarah: JKT vs FRA) | `vpn_and_gate_access_2.csv` (Budi: SUB vs DAL) | `vpn_and_gate_access_3.csv` (Ahmad: SIN vs SVO) |
+| **4. Distributed Brute Force**| Syslog RFC 3164 | `auth_sshd_bruteforce_1.log` (admin_corp / Tor) | `auth_sshd_bruteforce_2.log` (root / Botnet) | `auth_sshd_bruteforce_3.log` (svc_deploy / VPS) |
+| **5. Data Exfiltration** | PostgreSQL PGAudit JSONL | `postgres_audit_exfiltration_1.jsonl` (dev_rogue) | `postgres_audit_exfiltration_2.jsonl` (contractor) | `postgres_audit_exfiltration_3.jsonl` (intern) |
+| **6. Careless Whitelist** | Nginx Web Access | `careless_whitelist_attack_1.log` (203.0.113.88) | `careless_whitelist_attack_2.log` (198.51.100.50) | `careless_whitelist_attack_3.log` (192.0.2.77) |
+| **7. Malformed / Drift** | Raw Telemetry Injection | `legacy_corrupted_device_1.log` (IoT Gateway) | `legacy_corrupted_device_2.log` (Branch Router) | `legacy_corrupted_device_3.log` (SCADA PLC) |
+| **8. Low & Slow APT** | Multi-phase APT Log | `apt_recon_and_exploit_1.log` (198.51.100.77) | `apt_recon_and_exploit_2.log` (203.0.113.144) | `apt_recon_and_exploit_3.log` (192.0.2.199) |
 
 ```
-[Raw Log Sources]                 [Universal Log Adapter]               [Gatekeeper & Correlation Engine]
-sample_logs/                      app/log_adapter.py                     app/engine.py
-├── web_access_normal.log  -----> Nginx Combined Regex Parser --------> POST /api/ingest (Canonical JSON)
-├── nginx_ddos_flood.log   -----> HTTP Flood Regex Parser -------------> POST /api/ingest
-├── vpn_and_gate_access.csv ----> RFID CSV & Geo Parser ---------------> POST /api/ingest
-├── auth_sshd_bruteforce.log ---> Syslog RFC 3164 Regex Parser --------> POST /api/ingest
-├── postgres_audit_exfil.jsonl -> PGAudit JSON Lines Parser -----------> POST /api/ingest
-├── careless_whitelist.log -----> Whitelist Target Regex --------------> POST /api/ingest
-├── legacy_corrupted.log -------> Raw Corrupted Injector --------------> POST /api/ingest (Negative Test)
-└── apt_recon_exploit.log ------> Multi-phase APT Parser --------------> POST /api/ingest (Temporal Demo)
+[Raw Log Sources (24 Files)]        [Universal Log Adapter]               [Gatekeeper & Correlation Engine]
+sample_logs/                         app/log_adapter.py                     app/engine.py
+├── web_access_normal_[1..3].log  -> Nginx Combined Regex Parser --------> POST /api/ingest (Canonical JSON)
+├── nginx_ddos_flood_[1..3].log   -> HTTP Flood Regex Parser -------------> POST /api/ingest
+├── vpn_and_gate_access_[1..3].csv-> RFID CSV & Geo Parser ---------------> POST /api/ingest
+├── auth_sshd_bruteforce_[1..3].log> Syslog RFC 3164 Regex Parser --------> POST /api/ingest
+├── postgres_audit_exfil_[1..3].. -> PGAudit JSON Lines Parser -----------> POST /api/ingest
+├── careless_whitelist_[1..3].log -> Dynamic Attacker IP Parser ----------> POST /api/ingest
+├── legacy_corrupted_[1..3].log   -> Raw Corrupted Injector --------------> POST /api/ingest (Negative Test)
+└── apt_recon_exploit_[1..3].log  -> Multi-phase APT Parser --------------> POST /api/ingest (Temporal Demo)
 ```
+
+### Mekanisme Pemilihan Varian (Random & Deterministic)
+* **Secara Default (Acak):** Setiap kali simulator atau tombol dashboard diklik, sistem secara otomatis memilih acak 1 dari 3 varian (`random.choice([1, 2, 3])`), sehingga simulasi selalu variatif tanpa pengulangan monoton.
+* **Secara Deterministik:** Pengguna dapat menentukan varian yang diinginkan melalui CLI flag `--variant <1-3>` atau API query param `?variant=<1-3>`.
 
 ### Mekanisme Dynamic Timestamp Shifting
 `LogAdapter.shift_timestamps_to_now()` menghitung selisih waktu antara entri pertama dalam berkas log dengan waktu saat ini (`NOW()`), lalu memproyeksikan seluruh baris log secara proporsional ke detik berjalan. Hal ini memastikan data mentah asli tetap 100% autentik sekaligus memicu sliding correlation windows tanpa melanggar Gatekeeper Time Drift Check.
@@ -148,10 +163,10 @@ Dashboard melakukan sinkronisasi data (*polling*) setiap **2 detik** ke API SIEM
 Buka jendela terminal kedua dengan server tetap menyala di jendela pertama. 
 
 Anda dapat menjalankan skenario melalui:
-1. **Script CLI Simulator**: `python simulator.py --scenario <1-8>`
+1. **Script CLI Simulator**: `python simulator.py --scenario <1-8> [--variant <1-3>]`
 2. **Demo SOAR Active Defense**: `python simulator.py --soar`
 3. **One-Click Batch**: `run_simulator.bat`
-4. **Web UI Dashboard**: Mengklik langsung tombol pada panel *"Quick Scenario Launcher"* di sisi kanan halaman web.
+4. **Web UI Dashboard**: Mengklik langsung tombol pada panel *"Quick Scenario Launcher"* di sisi kanan halaman web (otomatis memilih varian secara acak).
 
 ---
 
@@ -317,15 +332,15 @@ CommandCenter/
 │       ├── index.html       # Antarmuka Command Center SOC Dark Theme (dengan SOAR Panel)
 │       ├── style.css        # Tata letak grid/flexbox, efek visual alert KRITIS & status CONTAINED
 │       └── app.js           # Polling real-time 2s & handler aksi interaktif Isolate/Release Host
-├── sample_logs/             # Kumpulan berkas log fisik autentik dunia nyata
-│   ├── web_access_normal.log         # Format Nginx/Apache Combined Log
-│   ├── nginx_ddos_flood.log          # Format Nginx HTTP Flood
-│   ├── vpn_and_gate_access.csv       # Format Akses Fisik RFID & VPN Gateway CSV
-│   ├── auth_sshd_bruteforce.log      # Format Linux /var/log/auth.log Syslog RFC 3164
-│   ├── postgres_audit_exfiltration.jsonl # Format Audit Query Database PostgreSQL JSONL
-│   ├── careless_whitelist_attack.log # Format Nginx Web Access untuk Whitelist Demo
-│   ├── legacy_corrupted_device.log   # Telemetri format rusak & Time Drift Error
-│   └── apt_recon_and_exploit.log     # Format Jejak APT multi-fase (20 hari)
+├── sample_logs/             # Kumpulan 24 berkas log fisik autentik (8 skenario x 3 varian)
+│   ├── web_access_normal_[1..3].log         # Format Nginx/Apache Combined Log
+│   ├── nginx_ddos_flood_[1..3].log          # Format Nginx HTTP Flood
+│   ├── vpn_and_gate_access_[1..3].csv       # Format Akses Fisik RFID & VPN Gateway CSV
+│   ├── auth_sshd_bruteforce_[1..3].log      # Format Linux /var/log/auth.log Syslog RFC 3164
+│   ├── postgres_audit_exfiltration_[1..3].jsonl # Format Audit Query Database PostgreSQL JSONL
+│   ├── careless_whitelist_attack_[1..3].log # Format Nginx Web Access untuk Whitelist Demo
+│   ├── legacy_corrupted_device_[1..3].log   # Telemetri format rusak & Time Drift Error
+│   └── apt_recon_and_exploit_[1..3].log     # Format Jejak APT multi-fase (20 hari)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
 ├── simulator.py             # Script simulator interaktif 8 skenario & demo SOAR containment
 ├── test_siem.py             # Test suite 26 unit & integration test otomatis (100% passed)

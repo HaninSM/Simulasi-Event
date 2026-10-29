@@ -319,30 +319,27 @@ def reset_siem():
 
 
 @app.post("/api/simulator/replay")
-def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
+def replay_scenario(
+    scenario: int = Query(..., ge=1, le=8),
+    variant: Optional[int] = Query(None, ge=1, le=3, description="Varian berkas log (1-3). Kosongkan untuk pemilihan acak.")
+):
     """
     Replays attack scenarios by reading actual sample log files from sample_logs/ on disk.
+    Supports 3 variants per scenario; randomly selects one if variant is not specified.
     Parses them via LogAdapter and ingests them into the SIEM engine with dynamic timestamp shifting.
     """
-    events = LogAdapter.load_scenario_from_file(scenario)
+    events = LogAdapter.load_scenario_from_file(scenario, variant=variant)
     if not events and scenario != 7:
         raise HTTPException(status_code=404, detail=f"Log file for scenario {scenario} not found or empty.")
 
-    source_files = {
-        1: "sample_logs/web_access_normal.log (Nginx Combined Log)",
-        2: "sample_logs/nginx_ddos_flood.log (Nginx Access Log)",
-        3: "sample_logs/vpn_and_gate_access.csv (Physical RFID + VPN Audit CSV)",
-        4: "sample_logs/auth_sshd_bruteforce.log (Linux /var/log/auth.log Syslog)",
-        5: "sample_logs/postgres_audit_exfiltration.jsonl (PostgreSQL PGAudit JSON)",
-        6: "sample_logs/careless_whitelist_attack.log (Nginx Access Log)",
-        7: "sample_logs/legacy_corrupted_device.log (Corrupted & Time-Drift Payload)",
-        8: "sample_logs/apt_recon_and_exploit.log (Multi-Stage APT Telemetry)"
-    }
+    source_file = getattr(events, "source_file", f"sample_logs/scenario_{scenario}.log")
+    variant_num = getattr(events, "variant", 1)
+    variant_desc = getattr(events, "description", "")
 
     if scenario == 6:
-        # Whitelist the attacker IP first
-        attacker_ip = "203.0.113.88"
-        engine.add_to_whitelist(WhitelistRequest(ip_address=attacker_ip, reason="Careless exception added by Admin"))
+        # Dynamic attacker IP from the selected variant
+        attacker_ip = events[0]["ip_address"]
+        engine.add_to_whitelist(WhitelistRequest(ip_address=attacker_ip, reason=f"Careless exception for {attacker_ip} added by Admin"))
         alerts_triggered = []
         for ev in events:
             ev_clean = {k: v for k, v in ev.items() if k in LogEvent.model_fields}
@@ -353,12 +350,14 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
         return {
             "scenario": 6,
             "title": "Careless Whitelisting (Fatal Error / Blind Spot)",
-            "source_file": source_files[6],
+            "variant": variant_num,
+            "variant_description": variant_desc,
+            "source_file": source_file,
             "logs_processed": len(events),
             "whitelisted_ip": attacker_ip,
             "alerts_triggered": len(alerts_triggered),
             "blind_spot_confirmed": len(alerts_triggered) == 0,
-            "message": "15 attack requests sent from whitelisted IP. SIEM completely ignored them (0 alerts triggered)!"
+            "message": f"15 attack requests sent from whitelisted IP {attacker_ip}. SIEM completely ignored them (0 alerts triggered)!"
         }
 
     elif scenario == 7:
@@ -381,7 +380,9 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
         return {
             "scenario": 7,
             "title": "Malformed Log & Time Drift Validation",
-            "source_file": source_files[7],
+            "variant": variant_num,
+            "variant_description": variant_desc,
+            "source_file": source_file,
             "tests_executed": len(results),
             "all_dropped_safely": all(r["dropped_safely"] for r in results),
             "details": results,
@@ -389,19 +390,21 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
         }
 
     elif scenario == 8:
-        # Low & Slow APT: Two-Act demonstration
+        # Dynamic attacker IP from selected variant
+        attacker_ip = events[0]["ip_address"]
+
         # Event 0: Day 1 Recon
         e1 = {k: v for k, v in events[0].items() if k in LogEvent.model_fields}
         recon_alerts = engine.process_log(LogEvent(**e1))
 
         # Aging simulation: Archive to cold storage
-        archived_count = engine.archive_to_cold("198.51.100.77")
+        archived_count = engine.archive_to_cold(attacker_ip)
 
         # Solution applied: Add to persistent watchlist
         engine.add_to_watchlist(WatchlistRequest(
-            ip_address="198.51.100.77",
+            ip_address=attacker_ip,
             risk_level="HIGH",
-            reason="Reconnaissance probe detected in Day 1 logs"
+            reason=f"Reconnaissance probe detected in Day 1 logs from {attacker_ip}"
         ))
 
         # Event 1: Day 20 Exploit
@@ -409,21 +412,24 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
         exploit_alerts = engine.process_log(LogEvent(**e2))
 
         # Rehydrate for forensics
-        rehydrated = engine.rehydrate_cold("198.51.100.77")
+        rehydrated = engine.rehydrate_cold(attacker_ip)
 
         return {
             "scenario": 8,
             "title": "The Low & Slow APT (Hot vs Cold Storage & Stateful Watchlist)",
-            "source_file": source_files[8],
+            "variant": variant_num,
+            "variant_description": variant_desc,
+            "source_file": source_file,
+            "target_ip": attacker_ip,
             "stages": [
                 {"stage": "Day 1 Recon Probe Ingested", "alerts": len(recon_alerts)},
                 {"stage": "Archived to Cold Storage (>14 days)", "archived_logs": archived_count},
-                {"stage": "Persistent Stateful Watchlist Added", "ip": "198.51.100.77", "risk": "HIGH"},
+                {"stage": f"Persistent Stateful Watchlist Added ({attacker_ip})", "risk": "HIGH"},
                 {"stage": "Day 20 Exploit Ingested", "alerts": [a.rule_name for a in exploit_alerts]},
                 {"stage": "Cold Log Rehydration", "rehydrated_count": len(rehydrated)}
             ],
             "apt_detected": any(a.rule_name == "APT Low & Slow / Persistent Threat" for a in exploit_alerts),
-            "message": "Multi-stage APT successfully correlated across cold retention cycle using Stateful Watchlist!"
+            "message": f"Multi-stage APT for {attacker_ip} successfully correlated across cold retention cycle using Stateful Watchlist!"
         }
 
     # Standard scenarios: 1, 2, 3, 4, 5
@@ -447,7 +453,9 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
 
     return {
         "scenario": scenario,
-        "source_file": source_files.get(scenario, "sample_logs/"),
+        "variant": variant_num,
+        "variant_description": variant_desc,
+        "source_file": source_file,
         "logs_processed": len(events),
         "logs_accepted": accepted_count,
         "logs_blocked_by_soar": blocked_count,
@@ -459,4 +467,5 @@ def replay_scenario(scenario: int = Query(..., ge=1, le=8)):
             if blocked_count > 0 else None
         )
     }
+
 

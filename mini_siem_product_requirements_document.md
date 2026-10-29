@@ -33,18 +33,19 @@ Semua log yang masuk ke sistem (Ingestion) wajib memenuhi format JSON kanonikal 
   * Format IP bukan IPv4 valid (misal: `999.999.999.999`).
   * `timestamp` berasal dari lebih dari 24 jam lampau atau masa depan (*Time Drift Error*).
 
-### Fitur B: Universal Log Adapter & Real-World Log Replay
-* Modul `app/log_adapter.py` membaca berkas log fisik dari direktori `sample_logs/`:
-  * `web_access_normal.log`: Format standar Nginx/Apache Combined Log.
-  * `nginx_ddos_flood.log`: Telemetri akses web HTTP flooding L7.
-  * `vpn_and_gate_access.csv`: Log akses fisik kartu RFID pintu vs login VPN luar negeri.
-  * `auth_sshd_bruteforce.log`: Format Syslog Linux RFC 3164 `/var/log/auth.log` dari multi-IP.
-  * `postgres_audit_exfiltration.jsonl`: Telemetri audit query database PostgreSQL PGAudit.
-  * `careless_whitelist_attack.log`: Log akses web dari IP yang telah masuk daftar whitelist ceroboh.
-  * `legacy_corrupted_device.log`: Telemetri anomali (IP null, IP 999.x, JSON truncated, reset jam CMOS 1970).
-  * `apt_recon_and_exploit.log`: Jejak pengintaian awal vs serangan eksploitasi berjarak 20 hari.
+### Fitur B: Universal Log Adapter, 24 Variant Sample Logs & Real-World Replay
+* Modul `app/log_adapter.py` membaca berkas log fisik dari direktori `sample_logs/`. Masing-masing skenario (1 s/d 8) memiliki **3 varian berkas log realistis** (total 24 berkas):
+  * **Skenario 1 (Trafik Normal):** `web_access_normal_1.log` (E-Commerce), `web_access_normal_2.log` (HR Portal), `web_access_normal_3.log` (Support Desk).
+  * **Skenario 2 (DDoS Attack):** `nginx_ddos_flood_1.log` (IP `45.33.32.156`), `nginx_ddos_flood_2.log` (IP `194.26.29.112`), `nginx_ddos_flood_3.log` (IP `185.220.101.45`).
+  * **Skenario 3 (Impossible Travel):** `vpn_and_gate_access_1.csv` (`sarah_security`: Jakarta vs Frankfurt), `vpn_and_gate_access_2.csv` (`budi_finance`: Surabaya vs Dallas), `vpn_and_gate_access_3.csv` (`ahmad_devops`: Singapore vs Moscow).
+  * **Skenario 4 (Distributed Brute Force):** `auth_sshd_bruteforce_1.log` (`admin_corp` via Tor), `auth_sshd_bruteforce_2.log` (`root` via botnet), `auth_sshd_bruteforce_3.log` (`svc_deploy` via Cloud VPS).
+  * **Skenario 5 (Data Exfiltration):** `postgres_audit_exfiltration_1.jsonl` (`dev_rogue`), `postgres_audit_exfiltration_2.jsonl` (`contractor_analyst`), `postgres_audit_exfiltration_3.jsonl` (`intern_badactor`).
+  * **Skenario 6 (Careless Whitelist):** `careless_whitelist_attack_1.log` (IP `203.0.113.88`), `careless_whitelist_attack_2.log` (IP `198.51.100.50`), `careless_whitelist_attack_3.log` (IP `192.0.2.77`).
+  * **Skenario 7 (Data Cacat/Drift):** `legacy_corrupted_device_1.log` (IoT Gateway), `legacy_corrupted_device_2.log` (Branch Router), `legacy_corrupted_device_3.log` (SCADA PLC).
+  * **Skenario 8 (Low & Slow APT):** `apt_recon_and_exploit_1.log` (IP `198.51.100.77`), `apt_recon_and_exploit_2.log` (IP `203.0.113.144`), `apt_recon_and_exploit_3.log` (IP `192.0.2.199`).
+* **Random Variant Selection & Deterministic Overrides:** Logika pemanggilan simulator secara otomatis memilih acak 1 dari 3 varian berkas log per skenario (`variant=None` -> `random.choice([1, 2, 3])`). Analis juga dapat memilih varian spesifik secara deterministik via query parameter `?variant=1..3` pada API atau flag CLI `--variant 1..3`.
 * **Dynamic Timestamp Shifting:** Mengonversi timestamp historis secara dinamis relatif terhadap waktu nyata sistem (`NOW()`) saat di-replay, sehingga data audit asli tetap utuh sekaligus lolos Gatekeeper Time Drift Check dan memicu sliding windows korelasi.
-* Endpoint `POST /api/simulator/replay?scenario={1..8}`: Menjalankan eksekusi replay langsung di sisi backend untuk CLI maupun Dashboard Browser.
+* Endpoint `POST /api/simulator/replay?scenario={1..8}&variant={1..3}`: Menjalankan eksekusi replay langsung di sisi backend untuk CLI maupun Dashboard Browser.
 
 ### Fitur C: Mesin Korelasi Berbasis Aturan (The Brain)
 Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:

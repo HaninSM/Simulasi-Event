@@ -1,0 +1,3 @@
+timestamp,user_id,ip_address,location,event_type,status
+2026-10-29 09:30:00,budi_finance,182.253.110.15,Surabaya ID,login_attempt,success
+2026-10-29 09:30:01,budi_finance,198.51.100.99,Dallas US,login_attempt,success

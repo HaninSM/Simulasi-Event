@@ -1,0 +1,4 @@
+10.10.5.40 - grace_support [29/Oct/2026:09:15:02 +0000] "GET /helpdesk/tickets/queue HTTP/1.1" 200 3120 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+10.10.5.42 - henry_agent [29/Oct/2026:09:15:08 +0000] "POST /helpdesk/ticket/4921/reply HTTP/1.1" 200 450 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+10.10.5.45 - ivy_qa [29/Oct/2026:09:15:14 +0000] "GET /kb/articles/network-vpn HTTP/1.1" 200 1890 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+10.10.5.40 - grace_support [29/Oct/2026:09:15:20 +0000] "GET /helpdesk/customer/search HTTP/1.1" 200 980 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"

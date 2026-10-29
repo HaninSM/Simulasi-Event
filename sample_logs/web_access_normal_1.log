@@ -1,0 +1,5 @@
+192.168.1.101 - alice_hr [29/Oct/2026:08:15:20 +0000] "POST /api/v1/auth/login HTTP/1.1" 200 482 "https://corp.local/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.102 - bob_eng [29/Oct/2026:08:15:22 +0000] "GET /api/v1/projects/dashboard HTTP/1.1" 200 3120 "https://corp.local/projects" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+192.168.1.103 - charlie_sales [29/Oct/2026:08:15:25 +0000] "GET /api/v1/crm/leads HTTP/1.1" 200 1540 "https://corp.local/crm" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.101 - alice_hr [29/Oct/2026:08:15:28 +0000] "GET /api/v1/hr/payroll HTTP/1.1" 200 2840 "https://corp.local/hr" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.104 - diana_finance [29/Oct/2026:08:15:30 +0000] "GET /api/v1/finance/invoices HTTP/1.1" 200 4120 "https://corp.local/finance" "Mozilla/5.0 (X11; Linux x86_64)"

@@ -1,0 +1,6 @@
+{"test_case": "null_ip", "raw_payload": {"timestamp": "2026-10-29T14:30:00Z", "event_type": "database_download", "user_id": "scada_plc_01", "ip_address": null, "location": "Power Plant Substation", "status": "success"}}
+{"test_case": "truncated_json", "raw_payload": "{\"timestamp\": \"2026-10-29T14:30:00Z\", \"event_type\": \"database_download\", \"user_id\": \"plc_"}
+{"test_case": "missing_ip", "raw_payload": {"timestamp": "2026-10-29T14:30:00Z", "event_type": "database_download", "user_id": "scada_plc_02", "location": "Power Plant Substation", "status": "success"}}
+{"test_case": "invalid_ip_format", "raw_payload": {"timestamp": "2026-10-29T14:30:00Z", "event_type": "database_download", "user_id": "plc_operator", "ip_address": "192.168.1.999", "location": "Substation", "status": "success"}}
+{"test_case": "cmos_1970", "raw_payload": {"timestamp": "1970-01-01T00:00:00Z", "event_type": "web_request", "user_id": "plc_telemetry", "ip_address": "172.16.50.12", "location": "Substation", "status": "success"}}
+{"test_case": "future_time_drift", "raw_payload": {"timestamp": "2029-01-01T00:00:00Z", "event_type": "web_request", "user_id": "future_scada", "ip_address": "172.16.50.12", "location": "Substation", "status": "success"}}

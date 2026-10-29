@@ -1,0 +1,4 @@
+192.168.20.15 - diana_hr [29/Oct/2026:08:30:10 +0000] "GET /hr/portal/dashboard HTTP/1.1" 200 1450 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.20.18 - evan_payroll [29/Oct/2026:08:30:15 +0000] "GET /hr/payroll/summary HTTP/1.1" 200 2310 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+192.168.20.22 - frank_ops [29/Oct/2026:08:30:20 +0000] "POST /attendance/clock-in HTTP/1.1" 200 320 "-" "Mozilla/5.0 (X11; Linux x86_64)"
+192.168.20.15 - diana_hr [29/Oct/2026:08:30:25 +0000] "GET /hr/employees/list HTTP/1.1" 200 4890 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"

@@ -64,10 +64,12 @@ def fetch_alerts(api_base):
 
 
 # ---------------- SCENARIO 1: TRAFIK NORMAL ----------------
-def scenario_1_normal_traffic(api_base):
+def scenario_1_normal_traffic(api_base, variant=None):
     print(f"\n{BOLD}{CYAN}>>> Skenario 1: Trafik Normal (Karyawan bekerja normal){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/web_access_normal.log (Nginx/Apache Combined Log){RESET}")
-    events = LogAdapter.load_scenario_from_file(1)
+    events = LogAdapter.load_scenario_from_file(1, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/web_access_normal.log")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     print(f"  Memproses {len(events)} entri log wajar dari berkas fisik...")
 
     for emp in events:
@@ -84,10 +86,12 @@ def scenario_1_normal_traffic(api_base):
 
 
 # ---------------- SCENARIO 2: DDOS ATTACK ----------------
-def scenario_2_ddos_attack(api_base):
+def scenario_2_ddos_attack(api_base, variant=None):
     print(f"\n{BOLD}{YELLOW}>>> Skenario 2: DDoS / Botnet Attack (Memicu Rule 1){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/nginx_ddos_flood.log (Nginx Access Log HTTP Flood){RESET}")
-    events = LogAdapter.load_scenario_from_file(2)
+    events = LogAdapter.load_scenario_from_file(2, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/nginx_ddos_flood.log")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     print("Kriteria Rule 1: > 10 web_request dari 1 IP yang sama dalam 10 detik.")
     print(f"Memproses {len(events)} rentetan request agresif dari berkas log...")
 
@@ -106,20 +110,22 @@ def scenario_2_ddos_attack(api_base):
 
 
 # ---------------- SCENARIO 3: IMPOSSIBLE TRAVEL ----------------
-def scenario_3_impossible_travel(api_base):
+def scenario_3_impossible_travel(api_base, variant=None):
     print(f"\n{BOLD}{RED}>>> Skenario 3: Impossible Travel (Memicu Rule 2){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/vpn_and_gate_access.csv (Physical Access Gate RFID + VPN Audit){RESET}")
-    events = LogAdapter.load_scenario_from_file(3)
+    events = LogAdapter.load_scenario_from_file(3, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/vpn_and_gate_access.csv")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     print("Kriteria Rule 2: 2 login_attempt sukses user yang sama di lokasi berbeda dalam < 1 jam.")
 
     if len(events) >= 2:
-        # Event 1: Jakarta
+        # Event 1: First login (e.g. Physical Gate)
         p1 = {k: v for k, v in events[0].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
-        print(f"  [1] Event Hardware: Akses Pintu Fisik User '{p1['user_id']}' di {p1['location']} ({p1['ip_address']})...")
+        print(f"  [1] Event Hardware: Akses Fisik User '{p1['user_id']}' di {p1['location']} ({p1['ip_address']})...")
         post_log(api_base, p1)
         time.sleep(1)
 
-        # Event 2: Frankfurt
+        # Event 2: Second login (e.g. Remote VPN)
         p2 = {k: v for k, v in events[1].items() if k in ["timestamp", "event_type", "user_id", "ip_address", "location", "status"]}
         print(f"  [2] Event Jaringan: Login VPN User '{p2['user_id']}' dari {p2['location']} ({p2['ip_address']}) selang 1 detik...")
         res = post_log(api_base, p2)
@@ -131,10 +137,12 @@ def scenario_3_impossible_travel(api_base):
 
 
 # ---------------- SCENARIO 4: DISTRIBUTED BRUTE FORCE ----------------
-def scenario_4_distributed_brute_force(api_base):
+def scenario_4_distributed_brute_force(api_base, variant=None):
     print(f"\n{BOLD}{YELLOW}>>> Skenario 4: Distributed Brute Force (Memicu Rule 3){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/auth_sshd_bruteforce.log (Linux /var/log/auth.log Syslog){RESET}")
-    events = LogAdapter.load_scenario_from_file(4)
+    events = LogAdapter.load_scenario_from_file(4, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/auth_sshd_bruteforce.log")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     print("Kriteria Rule 3: > 5 login gagal untuk 1 user dari > 3 IP berbeda dalam 1 menit.")
     print(f"Memproses {len(events)} entri kegagalan SSH autentikasi terdistribusi...")
 
@@ -153,10 +161,12 @@ def scenario_4_distributed_brute_force(api_base):
 
 
 # ---------------- SCENARIO 5: DATA EXFILTRATION ----------------
-def scenario_5_data_exfiltration(api_base):
+def scenario_5_data_exfiltration(api_base, variant=None):
     print(f"\n{BOLD}{RED}>>> Skenario 5: Data Exfiltration / Insider Threat (Memicu Rule 5){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/postgres_audit_exfiltration.jsonl (PostgreSQL PGAudit Log){RESET}")
-    events = LogAdapter.load_scenario_from_file(5)
+    events = LogAdapter.load_scenario_from_file(5, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/postgres_audit_exfiltration.jsonl")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     print("Kriteria Rule 5: 1 user melakukan database_download > 50 kali dalam 1 menit.")
     print(f"Memproses {len(events)} unduhan database massal dari log audit SQL...")
     alert_triggered = False
@@ -175,10 +185,12 @@ def scenario_5_data_exfiltration(api_base):
 
 
 # ---------------- SCENARIO 6: CARELESS WHITELISTING ----------------
-def scenario_6_careless_whitelisting(api_base):
+def scenario_6_careless_whitelisting(api_base, variant=None):
     print(f"\n{BOLD}{CYAN}>>> Skenario 6: Careless Whitelisting (Fatal Error / Blind Spot Demo){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/careless_whitelist_attack.log (Nginx Web Attack Log){RESET}")
-    events = LogAdapter.load_scenario_from_file(6)
+    events = LogAdapter.load_scenario_from_file(6, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/careless_whitelist_attack.log")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     attacker_ip = events[0]["ip_address"] if events else "203.0.113.88"
     print(f"1. Memasukkan IP {attacker_ip} ke Whitelist SIEM (dalih: IP VIP/Vendor)...")
 
@@ -207,15 +219,17 @@ def scenario_6_careless_whitelisting(api_base):
 
 
 # ---------------- SCENARIO 7: DATA CACAT / TIME DRIFT ----------------
-def scenario_7_corrupted_data_and_time_drift(api_base):
+def scenario_7_corrupted_data_and_time_drift(api_base, variant=None):
     print(f"\n{BOLD}{RED}>>> Skenario 7: Malformed Log (Format Cacat/Hilang) & Time Drift{RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/legacy_corrupted_device.log (Legacy Corrupted Telemetry){RESET}")
+    test_items = LogAdapter.load_scenario_from_file(7, variant=variant)
+    variant_str = f" (Varian {test_items.variant}/3: {test_items.description})" if hasattr(test_items, "variant") and test_items.variant else ""
+    source_str = getattr(test_items, "source_file", "sample_logs/legacy_corrupted_device.log")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     print("Masalah: Perangkat legacy mengirim log tanpa atribut penting, JSON terpotong, atau stempel waktu rusak.")
     print("Penanganan: Lapisan Validasi Skema (Gatekeeper) menolak log dengan HTTP 422, SIEM tetap berjalan normal.")
 
     url = f"{api_base}/api/ingest"
     all_passed = True
-    test_items = LogAdapter.load_scenario_from_file(7)
 
     for i, item in enumerate(test_items, start=1):
         tc = item.get("test_case")
@@ -247,10 +261,12 @@ def scenario_7_corrupted_data_and_time_drift(api_base):
 
 
 # ---------------- SCENARIO 8: LOW & SLOW APT / HOT VS COLD STORAGE ----------------
-def scenario_8_low_and_slow_apt(api_base):
+def scenario_8_low_and_slow_apt(api_base, variant=None):
     print(f"\n{BOLD}{RED}>>> Skenario 8: The Low & Slow APT (Jebakan Hot vs Cold Storage & Solusi Persistent Watchlist){RESET}")
-    print(f"  {YELLOW}📁 Berkas Sumber: sample_logs/apt_recon_and_exploit.log (APT Multi-Stage Attack Log){RESET}")
-    events = LogAdapter.load_scenario_from_file(8)
+    events = LogAdapter.load_scenario_from_file(8, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/apt_recon_and_exploit.log")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
     attacker_ip = events[0]["ip_address"] if events else "198.51.100.77"
 
     # --- BABAK 1: RECONNAISSANCE TANGGAL 1 ---
@@ -397,24 +413,24 @@ def reset_siem_database(api_base):
         print(f"{RED}[!] Error: {e}{RESET}")
 
 
-def run_all_scenarios(api_base):
+def run_all_scenarios(api_base, variant=None):
     print(f"\n{BOLD}{CYAN}===== MENJALANKAN SELURUH 8 SKENARIO SECARA BERUNTUN ====={RESET}")
     reset_siem_database(api_base)
-    scenario_1_normal_traffic(api_base)
+    scenario_1_normal_traffic(api_base, variant=variant)
     time.sleep(1)
-    scenario_2_ddos_attack(api_base)
+    scenario_2_ddos_attack(api_base, variant=variant)
     time.sleep(1)
-    scenario_3_impossible_travel(api_base)
+    scenario_3_impossible_travel(api_base, variant=variant)
     time.sleep(1)
-    scenario_4_distributed_brute_force(api_base)
+    scenario_4_distributed_brute_force(api_base, variant=variant)
     time.sleep(1)
-    scenario_5_data_exfiltration(api_base)
+    scenario_5_data_exfiltration(api_base, variant=variant)
     time.sleep(1)
-    scenario_6_careless_whitelisting(api_base)
+    scenario_6_careless_whitelisting(api_base, variant=variant)
     time.sleep(1)
-    scenario_7_corrupted_data_and_time_drift(api_base)
+    scenario_7_corrupted_data_and_time_drift(api_base, variant=variant)
     time.sleep(1)
-    scenario_8_low_and_slow_apt(api_base)
+    scenario_8_low_and_slow_apt(api_base, variant=variant)
     print(f"\n{BOLD}{GREEN}===== SELURUH 8 SKENARIO SELESAI DIJALANKAN ====={RESET}")
 
 
@@ -435,6 +451,7 @@ def interactive_menu(api_base):
         print("  9. Jalankan Seluruh Skenario (1 - 8 Tour Lengkap)")
         print("  R. Reset SIEM Memory (Bersihkan log, alarm & whitelist)")
         print("  0. Keluar (Exit)")
+        print("  *(Setiap skenario otomatis memilih acak 1 dari 3 varian berkas log)*")
         print("-" * 65)
 
         choice = input("Masukkan pilihan Anda: ").strip()
@@ -473,6 +490,7 @@ def main():
     parser = argparse.ArgumentParser(description="Mini-SIEM Attack & Telemetry Simulator")
     parser.add_argument("--api", default=DEFAULT_API_BASE, help="SIEM API base URL (default: http://127.0.0.1:8000)")
     parser.add_argument("--scenario", "-s", type=int, choices=range(1, 9), help="Jalankan skenario tertentu (1-8)")
+    parser.add_argument("--variant", "-v", type=int, choices=[1, 2, 3], default=None, help="Pilih varian berkas log tertentu (1-3, default: acak)")
     parser.add_argument("--soar", action="store_true", help="Jalankan demonstrasi SOAR Active Defense & Host Containment")
     parser.add_argument("--all", action="store_true", help="Jalankan semua skenario secara berurutan")
     parser.add_argument("--reset", action="store_true", help="Reset state memori SIEM")
@@ -488,7 +506,7 @@ def main():
         return
 
     if args.all:
-        run_all_scenarios(args.api)
+        run_all_scenarios(args.api, variant=args.variant)
         return
 
     if args.scenario:
@@ -502,7 +520,7 @@ def main():
             7: scenario_7_corrupted_data_and_time_drift,
             8: scenario_8_low_and_slow_apt,
         }
-        scenarios[args.scenario](args.api)
+        scenarios[args.scenario](args.api, variant=args.variant)
         return
 
     interactive_menu(args.api)

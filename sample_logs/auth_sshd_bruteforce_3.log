@@ -1,0 +1,6 @@
+Oct 29 11:15:02 srv-deploy sshd[6101]: Failed password for svc_deploy from 178.128.80.12 port 52101 ssh2
+Oct 29 11:15:06 srv-deploy sshd[6105]: Failed password for svc_deploy from 167.99.145.30 port 53420 ssh2
+Oct 29 11:15:10 srv-deploy sshd[6109]: Failed password for svc_deploy from 159.65.20.91 port 49112 ssh2
+Oct 29 11:15:14 srv-deploy sshd[6112]: Failed password for svc_deploy from 138.68.45.101 port 58921 ssh2
+Oct 29 11:15:18 srv-deploy sshd[6116]: Failed password for svc_deploy from 178.128.80.12 port 52105 ssh2
+Oct 29 11:15:22 srv-deploy sshd[6120]: Failed password for svc_deploy from 167.99.145.30 port 53428 ssh2

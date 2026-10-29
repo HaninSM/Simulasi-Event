@@ -566,6 +566,7 @@ async function runScenarioFromBrowser(scNum) {
 
         let alertMsg = `[LOG REPLAY DARI BERKAS FISIK]\n`;
         alertMsg += `Skenario: ${scNum} - ${data.title || "Attack Telemetry"}\n`;
+        if (data.variant) alertMsg += `Varian: ${data.variant}/3 (${data.variant_description || ""})\n`;
         alertMsg += `Berkas Sumber: ${data.source_file}\n`;
         if (data.logs_processed !== undefined) alertMsg += `Jumlah Log Diproses: ${data.logs_processed}\n`;
         if (data.logs_blocked_by_soar) alertMsg += `Log Diblokir SOAR (Karantina/Suspensi): ${data.logs_blocked_by_soar}\n`;

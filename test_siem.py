@@ -442,46 +442,68 @@ def test_stats_and_reset_endpoints():
     assert stats_after["total_alerts"] == 0
 
 
-def test_log_adapter_parses_real_sample_files():
+def test_log_adapter_parses_all_24_variants_and_random_selection():
     from app.log_adapter import LogAdapter
+    
+    # 1. Test all 24 explicit scenario-variant pairs (8 scenarios x 3 variants)
     for sc in range(1, 9):
-        events = LogAdapter.load_scenario_from_file(sc)
-        assert len(events) > 0, f"Scenario {sc} sample log failed to load"
+        for v in [1, 2, 3]:
+            events = LogAdapter.load_scenario_from_file(sc, variant=v)
+            assert len(events) > 0, f"Scenario {sc} variant {v} failed to load"
+            assert events.scenario_id == sc
+            assert events.variant == v
+            expected_filename, expected_desc = LogAdapter.VARIANT_CATALOG[sc][v]
+            assert events.filename == expected_filename
+            assert events.description == expected_desc
+            assert events.source_file.endswith(expected_filename)
+
+    # 2. Test random selection when variant is None
+    for sc in range(1, 9):
+        events = LogAdapter.load_scenario_from_file(sc, variant=None)
+        assert len(events) > 0
+        assert events.scenario_id == sc
+        assert events.variant in [1, 2, 3]
+        assert len(events.description) > 0
 
 
 def test_api_simulator_replay_scenarios():
-    # Test Scenario 1 (Normal)
+    # Test Scenario 1 (Normal) with explicit variant 1
     client.post("/api/reset")
-    r1 = client.post("/api/simulator/replay?scenario=1")
+    r1 = client.post("/api/simulator/replay?scenario=1&variant=1")
     assert r1.status_code == 200
     assert r1.json()["logs_processed"] == 5
     assert r1.json()["alerts_triggered"] == 0
+    assert r1.json()["variant"] == 1
 
-    # Test Scenario 2 (DDoS from nginx_ddos_flood.log)
+    # Test Scenario 2 (DDoS from nginx_ddos_flood_1.log)
     client.post("/api/reset")
-    r2 = client.post("/api/simulator/replay?scenario=2")
+    r2 = client.post("/api/simulator/replay?scenario=2&variant=1")
     assert r2.status_code == 200
     assert r2.json()["logs_processed"] == 15
     assert r2.json()["alerts_triggered"] >= 1
     assert any("DDoS" in a["rule_name"] for a in r2.json()["alerts"])
+    assert r2.json()["variant"] == 1
 
-    # Test Scenario 6 (Careless Whitelisting)
+    # Test Scenario 6 (Careless Whitelisting with dynamic IP across random variant)
     client.post("/api/reset")
     r6 = client.post("/api/simulator/replay?scenario=6")
     assert r6.status_code == 200
     assert r6.json()["blind_spot_confirmed"] is True
     assert r6.json()["alerts_triggered"] == 0
+    assert r6.json()["variant"] in [1, 2, 3]
 
     # Test Scenario 7 (Corrupted Device Validation)
     r7 = client.post("/api/simulator/replay?scenario=7")
     assert r7.status_code == 200
     assert r7.json()["all_dropped_safely"] is True
+    assert r7.json()["variant"] in [1, 2, 3]
 
     # Test Scenario 8 (APT)
     client.post("/api/reset")
     r8 = client.post("/api/simulator/replay?scenario=8")
     assert r8.status_code == 200
     assert r8.json()["apt_detected"] is True
+    assert r8.json()["variant"] in [1, 2, 3]
 
 
 def test_soar_isolate_host_blocks_subsequent_ingestion_http_403():
@@ -566,8 +588,8 @@ def test_soar_alert_status_transitions_to_contained():
     client.post("/api/reset")
     attacker_ip = "45.33.32.156"
 
-    # Trigger DDoS alert (Scenario 2)
-    client.post("/api/simulator/replay?scenario=2")
+    # Trigger DDoS alert (Scenario 2 variant 1)
+    client.post("/api/simulator/replay?scenario=2&variant=1")
     alerts_before = client.get("/api/alerts").json()
     assert len(alerts_before) >= 1
     assert any(a["ip_address"] == attacker_ip and a["status"] == "NEW" for a in alerts_before)
@@ -605,8 +627,8 @@ def test_soar_stats_and_audit_trail():
 
 def test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay():
     client.post("/api/reset")
-    # 1. Replay Scenario 3 first time: triggers Impossible Travel alert
-    r1 = client.post("/api/simulator/replay?scenario=3")
+    # 1. Replay Scenario 3 first time (variant 1: Sarah Security - Jakarta & Frankfurt): triggers Impossible Travel alert
+    r1 = client.post("/api/simulator/replay?scenario=3&variant=1")
     assert r1.status_code == 200
     assert r1.json()["alerts_triggered"] == 1
     frankfurt_ip = "185.190.140.2"
@@ -618,8 +640,8 @@ def test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay():
     })
     assert iso_res.status_code == 200
 
-    # 3. Replay Scenario 3 again: Frankfurt host is isolated, so event is blocked!
-    r2 = client.post("/api/simulator/replay?scenario=3")
+    # 3. Replay Scenario 3 variant 1 again: Frankfurt host is isolated, so event is blocked!
+    r2 = client.post("/api/simulator/replay?scenario=3&variant=1")
     assert r2.status_code == 200
     assert r2.json()["logs_blocked_by_soar"] >= 1
     assert r2.json()["soar_containment_active"] is True
@@ -651,8 +673,8 @@ def test_soar_user_suspension_blocks_logins_and_replays():
     assert ingest_res.status_code == 403
     assert "SUSPENDED" in ingest_res.json()["detail"]
 
-    # 3. Replay Scenario 3: all events belong to sarah_security, so both are blocked!
-    replay_res = client.post("/api/simulator/replay?scenario=3")
+    # 3. Replay Scenario 3 variant 1: all events belong to sarah_security, so both are blocked!
+    replay_res = client.post("/api/simulator/replay?scenario=3&variant=1")
     assert replay_res.status_code == 200
     assert replay_res.json()["logs_blocked_by_soar"] == 2
     assert replay_res.json()["alerts_triggered"] == 0
