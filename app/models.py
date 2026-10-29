@@ -102,4 +102,41 @@ class Alert(BaseModel):
     description: str
     ip_address: Optional[str] = None
     user_id: Optional[str] = None
+    status: str = "NEW"  # NEW | CONTAINED | RESOLVED
     details: dict = Field(default_factory=dict)
+
+
+class IsolateHostRequest(BaseModel):
+    ip_address: str
+    reason: Optional[str] = "Contained by SOC Analyst via Active Defense"
+    analyst: Optional[str] = "SOC Analyst Tier-1"
+
+    @field_validator("ip_address")
+    @classmethod
+    def validate_ipv4(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("ip_address cannot be empty")
+        v = v.strip()
+        try:
+            addr = ipaddress.IPv4Address(v)
+            return str(addr)
+        except Exception:
+            raise ValueError(f"'{v}' is not a valid IPv4 address")
+
+
+class ReleaseHostRequest(BaseModel):
+    ip_address: str
+    analyst: Optional[str] = "SOC Analyst Tier-1"
+
+    @field_validator("ip_address")
+    @classmethod
+    def validate_ipv4(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("ip_address cannot be empty")
+        v = v.strip()
+        try:
+            addr = ipaddress.IPv4Address(v)
+            return str(addr)
+        except Exception:
+            raise ValueError(f"'{v}' is not a valid IPv4 address")
+

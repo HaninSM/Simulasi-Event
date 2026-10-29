@@ -482,3 +482,122 @@ def test_api_simulator_replay_scenarios():
     r8 = client.post("/api/simulator/replay?scenario=8")
     assert r8.status_code == 200
     assert r8.json()["apt_detected"] is True
+
+
+def test_soar_isolate_host_blocks_subsequent_ingestion_http_403():
+    client.post("/api/reset")
+    target_ip = "45.33.32.156"
+
+    # 1. Normal ingestion works initially
+    res_before = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "web_request",
+        "user_id": "client_tester",
+        "ip_address": target_ip,
+        "location": "Dallas, US",
+        "status": "success"
+    })
+    assert res_before.status_code == 201
+
+    # 2. SOC Analyst triggers Isolate Host via SOAR
+    iso_res = client.post("/api/soar/isolate", json={
+        "ip_address": target_ip,
+        "reason": "Host exhibiting L7 flood DDoS attack pattern",
+        "analyst": "SOC Analyst Tier-2"
+    })
+    assert iso_res.status_code == 200
+    assert iso_res.json()["status"] == "success"
+    assert iso_res.json()["data"]["ip_address"] == target_ip
+
+    # 3. Subsequent ingestion from this host must be dropped with HTTP 403 Forbidden
+    res_after = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "web_request",
+        "user_id": "attacker_drone",
+        "ip_address": target_ip,
+        "location": "Dallas, US",
+        "status": "success"
+    })
+    assert res_after.status_code == 403
+    assert "ISOLATED" in res_after.json()["detail"]
+
+    # 4. Check stats reflect the quarantined host and blocked traffic
+    stats = client.get("/api/stats").json()
+    assert stats["isolated_hosts_count"] == 1
+    assert stats["blocked_containment_count"] >= 1
+
+
+def test_soar_release_host_restores_ingestion():
+    client.post("/api/reset")
+    target_ip = "10.0.8.21"
+
+    # Isolate
+    client.post("/api/soar/isolate", json={"ip_address": target_ip, "reason": "Data exfil suspect"})
+
+    # Verify blocked
+    res_blocked = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "database_download",
+        "user_id": "dev_suspect",
+        "ip_address": target_ip,
+        "location": "Internal LAN",
+        "status": "success"
+    })
+    assert res_blocked.status_code == 403
+
+    # Release Host
+    rel_res = client.post("/api/soar/release", json={"ip_address": target_ip})
+    assert rel_res.status_code == 200
+    assert rel_res.json()["status"] == "success"
+
+    # Traffic should now flow normally
+    res_restored = client.post("/api/ingest", json={
+        "timestamp": get_iso_now(),
+        "event_type": "database_download",
+        "user_id": "dev_suspect",
+        "ip_address": target_ip,
+        "location": "Internal LAN",
+        "status": "success"
+    })
+    assert res_restored.status_code == 201
+
+
+def test_soar_alert_status_transitions_to_contained():
+    client.post("/api/reset")
+    attacker_ip = "45.33.32.156"
+
+    # Trigger DDoS alert (Scenario 2)
+    client.post("/api/simulator/replay?scenario=2")
+    alerts_before = client.get("/api/alerts").json()
+    assert len(alerts_before) >= 1
+    assert any(a["ip_address"] == attacker_ip and a["status"] == "NEW" for a in alerts_before)
+
+    # Isolate the host
+    client.post("/api/soar/isolate", json={"ip_address": attacker_ip, "reason": "DDoS remediation"})
+
+    # Check alert status transitioned to CONTAINED
+    alerts_after = client.get("/api/alerts").json()
+    contained_alerts = [a for a in alerts_after if a["ip_address"] == attacker_ip]
+    assert len(contained_alerts) >= 1
+    assert all(a["status"] == "CONTAINED" for a in contained_alerts)
+
+
+def test_soar_stats_and_audit_trail():
+    client.post("/api/reset")
+    test_ip = "192.168.100.50"
+
+    client.post("/api/soar/isolate", json={"ip_address": test_ip, "reason": "Malware beacon"})
+    audit_log = client.get("/api/soar/audit").json()
+    assert len(audit_log) >= 1
+    assert audit_log[0]["action"] == "ISOLATE"
+    assert audit_log[0]["ip_address"] == test_ip
+
+    client.post("/api/soar/release", json={"ip_address": test_ip})
+    audit_after = client.get("/api/soar/audit").json()
+    assert audit_after[0]["action"] == "RELEASE"
+
+    # Reset clears isolated state
+    client.post("/api/reset")
+    stats = client.get("/api/stats").json()
+    assert stats["isolated_hosts_count"] == 0
+    assert stats["blocked_containment_count"] == 0

@@ -76,6 +76,14 @@
                 <span class="metric-label">Cold Storage Archive (&gt;14d)</span>
                 <span class="metric-value" id="valColdCount">0</span>
             </div>
+            <div class="metric-card" style="border-left-color: #ec4899;">
+                <span class="metric-label">🔒 Quarantined Hosts (SOAR)</span>
+                <span class="metric-value" id="valIsolatedCount">0</span>
+            </div>
+            <div class="metric-card" style="border-left-color: #10b981;">
+                <span class="metric-label">🛡️ Blocked Traffic (SOAR)</span>
+                <span class="metric-value" id="valBlockedCount">0</span>
+            </div>
         </section>
 
         <!-- Main Dashboard Split Layout -->
@@ -183,6 +191,70 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SOAR Active Defense & Containment Panel -->
+                <div class="panel" style="border-top: 2px solid #ec4899;">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            🔒 SOAR Active Defense (Network Quarantine)
+                        </h2>
+                        <span class="panel-badge" id="isolatedCountBadge" style="background: rgba(236,72,153,0.15); color: #ec4899; border-color: rgba(236,72,153,0.4);">0 Quarantined</span>
+                    </div>
+                    <div class="panel-body">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem; line-height: 1.4;">
+                            Mekanisme penanganan otomatis (Active Containment). Host yang diisolasi akan <strong>diputus total</strong> di Gatekeeper (HTTP 403 Dropped).
+                        </div>
+
+                        <form id="isolateForm">
+                            <div class="form-group">
+                                <label class="form-label" for="isolateIp">IP Target untuk Diisolasi</label>
+                                <input type="text" id="isolateIp" class="form-control" placeholder="Contoh: 45.33.32.156" required pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="isolateReason">Alasan Penindakan SOAR</label>
+                                <input type="text" id="isolateReason" class="form-control" placeholder="Contoh: Terdeteksi L7 HTTP Flooding">
+                            </div>
+                            <button type="submit" class="btn btn-isolate-primary" style="width: 100%;">
+                                🔒 Eksekusi Playbook: Isolate Host
+                            </button>
+                        </form>
+
+                        <div style="margin-top: 1.25rem;">
+                            <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Active Quarantined Hosts
+                            </h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>IP Address</th>
+                                            <th>Reason</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="isolatedTableBody">
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada host dalam karantina</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SOAR Audit Trail Stream -->
+                        <div style="margin-top: 1rem;">
+                            <h3 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase;">
+                                📜 SOAR Action Audit Trail
+                            </h3>
+                            <div id="soarAuditList" class="soar-audit-container">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">
+                                    Belum ada aksi penindakan SOAR
+                                </div>
                             </div>
                         </div>
 

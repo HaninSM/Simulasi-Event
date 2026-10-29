@@ -4,6 +4,7 @@ const API_BASE = "";
 
 // State
 let lastAlertIds = new Set();
+let isolatedIpsSet = new Set();
 
 // Elements
 const alertList = document.getElementById("alertList");
@@ -11,6 +12,14 @@ const logTableBody = document.getElementById("logTableBody");
 const whitelistTableBody = document.getElementById("whitelistTableBody");
 const whitelistForm = document.getElementById("whitelistForm");
 const btnReset = document.getElementById("btnReset");
+
+// SOAR Elements
+const valIsolatedCount = document.getElementById("valIsolatedCount");
+const valBlockedCount = document.getElementById("valBlockedCount");
+const isolatedCountBadge = document.getElementById("isolatedCountBadge");
+const isolatedTableBody = document.getElementById("isolatedTableBody");
+const isolateForm = document.getElementById("isolateForm");
+const soarAuditList = document.getElementById("soarAuditList");
 
 // Metric elements
 const valTotalLogs = document.getElementById("valTotalLogs");
@@ -61,15 +70,39 @@ function renderAlerts(alerts) {
 
     alertList.innerHTML = alerts.map(a => {
         const isCritical = a.severity === "KRITIS";
+        const isContained = a.status === "CONTAINED" || (a.ip_address && isolatedIpsSet.has(a.ip_address));
         const metaDetails = a.details ? Object.entries(a.details)
             .map(([k, v]) => `<span class="meta-item"><strong>${k}:</strong> ${typeof v === 'object' ? JSON.stringify(v) : v}</span>`)
             .join("") : "";
 
+        let soarActionButton = "";
+        if (a.ip_address) {
+            if (isContained) {
+                soarActionButton = `
+                    <button class="btn-action-release" onclick="releaseHost('${escapeHtml(a.ip_address)}')">
+                        🔓 Release Host
+                    </button>
+                `;
+            } else {
+                soarActionButton = `
+                    <button class="btn-action-isolate" onclick="isolateHost('${escapeHtml(a.ip_address)}', 'Containment for alert ${a.id}')">
+                        🔒 Isolate Host
+                    </button>
+                `;
+            }
+        }
+
         return `
-            <div class="alert-card ${a.severity}" id="alert-${a.id}">
+            <div class="alert-card ${a.severity} ${isContained ? 'CONTAINED' : ''}" id="alert-${a.id}">
                 <div class="alert-header">
-                    <span class="alert-badge ${a.severity}">${a.severity}</span>
-                    <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="alert-badge ${a.severity}">${a.severity}</span>
+                        ${isContained ? `<span class="badge-contained">🔒 CONTAINED</span>` : ""}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
+                        ${soarActionButton}
+                    </div>
                 </div>
                 <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
                 <div class="alert-desc">${escapeHtml(a.description)}</div>
@@ -93,10 +126,13 @@ async function fetchStats() {
         valWhitelistCount.textContent = stats.whitelist_count || 0;
         if (valWatchlistCount) valWatchlistCount.textContent = stats.watchlist_count || 0;
         if (valColdCount) valColdCount.textContent = stats.cold_archive_count || 0;
+        if (valIsolatedCount) valIsolatedCount.textContent = stats.isolated_hosts_count || 0;
+        if (valBlockedCount) valBlockedCount.textContent = stats.blocked_containment_count || 0;
     } catch (err) {
         console.error("Error fetching stats:", err);
     }
 }
+
 
 // 3. Fetch Recent Ingestion Logs
 async function fetchLogs() {
@@ -213,6 +249,159 @@ window.removeWhitelist = async function(ip) {
     }
 };
 
+// ---------------- SOAR ACTIVE DEFENSE (CONTAINMENT) ----------------
+
+// Fetch Quarantined / Isolated Hosts
+async function fetchIsolatedHosts() {
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/isolated`);
+        if (!res.ok) return;
+        const list = await res.json();
+        isolatedIpsSet = new Set(list.map(item => item.ip_address));
+        renderIsolatedHosts(list);
+    } catch (err) {
+        console.error("Error fetching isolated hosts:", err);
+    }
+}
+
+function renderIsolatedHosts(list) {
+    if (isolatedCountBadge) isolatedCountBadge.textContent = `${list ? list.length : 0} Quarantined`;
+
+    if (!list || list.length === 0) {
+        if (isolatedTableBody) {
+            isolatedTableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada host dalam karantina</td>
+                </tr>`;
+        }
+        return;
+    }
+
+    if (isolatedTableBody) {
+        isolatedTableBody.innerHTML = list.map(item => `
+            <tr>
+                <td><strong style="color: #ec4899;">🔒 ${escapeHtml(item.ip_address)}</strong></td>
+                <td><span style="font-size: 0.72rem;">${escapeHtml(item.reason || "Manual containment")}</span></td>
+                <td>
+                    <button class="btn-action-release" onclick="releaseHost('${escapeHtml(item.ip_address)}')">
+                        🔓 Release
+                    </button>
+                </td>
+            </tr>
+        `).join("");
+    }
+}
+
+// Fetch SOAR Action Audit Trail
+async function fetchSoarAudit() {
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/audit?limit=15`);
+        if (!res.ok) return;
+        const auditItems = await res.json();
+        renderSoarAudit(auditItems);
+    } catch (err) {
+        console.error("Error fetching SOAR audit trail:", err);
+    }
+}
+
+function renderSoarAudit(items) {
+    if (!soarAuditList) return;
+
+    if (!items || items.length === 0) {
+        soarAuditList.innerHTML = `
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">
+                Belum ada aksi penindakan SOAR
+            </div>`;
+        return;
+    }
+
+    soarAuditList.innerHTML = items.map(item => `
+        <div class="soar-audit-item ${item.action}">
+            <div class="soar-audit-header">
+                <strong>${item.action === 'ISOLATE' ? '🔒 HOST QUARANTINED' : '🔓 QUARANTINE RELEASED'}</strong>
+                <span>${formatTimestamp(item.timestamp)}</span>
+            </div>
+            <div>
+                Target: <code style="color: #fff;">${escapeHtml(item.ip_address)}</code>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 0.7rem;">
+                ${escapeHtml(item.reason || "-")} (${escapeHtml(item.analyst || "SOC Analyst")})
+            </div>
+        </div>
+    `).join("");
+}
+
+// Global Isolate Host Action
+window.isolateHost = async function(ip, reason) {
+    const actionReason = reason || prompt(`Alasan penindakan isolasi host ${ip}:`, "Host quarantined due to critical security alert");
+    if (!actionReason) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/isolate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ip_address: ip,
+                reason: actionReason,
+                analyst: "SOC Analyst Tier-1"
+            })
+        });
+
+        if (res.ok) {
+            fetchIsolatedHosts();
+            fetchAlerts();
+            fetchStats();
+            fetchSoarAudit();
+        } else {
+            const err = await res.json();
+            alert(`Gagal mengisolasi host: ${JSON.stringify(err.detail || err)}`);
+        }
+    } catch (err) {
+        alert(`Error executing SOAR containment: ${err.message}`);
+    }
+};
+
+// Global Release Host Action
+window.releaseHost = async function(ip) {
+    if (!confirm(`Lepas karantina jaringan untuk host ${ip}?`)) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/soar/release`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ip_address: ip,
+                analyst: "SOC Analyst Tier-1"
+            })
+        });
+
+        if (res.ok) {
+            fetchIsolatedHosts();
+            fetchAlerts();
+            fetchStats();
+            fetchSoarAudit();
+        } else {
+            const err = await res.json();
+            alert(`Gagal melepas karantina: ${JSON.stringify(err.detail || err)}`);
+        }
+    } catch (err) {
+        alert(`Error releasing quarantine: ${err.message}`);
+    }
+};
+
+// Isolate Form Submission
+if (isolateForm) {
+    isolateForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const ip = document.getElementById("isolateIp").value.trim();
+        const reason = document.getElementById("isolateReason").value.trim() || "Manual containment via SOAR Panel";
+        await window.isolateHost(ip, reason);
+        document.getElementById("isolateIp").value = "";
+        document.getElementById("isolateReason").value = "";
+    });
+}
+
+
 // Reset SIEM
 btnReset.addEventListener("click", async () => {
     if (!confirm("Reset database dan state korelasi SIEM?")) return;
@@ -223,6 +412,8 @@ btnReset.addEventListener("click", async () => {
             fetchStats();
             fetchLogs();
             fetchWhitelist();
+            fetchIsolatedHosts();
+            fetchSoarAudit();
         }
     } catch (err) {
         alert(`Reset error: ${err.message}`);
@@ -271,6 +462,8 @@ async function runScenarioFromBrowser(scNum) {
         fetchStats();
         fetchLogs();
         fetchWhitelist();
+        fetchIsolatedHosts();
+        fetchSoarAudit();
     }, 300);
 }
 
@@ -290,6 +483,8 @@ function pollCycle() {
     fetchAlerts();
     fetchStats();
     fetchLogs();
+    fetchIsolatedHosts();
+    fetchSoarAudit();
 }
 
 pollCycle();

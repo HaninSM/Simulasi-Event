@@ -1,4 +1,4 @@
-# 🛡️ Mini-SIEM Simulator (V2.0 - Real Log Replay & Advanced Threat Edition)
+# 🛡️ Mini-SIEM Simulator (V2.1 - Real Log Replay & SOAR Active Defense Edition)
 
 Aplikasi simulasi **Security Information and Event Management (SIEM)** berskala kecil berbasis API yang dibangun menggunakan **FastAPI**, **Pydantic**, dan **HTML5/CSS3/Vanilla JS (SOC Dark Command Center)**.
 
@@ -10,16 +10,18 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 5. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
 6. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
 7. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
+8. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
 
 ---
 
 ## 📋 Daftar Isi
 1. [Spesifikasi Kontrak Data](#-spesifikasi-kontrak-data)
 2. [5 Aturan Mesin Korelasi & Logika APT](#-5-aturan-mesin-korelasi--logika-apt)
-3. [Arsitektur Log Adapter & Berkas Sample Logs](#-arsitektur-log-adapter--berkas-sample-logs)
-4. [Instalasi & Persiapan Lingkungan](#-instalasi--persiapan-lingkungan)
-5. [Menjalankan Server & Dashboard](#-menjalankan-server--dashboard)
-6. [Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 8](#-panduan-step-by-step-menjalankan-poc-skenario-1-sd-8)
+3. [SOAR Active Defense & Host Containment](#-soar-active-defense--host-containment)
+4. [Arsitektur Log Adapter & Berkas Sample Logs](#-arsitektur-log-adapter--berkas-sample-logs)
+5. [Instalasi & Persiapan Lingkungan](#-instalasi--persiapan-lingkungan)
+6. [Menjalankan Server & Dashboard](#-menjalankan-server--dashboard)
+7. [Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 8](#-panduan-step-by-step-menjalankan-poc-skenario-1-sd-8)
    - [Skenario 1: Trafik Normal (Baseline)](#skenario-1-trafik-normal-baseline)
    - [Skenario 2: DDoS / Botnet Attack (Rule 1 - TINGGI)](#skenario-2-ddos--botnet-attack-rule-1---tinggi)
    - [Skenario 3: Impossible Travel (Rule 2 - KRITIS)](#skenario-3-impossible-travel-rule-2---kritis)
@@ -28,9 +30,10 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
    - [Skenario 6: Careless Whitelisting (Fatal Error / Blind Spot Demo)](#skenario-6-careless-whitelisting-fatal-error--blind-spot-demo)
    - [Skenario 7: Data Cacat & Time Drift (Gatekeeper Negative Testing)](#skenario-7-data-cacat--time-drift-gatekeeper-negative-testing)
    - [Skenario 8: The Low & Slow APT (Hot vs Cold Storage & Greylist Demo)](#skenario-8-the-low--slow-apt-hot-vs-cold-storage--greylist-demo)
-7. [Otomasi Pengujian (Automated Unit & Integration Tests - 20 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---20-passed)
-8. [Daftar Endpoint API SIEM](#-daftar-endpoint-api-siem)
-9. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
+   - [Demo SOAR: Host Isolation & Active Traffic Dropping](#demo-soar-host-isolation--active-traffic-dropping)
+8. [Otomasi Pengujian (Automated Unit & Integration Tests - 24 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---24-passed)
+9. [Daftar Endpoint API SIEM & SOAR](#-daftar-endpoint-api-siem--soar)
+10. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
 
 ---
 
@@ -48,7 +51,7 @@ Setiap log yang dikirim ke `POST /api/ingest` wajib memenuhi format JSON kanonik
 }
 ```
 
-*Jika data tidak mematuhi kontrak atau mengalami selisih waktu > 24 jam / masa depan, sistem secara otomatis merespons dengan **HTTP 422 (Unprocessable Entity)**.*
+*Jika data tidak mematuhi kontrak atau mengalami selisih waktu > 24 jam / masa depan, sistem merespons dengan **HTTP 422 (Unprocessable Entity)**. Jika IP pengirim sedang berada dalam status **Network Quarantine (SOAR)**, Gatekeeper langsung menolak dengan **HTTP 403 (Forbidden)**.*
 
 ---
 
@@ -61,6 +64,20 @@ Setiap log yang dikirim ke `POST /api/ingest` wajib memenuhi format JSON kanonik
 | **Rule 4** | **Off-Hours Anomaly** | **MENENGAH** | Aktivitas `status: success` oleh user manusia yang terjadi di luar jam kerja (00:00 - 05:00 waktu lokal). |
 | **Rule 5** | **Data Exfiltration** | **KRITIS** | 1 `user_id` melakukan `database_download` > 50 kali dalam rentang 1 menit. |
 | **APT Watchlist** | **Low & Slow APT Correlation**| **KRITIS** | IP yang sebelumnya melakukan *reconnaissance* terdaftar dalam *stateful greylist*. Saat IP tersebut mengirim *exploit request* di masa depan, SIEM merehidrasi riwayat dari *Cold Storage* dan membunyikan alarm APT. |
+
+---
+
+## 🔒 SOAR Active Defense & Host Containment
+Mini-SIEM mengintegrasikan kapabilitas **SOAR (Security Orchestration, Automation, and Response)** untuk respons aktif:
+1. **Network Quarantine (Isolate Host):**
+   * Analis dapat mengeklik tombol **"🔒 Isolate Host"** langsung pada kartu alert di dashboard, atau mengirim permintaan `POST /api/soar/isolate`.
+   * Status alert otomatis bertransisi menjadi **`[CONTAINED]`** dan animasi berkedip darurat dinonaktifkan.
+2. **Gatekeeper Enforcement (Active Traffic Drop):**
+   * Semua paket atau log lanjutan dari host yang telah diisolasi langsung ditolak di pintu masuk Gatekeeper dengan status kode **`HTTP 403 Forbidden`**.
+   * Counter *Blocked Traffic (SOAR)* bertambah secara *real-time*.
+3. **Audit Trail & Recovery:**
+   * Setiap penindakan dicatat dalam riwayat audit SOAR (`GET /api/soar/audit`).
+   * Host dapat dilepaskan dari karantina melalui tombol **"🔓 Release Host"** (`POST /api/soar/release`) setelah proses remediasi selesai.
 
 ---
 
@@ -81,11 +98,7 @@ sample_logs/                      app/log_adapter.py                     app/eng
 ```
 
 ### Mekanisme Dynamic Timestamp Shifting
-Berkas log asli di industri menyimpan timestamp historis. Jika di-replay apa adanya ke SIEM, log tersebut akan ditolak oleh Gatekeeper karena aturan *Time Drift* (> 24 jam lampau). 
-
-`LogAdapter.shift_timestamps_to_now()` menghitung selisih waktu antara entri pertama dalam berkas log dengan waktu saat ini (`NOW()`), lalu memproyeksikan seluruh baris log secara proporsional ke detik berjalan. Hal ini memastikan:
-1. Format asli (IP, user agent, query, payload, URL) tetap 100% autentik sesuai berkas raw.
-2. Jendela waktu korelasi (sliding window 10 detik atau 60 detik) tetap terpenuhi secara akurat saat simulasi berjalan.
+`LogAdapter.shift_timestamps_to_now()` menghitung selisih waktu antara entri pertama dalam berkas log dengan waktu saat ini (`NOW()`), lalu memproyeksikan seluruh baris log secara proporsional ke detik berjalan. Hal ini memastikan data mentah asli tetap 100% autentik sekaligus memicu sliding correlation windows tanpa melanggar Gatekeeper Time Drift Check.
 
 ---
 
@@ -126,7 +139,7 @@ Setelah server aktif, buka peramban Anda ke tautan berikut:
 * 🖥️ **Live SOC Dashboard**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 * 📖 **Dokumentasi Interaktif OpenAPI (Swagger)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-Dashboard akan otomatis melakukan sinkronisasi data (*polling*) setiap **2 detik** ke API SIEM.
+Dashboard melakukan sinkronisasi data (*polling*) setiap **2 detik** ke API SIEM.
 
 ---
 
@@ -136,105 +149,79 @@ Buka jendela terminal kedua dengan server tetap menyala di jendela pertama.
 
 Anda dapat menjalankan skenario melalui:
 1. **Script CLI Simulator**: `python simulator.py --scenario <1-8>`
-2. **One-Click Batch**: `run_simulator.bat`
-3. **Web UI Dashboard**: Mengklik langsung tombol pada panel *"Quick Scenario Launcher"* di sisi kanan halaman web (terhubung ke backend endpoint `POST /api/simulator/replay`).
+2. **Demo SOAR Active Defense**: `python simulator.py --soar`
+3. **One-Click Batch**: `run_simulator.bat`
+4. **Web UI Dashboard**: Mengklik langsung tombol pada panel *"Quick Scenario Launcher"* di sisi kanan halaman web.
 
 ---
 
 ### Skenario 1: Trafik Normal (Baseline)
 * **Sumber Data**: `sample_logs/web_access_normal.log` (Format Nginx/Apache Combined Log)
 * **Tujuan**: Membuktikan bahwa aktivitas normal karyawan tidak memicu alarm palsu (*False Positive*).
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 1
-  ```
-* **Hasil**: Counter *Ingested Logs* bertambah 4, counter *Total Alerts* tetap 0.
+* **Perintah**: `python simulator.py --scenario 1`
 
 ---
 
 ### Skenario 2: DDoS / Botnet Attack (Rule 1 - TINGGI)
 * **Sumber Data**: `sample_logs/nginx_ddos_flood.log` (Format Nginx HTTP Flood)
 * **Tujuan**: Membuktikan deteksi otomatis serangan flooding HTTP dari satu IP (`45.33.32.156`) dalam rentang 10 detik.
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 2
-  ```
-* **Hasil**: Alarm berbunyi dengan tingkat keparahan **TINGGI** (`DDoS / Botnet - 15 requests in 10s`).
+* **Perintah**: `python simulator.py --scenario 2`
 
 ---
 
 ### Skenario 3: Impossible Travel (Rule 2 - KRITIS)
 * **Sumber Data**: `sample_logs/vpn_and_gate_access.csv` (Format Telemetri Akses Fisik RFID & VPN Gateway)
 * **Tujuan**: Membuktikan korelasi identitas ganda yang mustahil secara fisik (User `budi_finance` tap pintu kantor Jakarta, lalu 2 menit kemudian login VPN dari Frankfurt, Jerman).
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 3
-  ```
-* **Hasil**: Alarm tingkat **KRITIS** (`Impossible Travel: User budi_finance logged in from Jakarta, Indonesia and Frankfurt, Germany within 1 hour`).
+* **Perintah**: `python simulator.py --scenario 3`
 
 ---
 
 ### Skenario 4: Distributed Brute Force (Rule 3 - TINGGI)
 * **Sumber Data**: `sample_logs/auth_sshd_bruteforce.log` (Format Linux `/var/log/auth.log` Syslog RFC 3164)
 * **Tujuan**: Membuktikan deteksi serangan tebak kata sandi terdistribusi yang menyasar 1 akun target (`admin_corp`) melalui beberapa IP exit node Tor berbeda dalam 1 menit.
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 4
-  ```
-* **Hasil**: Alarm tingkat **TINGGI** (`Distributed Brute Force: User admin_corp targeted by 6 failed logins from 4 distinct IPs in 1m`).
+* **Perintah**: `python simulator.py --scenario 4`
 
 ---
 
 ### Skenario 5: Data Exfiltration / Insider Threat (Rule 5 - KRITIS)
 * **Sumber Data**: `sample_logs/postgres_audit_exfiltration.jsonl` (Format Audit Query Database PGAudit JSONL)
 * **Tujuan**: Membuktikan deteksi orang dalam (*insider threat*) yang mengekstrak data nasabah secara masif (> 50 download query dalam 1 menit).
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 5
-  ```
-* **Hasil**: Alarm tingkat **KRITIS** (`Data Exfiltration: User dev_rogue downloaded database 55 times in 1m`).
+* **Perintah**: `python simulator.py --scenario 5`
 
 ---
 
 ### Skenario 6: Careless Whitelisting (Fatal Error / Blind Spot Demo)
 * **Sumber Data**: `sample_logs/careless_whitelist_attack.log` (Format Nginx Web Access)
 * **Tujuan**: Memperlihatkan bahaya fatal memasukkan IP sembarangan ke dalam whitelist.
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 6
-  ```
-* **Alur Eksekusi**:
-  1. Simulator mendaftarkan IP `203.0.113.88` ke whitelist SIEM.
-  2. Simulator menembakkan 15 request serangan flood dari IP tersebut.
-  3. SIEM menerima log, namun mesin korelasi membutakan diri sehingga alarm **TIDAK MUNJUL**.
-  4. Simulator menghapus IP dari whitelist dan mengirimkan 12 request baru: alarm langsung berbunyi **TINGGI**!
+* **Perintah**: `python simulator.py --scenario 6`
 
 ---
 
 ### Skenario 7: Data Cacat & Time Drift (Gatekeeper Negative Testing)
 * **Sumber Data**: `sample_logs/legacy_corrupted_device.log` (Telemetri Perangkat Lawas Rusak)
 * **Tujuan**: Membuktikan ketangguhan Gatekeeper dalam menolak log format rusak, atribut kosong, dan *Time Drift Error* (baterai CMOS reset ke tahun 1970 atau drift masa depan) dengan respons **HTTP 422** tanpa membuat sistem *crash*.
-* **Perintah**:
-  ```powershell
-  python simulator.py --scenario 7
-  ```
-* **Hasil**: 6 pengujian negatif berhasil ditolak dengan aman, health check SIEM menunjukkan kondisi tetap stabil dan responsif.
+* **Perintah**: `python simulator.py --scenario 7`
 
 ---
 
 ### Skenario 8: The Low & Slow APT (Hot vs Cold Storage & Greylist Demo)
 * **Sumber Data**: `sample_logs/apt_recon_and_exploit.log` (Telemetri Serangan Bertahap Berjarak 20 Hari)
 * **Tujuan**: Mengedukasi tantangan arsitektur *Hot Storage vs Cold Storage* dan mendemonstrasikan mitigasi kebutaan korelasi (*temporal blind spot*).
+* **Perintah**: `python simulator.py --scenario 8`
+
+---
+
+### Demo SOAR: Host Isolation & Active Traffic Dropping
+* **Tujuan**: Memperagakan penanganan insiden aktif saat analis mengisolasi host yang terinfeksi dan memutus serangannya secara instan.
 * **Perintah**:
   ```powershell
-  python simulator.py --scenario 8
+  python simulator.py --soar
   ```
 * **Alur Eksekusi**:
-  1. **Hari 1 (Reconnaissance Probe)**: IP penyerang (`198.51.100.77`) melakukan pemindaian direktori tersembunyi (`/.env`, `/wp-admin`).
-  2. **Hari 2 s/d 19 (Aging Out)**: Log hari pertama dipindahkan (*rotated*) dari Hot Storage (RAM/SSD) ke Cold Storage (S3/Glacier terkompresi).
-  3. **Hari 20 (Eksploitasi)**: Penyerang kembali mengeksekusi payload remote code execution.
-  4. **Uji Kasus A (Tanpa Watchlist)**: Korelasi standar gagal mendeteksi serangan karena data hari ke-1 sudah tidak ada di memori aktif (*Temporal Blind Spot*).
-  5. **Uji Kasus B (Dengan Stateful Greylist)**: Indikator IP mencurigakan tetap disimpan dalam tabel metadata ringan (*Stateful Greylist*). Saat eksploitasi terjadi di hari ke-20, SIEM memicu alarm investigasi dan merehidrasi riwayat audit dari Cold Storage secara instan untuk forensik digital.
+  1. Simulator menjalankan serangan L7 DDoS dari IP `45.33.32.156`.
+  2. SOAR mengeksekusi perintah isolasi jaringan (`POST /api/soar/isolate`).
+  3. Simulator mencoba mengirim paket serangan lanjutan dari host tersebut: Gatekeeper langsung menolak dengan status **HTTP 403 Forbidden (HOST ISOLATED)**.
+  4. Analis melepas karantina (`POST /api/soar/release`) dan membuktikan aliran trafik kembali normal.
 
 ---
 
@@ -246,7 +233,7 @@ python simulator.py --all
 
 ---
 
-## 🧪 Otomasi Pengujian (Automated Unit & Integration Tests - 20 Passed)
+## 🧪 Otomasi Pengujian (Automated Unit & Integration Tests - 24 Passed)
 
 Untuk memvalidasi integritas seluruh fungsionalitas sistem secara otomatis, jalankan rangkaian uji menggunakan `pytest`:
 
@@ -258,48 +245,56 @@ pytest test_siem.py -v
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.1.1
-collected 20 items
+collected 24 items
 
-test_siem.py::test_missing_ip_address_rejected PASSED                    [  5%]
-test_siem.py::test_null_ip_address_rejected PASSED                       [ 10%]
-test_siem.py::test_missing_ip_key_completely_rejected PASSED             [ 15%]
-test_siem.py::test_truncated_malformed_json_rejected PASSED              [ 20%]
-test_siem.py::test_invalid_ipv4_rejected PASSED                          [ 25%]
-test_siem.py::test_time_drift_cmos_battery_reset_1970_rejected PASSED    [ 30%]
-test_siem.py::test_time_drift_future_rejected PASSED                     [ 35%]
-test_siem.py::test_invalid_event_type_rejected PASSED                    [ 40%]
-test_siem.py::test_rule_1_ddos_detection PASSED                          [ 45%]
-test_siem.py::test_rule_2_impossible_travel PASSED                       [ 50%]
-test_siem.py::test_rule_3_distributed_brute_force PASSED                 [ 55%]
-test_siem.py::test_rule_4_off_hours_anomaly PASSED                       [ 60%]
-test_siem.py::test_rule_5_data_exfiltration PASSED                       [ 65%]
-test_siem.py::test_careless_whitelisting_blinds_correlation_engine PASSED [ 70%]
-test_siem.py::test_scenario_8_recon_probe_and_cold_storage_aging PASSED  [ 75%]
-test_siem.py::test_scenario_8_apt_correlation_blind_spot_without_watchlist PASSED [ 80%]
-test_siem.py::test_scenario_8_apt_correlation_success_with_persistent_watchlist PASSED [ 85%]
-test_siem.py::test_stats_and_reset_endpoints PASSED                      [ 90%]
-test_siem.py::test_log_adapter_parses_real_sample_files PASSED           [ 95%]
-test_siem.py::test_api_simulator_replay_scenarios PASSED                 [100%]
+test_siem.py::test_missing_ip_address_rejected PASSED                    [  4%]
+test_siem.py::test_null_ip_address_rejected PASSED                       [  8%]
+test_siem.py::test_missing_ip_key_completely_rejected PASSED             [ 12%]
+test_siem.py::test_truncated_malformed_json_rejected PASSED              [ 16%]
+test_siem.py::test_invalid_ipv4_rejected PASSED                          [ 20%]
+test_siem.py::test_time_drift_cmos_battery_reset_1970_rejected PASSED    [ 25%]
+test_siem.py::test_time_drift_future_rejected PASSED                     [ 29%]
+test_siem.py::test_invalid_event_type_rejected PASSED                    [ 33%]
+test_siem.py::test_rule_1_ddos_detection PASSED                          [ 37%]
+test_siem.py::test_rule_2_impossible_travel PASSED                       [ 41%]
+test_siem.py::test_rule_3_distributed_brute_force PASSED                 [ 45%]
+test_siem.py::test_rule_4_off_hours_anomaly PASSED                       [ 50%]
+test_siem.py::test_rule_5_data_exfiltration PASSED                       [ 54%]
+test_siem.py::test_careless_whitelisting_blinds_correlation_engine PASSED [ 58%]
+test_siem.py::test_scenario_8_recon_probe_and_cold_storage_aging PASSED  [ 62%]
+test_siem.py::test_scenario_8_apt_correlation_blind_spot_without_watchlist PASSED [ 66%]
+test_siem.py::test_scenario_8_apt_correlation_success_with_persistent_watchlist PASSED [ 70%]
+test_siem.py::test_stats_and_reset_endpoints PASSED                      [ 75%]
+test_siem.py::test_log_adapter_parses_real_sample_files PASSED           [ 79%]
+test_siem.py::test_api_simulator_replay_scenarios PASSED                 [ 83%]
+test_siem.py::test_soar_isolate_host_blocks_subsequent_ingestion_http_403 PASSED [ 87%]
+test_siem.py::test_soar_release_host_restores_ingestion PASSED           [ 91%]
+test_siem.py::test_soar_alert_status_transitions_to_contained PASSED     [ 95%]
+test_siem.py::test_soar_stats_and_audit_trail PASSED                     [100%]
 
-======================== 20 passed, 1 warning in 1.78s ========================
+======================== 24 passed, 1 warning in 2.00s ========================
 ```
 
 ---
 
-## 📡 Daftar Endpoint API SIEM
+## 📡 Daftar Endpoint API SIEM & SOAR
 
 | Method | Endpoint | Deskripsi | Status Code |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | Melayani web dashboard SOC (HTML/JS/CSS) | `200 OK` |
-| `POST` | `/api/ingest` | Menerima & memvalidasi log telemetri, mengevaluasi aturan korelasi | `201 Created` / `422 Unprocessable` |
+| `POST` | `/api/ingest` | Menerima & memvalidasi log telemetri, mengevaluasi aturan korelasi, menegakkan karantina SOAR | `201 Created` / `403 Forbidden` / `422 Unprocessable` |
 | `GET` | `/api/alerts` | Mengambil daftar alarm aktif (dapat difilter berdasarkan `severity`) | `200 OK` |
 | `GET` | `/api/logs` | Mengambil 15 log telemetri terbaru yang berhasil di-ingest | `200 OK` |
-| `GET` | `/api/stats` | Mengambil statistik agregasi metrik operasional SOC | `200 OK` |
+| `GET` | `/api/stats` | Mengambil statistik agregasi metrik operasional SOC (termasuk count SOAR) | `200 OK` |
 | `POST` | `/api/whitelist` | Menambahkan IP ke daftar pengecualian (*Blind Spot*) | `200 OK` |
 | `GET` | `/api/whitelist` | Melihat daftar IP yang saat ini di-whitelist | `200 OK` |
 | `DELETE` | `/api/whitelist/{ip}`| Menghapus IP dari daftar whitelist | `200 OK` / `404 Not Found` |
+| `POST` | `/api/soar/isolate` | **SOAR Action:** Mengisolasi host mencurigakan dan memutus trafficnya | `200 OK` |
+| `POST` | `/api/soar/release` | **SOAR Action:** Melepas status karantina host | `200 OK` / `404 Not Found` |
+| `GET` | `/api/soar/isolated` | Mengambil daftar seluruh host yang sedang dikarantina | `200 OK` |
+| `GET` | `/api/soar/audit` | Mengambil riwayat audit log tindakan penanganan SOAR | `200 OK` |
 | `POST` | `/api/simulator/replay` | Menjalankan replay otomatis berkas log fisik dari `sample_logs/` (parameter `scenario=1..8`) | `200 OK` / `400 Bad Request` |
-| `POST` | `/api/reset` | Mereset seluruh log, alert, dan whitelist in-memory | `200 OK` |
+| `POST` | `/api/reset` | Mereset seluruh log, alert, whitelist, dan karantina SOAR in-memory | `200 OK` |
 
 ---
 
@@ -309,14 +304,14 @@ test_siem.py::test_api_simulator_replay_scenarios PASSED                 [100%]
 CommandCenter/
 ├── app/
 │   ├── __init__.py          # Modul Python app
-│   ├── main.py              # Router FastAPI, endpoint ingestion, replay, & static handler
-│   ├── models.py            # Model data Pydantic, IPv4 validator, & time drift rule
-│   ├── engine.py            # Mesin korelasi, sliding windows, debouncing, & whitelist
+│   ├── main.py              # Router FastAPI, endpoint ingestion, SOAR containment, & replay
+│   ├── models.py            # Model data Pydantic, schema SOAR, IPv4 validator, & time drift rule
+│   ├── engine.py            # Mesin korelasi, debouncing, SOAR state (quarantine & audit trail)
 │   ├── log_adapter.py       # Universal Log Adapter: multi-format parser & dynamic timestamp shifter
 │   └── static/
-│       ├── index.html       # Antarmuka Command Center SOC Dark Theme
-│       ├── style.css        # Tata letak grid/flexbox & efek visual alert KRITIS
-│       └── app.js           # Polling real-time 2s & penghubung ke /api/simulator/replay
+│       ├── index.html       # Antarmuka Command Center SOC Dark Theme (dengan SOAR Panel)
+│       ├── style.css        # Tata letak grid/flexbox, efek visual alert KRITIS & status CONTAINED
+│       └── app.js           # Polling real-time 2s & handler aksi interaktif Isolate/Release Host
 ├── sample_logs/             # Kumpulan berkas log fisik autentik dunia nyata
 │   ├── web_access_normal.log         # Format Nginx/Apache Combined Log
 │   ├── nginx_ddos_flood.log          # Format Nginx HTTP Flood
@@ -327,12 +322,12 @@ CommandCenter/
 │   ├── legacy_corrupted_device.log   # Telemetri format rusak & Time Drift Error
 │   └── apt_recon_and_exploit.log     # Format Jejak APT multi-fase (20 hari)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
-├── simulator.py             # Script simulator interaktif 8 skenario berbasis berkas log asli
-├── test_siem.py             # Test suite 20 unit & integration test otomatis
+├── simulator.py             # Script simulator interaktif 8 skenario & demo SOAR containment
+├── test_siem.py             # Test suite 24 unit & integration test otomatis (100% passed)
 ├── requirements.txt         # Daftar dependensi Python
 ├── run_server.bat           # Launcher server satu-klik
 ├── run_simulator.bat        # Launcher simulator satu-klik
-├── mini_siem_product_requirements_document.md # Dokumen PRD V2.0
+├── mini_siem_product_requirements_document.md # Dokumen PRD V2.1
 └── README.md                # Panduan teknis lengkap & PoC skenario
 ```
 
@@ -340,4 +335,4 @@ CommandCenter/
 
 ## 🛡️ Catatan Tambahan untuk Demonstrasi
 * **Tombol Reset**: Setiap kali Anda ingin memulai demonstrasi bersih dari awal, tekan tombol **🔄 Reset SIEM State** di bilah navigasi dashboard atau jalankan `python simulator.py --reset`.
-* **Pengujian Fleksibel**: Demonstrasi dapat dijalankan baik melalui terminal (`simulator.py`) maupun melalui tombol skenario pada dashboard web browser. Keduanya mengeksekusi berkas fisik yang sama dari `sample_logs/`.
+* **Pengujian Fleksibel**: Demonstrasi dapat dijalankan baik melalui terminal (`simulator.py`) maupun melalui antarmuka web browser.

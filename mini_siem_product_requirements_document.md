@@ -1,4 +1,4 @@
-# 📄 PRD.md: Mini-SIEM Simulator (V2.0 - Real Log Replay & Advanced Threat Edition)
+# 📄 PRD.md: Mini-SIEM Simulator (V2.1 - Real Log Replay & SOAR Active Defense Edition)
 
 ## 1. Ringkasan Produk
 **Mini-SIEM** adalah aplikasi simulasi *Security Information and Event Management* berskala kecil berbasis API. Sistem ini dirancang untuk mendemonstrasikan secara *real-time* bagaimana pusat komando operasi keamanan (SOC):
@@ -8,6 +8,7 @@
 4. Menangani *Alert Fatigue* dengan debouncing cerdas.
 5. Memitigasi kegagalan transmisi data cacat dan *Time Drift Error* (HTTP 422).
 6. Mengungkap bahaya *Blind Spot* akibat *Careless Whitelisting* dan serangan *Low & Slow APT* (tantangan *Hot vs Cold Storage*).
+7. Menjalankan penanganan insiden aktif melalui **SOAR Playbook (Host Containment / Network Quarantine)** yang memutus paket penyerang di gerbang masuk (*Gatekeeper HTTP 403 Dropped*).
 
 ## 2. Spesifikasi Data (Data Contracts)
 Semua log yang masuk ke sistem (Ingestion) wajib memenuhi format JSON kanonikal berikut. Sistem Gatekeeper akan menolak data yang tidak mematuhi kontrak ini:
@@ -26,6 +27,7 @@ Semua log yang masuk ke sistem (Ingestion) wajib memenuhi format JSON kanonikal 
 
 ### Fitur A: API Ingestion & Validasi (Gatekeeper)
 * Menerima log melalui `POST /api/ingest`.
+* **SOAR Active Enforcement:** Jika IP pengirim tercatat dalam daftar karantina (`isolated_hosts`), Gatekeeper langsung menolak log dengan kode status **HTTP 403 (Forbidden)** dan menambah metrik *Blocked Containment Traffic*.
 * **Validasi Negatif:** Sistem merespons HTTP 422 (*Unprocessable Entity*) dan menolak log jika:
   * Format JSON rusak (sintaks terputus) atau atribut wajib (seperti IP) hilang/bernilai `null`.
   * Format IP bukan IPv4 valid (misal: `999.999.999.999`).
@@ -53,9 +55,20 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 5. **Data Exfiltration / Insider Threat (Level: KRITIS):** 1 `user_id` melakukan `database_download` > 50 kali dalam rentang 1 menit.
 6. **Advanced Persistent Threat (APT) / Temporal Correlation:** Korelasi jejak *reconnaissance* dari *Cold Storage* yang diaktifkan kembali (*rehydrated*) terhadap *exploit request* di *Hot Storage* menggunakan tabel stateful *Suspicious Greylist/Watchlist*.
 
-### Fitur D: Dashboard Real-Time & Tuning
+### Fitur D: SOAR Active Defense (Host Containment Playbook)
+* **Karantina Jaringan (`POST /api/soar/isolate`):**
+  * Analis dapat mengisolasi host target dengan satu klik langsung dari kartu alert atau panel SOAR.
+  * Status alert bertransisi dari `NEW` menjadi `CONTAINED` (animasi kedip darurat dimatikan).
+  * Penindakan dicatat dalam log audit SOAR lengkap dengan stempel waktu, nama analis, dan alasan.
+* **Pemulihan Akses (`POST /api/soar/release`):**
+  * Analis dapat melepas status isolasi setelah ancaman dinetralisir, mengembalikan aliran trafik ke kondisi normal.
+* **Audit Trail Feed (`GET /api/soar/audit`):**
+  * Menyajikan riwayat jejak audit eksekusi playbook SOAR untuk akuntabilitas operasional SOC.
+
+### Fitur E: Dashboard Real-Time & Tuning
 * **Live SOC Monitor:** Antarmuka web mengambil data dari `GET /api/alerts` setiap 2 detik.
-* **Visualisasi:** Alarm kritis berkedip merah dengan penanda waktu ISO.
+* **Visualisasi Insiden:** Alarm kritis berkedip merah dengan penanda waktu ISO; alert yang telah diisolasi ditandai dengan badge `[CONTAINED]` berlatar tenang.
+* **Panel SOAR Terintegrasi:** Menampilkan daftar host yang sedang dikarantina beserta audit trail tindakan analis.
 * **Careless Whitelisting:** Menyediakan kontrol (`POST /api/whitelist`) untuk mengecualikan IP secara manual, memvisualisasikan terciptanya celah *Blind Spot*.
 * **Replay Launcher:** Panel peluncur skenario 1 s/d 8 langsung dari antarmuka web yang terhubung ke physical log replay.
 
@@ -68,11 +81,12 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 6. **Skenario 6 (Careless Whitelisting):** Replay dari `careless_whitelist_attack.log` membuktikan IP yang di-whitelist membutakan SIEM.
 7. **Skenario 7 (Data Cacat & Time Drift):** Replay dari `legacy_corrupted_device.log` membuktikan Gatekeeper menolak log rusak tanpa membuat server crash (HTTP 422).
 8. **Skenario 8 (Low & Slow APT):** Replay dari `apt_recon_and_exploit.log` mendemonstrasikan mitigasi kebutaan korelasi akibat rotasi Hot ke Cold Storage menggunakan persistent watchlist.
+9. **Demo SOAR Active Defense:** Menjalankan `python simulator.py --soar` untuk memperagakan isolasi IP `45.33.32.156`, pemutusan traffic penyerang secara instan di Gatekeeper (HTTP 403), dan pemulihan karantina.
 
 ## 5. Tumpukan Teknologi (Tech Stack)
 * **Backend:** Python 3.11 + FastAPI (Asynchronous, High-Performance, ASGI).
 * **Validasi Skema:** Pydantic V2 + RFC 5424/OCSF normalization logic.
 * **Adapter & Ingestion:** Universal Log Adapter (`app/log_adapter.py`) dengan regex parser multi-format.
-* **Penyimpanan Telemetri:** *In-memory stateful store* (Event cache, Active Alerts, Whitelist, Suspicious Greylist).
-* **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, tanpa dependencies eksternal).
-* **Simulator & Testing:** Python Requests, Pytest test suite (20 automated test cases).
+* **Penyimpanan Telemetri:** *In-memory stateful store* (Event cache, Active Alerts, Whitelist, Suspicious Greylist, Isolated Hosts, SOAR Audit Trail).
+* **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, SOAR Active Panel, tanpa dependencies eksternal).
+* **Simulator & Testing:** Python Requests, Pytest test suite (24 automated test cases).

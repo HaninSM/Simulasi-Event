@@ -3,7 +3,10 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Set, Optional
 from collections import defaultdict
 
-from app.models import LogEvent, Alert, WhitelistRequest, WatchlistRequest
+from app.models import (
+    LogEvent, Alert, WhitelistRequest, WatchlistRequest,
+    IsolateHostRequest, ReleaseHostRequest
+)
 
 
 class CorrelationEngine:
@@ -14,6 +17,12 @@ class CorrelationEngine:
         # Stateful Watchlist (Greylist) for Long-Term APT Tracking:
         # ip_address -> dict(risk_level, reason, added_at, probe_count)
         self.watchlist: Dict[str, dict] = {}
+
+        # SOAR State: Active Network Quarantine / Isolated Hosts
+        # ip_address -> dict(ip_address, reason, analyst, isolated_at)
+        self.isolated_hosts: Dict[str, dict] = {}
+        self.soar_audit_trail: List[dict] = []
+        self.blocked_containment_count: int = 0
 
         # In-memory Hot Storage for logs and alerts (Instant Correlation)
         self.raw_logs: List[LogEvent] = []
@@ -80,6 +89,81 @@ class CorrelationEngine:
     def is_watchlisted(self, ip_address: str) -> bool:
         return ip_address in self.watchlist
 
+    # --- SOAR (Active Defense & Host Containment) Methods ---
+
+    def isolate_host(
+        self,
+        ip_address: str,
+        reason: str = "Contained by SOC Analyst via Active Defense Playbook",
+        analyst: str = "SOC Analyst Tier-1"
+    ) -> dict:
+        """
+        Quarantines a compromised or hostile host.
+        Subsequent network requests from this host will be blocked at the Gatekeeper (HTTP 403).
+        Transitions matching active alerts to 'CONTAINED' status.
+        """
+        now_iso = datetime.now(timezone.utc).isoformat()
+        entry = {
+            "ip_address": ip_address,
+            "reason": reason,
+            "analyst": analyst,
+            "isolated_at": now_iso
+        }
+        self.isolated_hosts[ip_address] = entry
+
+        # Transition active alerts for this IP to CONTAINED
+        for a in self.alerts:
+            if a.ip_address == ip_address and a.status == "NEW":
+                a.status = "CONTAINED"
+
+        # Record in SOAR audit trail
+        audit_entry = {
+            "id": str(uuid.uuid4())[:8],
+            "action": "ISOLATE",
+            "ip_address": ip_address,
+            "reason": reason,
+            "analyst": analyst,
+            "timestamp": now_iso
+        }
+        self.soar_audit_trail.append(audit_entry)
+        if len(self.soar_audit_trail) > 200:
+            self.soar_audit_trail.pop(0)
+
+        return entry
+
+    def release_host(self, ip_address: str, analyst: str = "SOC Analyst Tier-1") -> bool:
+        """
+        Lifts network quarantine on a host, allowing traffic to resume.
+        """
+        if ip_address in self.isolated_hosts:
+            del self.isolated_hosts[ip_address]
+            now_iso = datetime.now(timezone.utc).isoformat()
+            audit_entry = {
+                "id": str(uuid.uuid4())[:8],
+                "action": "RELEASE",
+                "ip_address": ip_address,
+                "reason": "Host quarantine released / restored to network",
+                "analyst": analyst,
+                "timestamp": now_iso
+            }
+            self.soar_audit_trail.append(audit_entry)
+            if len(self.soar_audit_trail) > 200:
+                self.soar_audit_trail.pop(0)
+            return True
+        return False
+
+    def is_host_isolated(self, ip_address: str) -> bool:
+        return ip_address in self.isolated_hosts
+
+    def get_isolated_hosts(self) -> List[dict]:
+        return list(self.isolated_hosts.values())
+
+    def get_soar_audit_trail(self) -> List[dict]:
+        return list(reversed(self.soar_audit_trail))
+
+    def record_blocked_containment(self, ip_address: str):
+        self.blocked_containment_count += 1
+
     def archive_to_cold(self, ip_address: Optional[str] = None) -> int:
         """
         Simulates log lifecycle: moves events from hot storage into frozen cold archive.
@@ -126,6 +210,9 @@ class CorrelationEngine:
         self.alerts.clear()
         self.cold_archive.clear()
         self.watchlist.clear()
+        self.isolated_hosts.clear()
+        self.soar_audit_trail.clear()
+        self.blocked_containment_count = 0
         self.web_requests_by_ip.clear()
         self.successful_logins_by_user.clear()
         self.failed_logins_by_user.clear()

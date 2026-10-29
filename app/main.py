@@ -6,7 +6,10 @@ from typing import List, Optional
 import os
 import json
 
-from app.models import LogEvent, Alert, WhitelistRequest, WatchlistRequest
+from app.models import (
+    LogEvent, Alert, WhitelistRequest, WatchlistRequest,
+    IsolateHostRequest, ReleaseHostRequest
+)
 from app.engine import CorrelationEngine
 from app.log_adapter import LogAdapter
 
@@ -53,9 +56,18 @@ def get_presentation():
 def ingest_log(event: LogEvent):
     """
     Ingests security event logs with schema & time drift validation.
+    Enforces SOAR Host Containment: drops traffic from quarantined hosts (HTTP 403).
     Returns HTTP 201 when accepted, or triggers alerts if correlation rules match.
     Returns HTTP 422 automatically if validation fails.
     """
+    # Gatekeeper SOAR Enforcement: Check if source host is isolated
+    if engine.is_host_isolated(event.ip_address):
+        engine.record_blocked_containment(event.ip_address)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"SECURITY CONTAINMENT: Host '{event.ip_address}' is ISOLATED by SOC Playbook. Traffic dropped at Gatekeeper."
+        )
+
     triggered_alerts = engine.process_log(event)
     return {
         "status": "accepted",
@@ -167,6 +179,56 @@ def rehydrate_cold(ip_address: str = Query(..., min_length=1)):
     }
 
 
+# ---------------- SOAR (ACTIVE DEFENSE & CONTAINMENT) ----------------
+
+@app.post("/api/soar/isolate")
+def isolate_host(req: IsolateHostRequest):
+    """
+    SOAR Active Defense: Quarantines a compromised or malicious host.
+    Subsequent traffic from this host is immediately dropped at the Gatekeeper (HTTP 403).
+    """
+    entry = engine.isolate_host(
+        ip_address=req.ip_address,
+        reason=req.reason or "Contained by SOC Analyst via Active Defense Playbook",
+        analyst=req.analyst or "SOC Analyst Tier-1"
+    )
+    return {
+        "status": "success",
+        "message": f"Host {req.ip_address} has been ISOLATED from network.",
+        "data": entry
+    }
+
+
+@app.post("/api/soar/release")
+def release_host(req: ReleaseHostRequest):
+    """
+    SOAR Active Defense: Releases a host from network quarantine.
+    """
+    released = engine.release_host(req.ip_address, analyst=req.analyst or "SOC Analyst Tier-1")
+    if not released:
+        raise HTTPException(status_code=404, detail=f"Host {req.ip_address} is not currently isolated.")
+    return {
+        "status": "success",
+        "message": f"Host {req.ip_address} network quarantine released / restored."
+    }
+
+
+@app.get("/api/soar/isolated")
+def list_isolated_hosts():
+    """
+    Returns list of all currently quarantined hosts.
+    """
+    return engine.get_isolated_hosts()
+
+
+@app.get("/api/soar/audit")
+def list_soar_audit(limit: int = Query(50, ge=1, le=200)):
+    """
+    Returns the SOAR containment action audit trail.
+    """
+    return engine.get_soar_audit_trail()[:limit]
+
+
 @app.get("/api/stats")
 def get_stats():
     """
@@ -189,7 +251,9 @@ def get_stats():
         "events_by_type": events_by_type,
         "whitelist_count": len(engine.whitelist),
         "watchlist_count": len(engine.watchlist),
-        "cold_archive_count": len(engine.cold_archive)
+        "cold_archive_count": len(engine.cold_archive),
+        "isolated_hosts_count": len(engine.isolated_hosts),
+        "blocked_containment_count": engine.blocked_containment_count
     }
 
 

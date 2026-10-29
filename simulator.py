@@ -329,6 +329,62 @@ def scenario_8_low_and_slow_apt(api_base):
     print(f"\n{GREEN}[OK] Hasil Skenario 8: Terbukti berhasil mengatasi jebakan Low & Slow APT dari file log riil!{RESET}")
 
 
+def demo_soar_containment(api_base):
+    print(f"\n{BOLD}{CYAN}>>> DEMO SOAR: Active Defense & Host Containment Playbook{RESET}")
+    print("Konsep: Begitu SIEM mendeteksi ancaman, analis mengeksekusi Playbook 'Isolate Host'.")
+    print("Efek: Gatekeeper SIEM langsung memutus traffic IP penyerang (HTTP 403 Dropped) secara real-time.")
+
+    target_ip = "45.33.32.156"
+    print(f"\n{YELLOW}[Fase 1] Menembakkan serangan DDoS awal dari IP {target_ip}...{RESET}")
+    scenario_2_ddos_attack(api_base)
+    time.sleep(1)
+
+    print(f"\n{YELLOW}[Fase 2] Menjalankan SOAR Action: Isolate Host '{target_ip}'...{RESET}")
+    try:
+        iso_res = requests.post(f"{api_base}/api/soar/isolate", json={
+            "ip_address": target_ip,
+            "reason": "Automated containment: L7 HTTP Flood detected",
+            "analyst": "SOC Analyst Tier-1"
+        }, timeout=5)
+        if iso_res.status_code == 200:
+            print(f"{GREEN}[+] SUCCESS: Host {target_ip} berhasil DIISOLASI oleh SOAR!{RESET}")
+            print(f"    Status Alert di Dashboard berubah menjadi: [CONTAINED]")
+        else:
+            print(f"{RED}[!] Gagal mengisolasi host: {iso_res.text}{RESET}")
+            return
+    except Exception as e:
+        print(f"{RED}[!] Error: {e}{RESET}")
+        return
+
+    time.sleep(1)
+    print(f"\n{YELLOW}[Fase 3] Menguji Penegakan Gatekeeper: Penyerang mencoba mengirim 3 request lanjutan...{RESET}")
+    for i in range(1, 4):
+        log_payload = {
+            "timestamp": get_current_utc_iso(),
+            "event_type": "web_request",
+            "user_id": f"bot_drone_{i}",
+            "ip_address": target_ip,
+            "location": "Dallas, US",
+            "status": "success"
+        }
+        res = requests.post(f"{api_base}/api/ingest", json=log_payload, timeout=5)
+        if res.status_code == 403:
+            print(f"  {GREEN}[BLOCKED - HTTP 403] Paket {i} dari {target_ip} langsung DITOLAK oleh Gatekeeper!{RESET}")
+        else:
+            print(f"  {RED}[!] Request lolos ({res.status_code}){RESET}")
+        time.sleep(0.3)
+
+    time.sleep(1)
+    print(f"\n{YELLOW}[Fase 4] Pemulihan: Analis menyelesaikan investigasi & melepas karantina...{RESET}")
+    try:
+        rel_res = requests.post(f"{api_base}/api/soar/release", json={"ip_address": target_ip}, timeout=5)
+        if rel_res.status_code == 200:
+            print(f"{GREEN}[+] SUCCESS: Karantina untuk {target_ip} dilepas. Traffic normal dipulihkan.{RESET}")
+    except Exception as e:
+        print(f"{RED}[!] Error: {e}{RESET}")
+    print(f"\n{BOLD}{GREEN}[OK] Hasil Demo SOAR: Active Defense & Containment Playbook terbukti memutus serangan!{RESET}")
+
+
 # ---------------- UTILITY: RESET ----------------
 def reset_siem_database(api_base):
     try:
@@ -374,6 +430,7 @@ def interactive_menu(api_base):
         print("  6. Skenario 6 - Careless Whitelisting (Demonstrasi Blind Spot Fatal)")
         print("  7. Skenario 7 - Data Cacat & Time Drift (Validasi Gatekeeper HTTP 422)")
         print("  8. Skenario 8 - The Low & Slow APT (Hot vs Cold Storage Dilemma & Stateful Watchlist)")
+        print("  C. Demo SOAR - Active Defense (Isolate Host, Drop Traffic & Release Quarantine)")
         print("  -------------------------------------------------------------")
         print("  9. Jalankan Seluruh Skenario (1 - 8 Tour Lengkap)")
         print("  R. Reset SIEM Memory (Bersihkan log, alarm & whitelist)")
@@ -397,6 +454,8 @@ def interactive_menu(api_base):
             scenario_7_corrupted_data_and_time_drift(api_base)
         elif choice == "8":
             scenario_8_low_and_slow_apt(api_base)
+        elif choice.upper() == "C":
+            demo_soar_containment(api_base)
         elif choice == "9":
             run_all_scenarios(api_base)
         elif choice.upper() == "R":
@@ -414,6 +473,7 @@ def main():
     parser = argparse.ArgumentParser(description="Mini-SIEM Attack & Telemetry Simulator")
     parser.add_argument("--api", default=DEFAULT_API_BASE, help="SIEM API base URL (default: http://127.0.0.1:8000)")
     parser.add_argument("--scenario", "-s", type=int, choices=range(1, 9), help="Jalankan skenario tertentu (1-8)")
+    parser.add_argument("--soar", action="store_true", help="Jalankan demonstrasi SOAR Active Defense & Host Containment")
     parser.add_argument("--all", action="store_true", help="Jalankan semua skenario secara berurutan")
     parser.add_argument("--reset", action="store_true", help="Reset state memori SIEM")
 
@@ -421,6 +481,10 @@ def main():
 
     if args.reset:
         reset_siem_database(args.api)
+        return
+
+    if args.soar:
+        demo_soar_containment(args.api)
         return
 
     if args.all:
