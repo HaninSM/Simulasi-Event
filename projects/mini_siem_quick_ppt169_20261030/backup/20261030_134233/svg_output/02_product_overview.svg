@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">01 / RINGKASAN PRODUK (PRD §1.1)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">6 Nilai Strategis &amp; Solusi Ekosistem Mini-SIEM</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Arsitektur pertahanan aktif hulu-ke-hilir untuk keamanan perimeter, identitas, dan fasilitas.</text>
+  </g>
+    <g id="card-1" data-pptx-bounds="72 135 365 235">
+      <rect x="72" y="135" width="365" height="235" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="72" y="135" width="6" height="235" rx="3" fill="#0284C7"/>
+      <text x="94" y="171" font-size="16" font-weight="bold" fill="#0F172A">1. Gatekeeper Ingestion</text>
+      <text x="94" y="199" font-size="12" font-weight="bold" fill="#0284C7">ENTERPRISE CAPABILITY</text>
+      <text x="94" y="235" font-size="13" fill="#475569">Normalisasi kontrak JSON kanonikal dari</text><text x="94" y="259" font-size="13" fill="#475569">beragam sumber log mentah. Menolak data</text><text x="94" y="283" font-size="13" fill="#475569">cacat dan clock drift via HTTP 422.</text>
+    </g>
+    <g id="card-2" data-pptx-bounds="462 135 365 235">
+      <rect x="462" y="135" width="365" height="235" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="462" y="135" width="6" height="235" rx="3" fill="#2563EB"/>
+      <text x="484" y="171" font-size="16" font-weight="bold" fill="#0F172A">2. Rule Correlation Engine</text>
+      <text x="484" y="199" font-size="12" font-weight="bold" fill="#2563EB">ENTERPRISE CAPABILITY</text>
+      <text x="484" y="235" font-size="13" fill="#475569">Mesin korelasi sliding window stateful</text><text x="484" y="259" font-size="13" fill="#475569">di memori mendeteksi serangan L7, brute</text><text x="484" y="283" font-size="13" fill="#475569">force, insider threat, dan anomali jam</text><text x="484" y="307" font-size="13" fill="#475569">kerja.</text>
+    </g>
+    <g id="card-3" data-pptx-bounds="852 135 365 235">
+      <rect x="852" y="135" width="365" height="235" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="852" y="135" width="6" height="235" rx="3" fill="#059669"/>
+      <text x="874" y="171" font-size="16" font-weight="bold" fill="#0F172A">3. SOAR Active Defense</text>
+      <text x="874" y="199" font-size="12" font-weight="bold" fill="#059669">ENTERPRISE CAPABILITY</text>
+      <text x="874" y="235" font-size="13" fill="#475569">Respons insiden aktif memutus serangan</text><text x="874" y="259" font-size="13" fill="#475569">di gerbang: Host Quarantine &amp; User</text><text x="874" y="283" font-size="13" fill="#475569">Suspension menolak paket via HTTP 403.</text>
+    </g>
+    <g id="card-4" data-pptx-bounds="72 395 365 235">
+      <rect x="72" y="395" width="365" height="235" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="72" y="395" width="6" height="235" rx="3" fill="#7C3AED"/>
+      <text x="94" y="431" font-size="16" font-weight="bold" fill="#0F172A">4. Hot vs Cold Storage (APT)</text>
+      <text x="94" y="459" font-size="12" font-weight="bold" fill="#7C3AED">ENTERPRISE CAPABILITY</text>
+      <text x="94" y="495" font-size="13" fill="#475569">Mengatasi temporal blind spot serangan</text><text x="94" y="519" font-size="13" fill="#475569">berjarak puluhan hari menggunakan</text><text x="94" y="543" font-size="13" fill="#475569">Persistent Stateful Greylist dan</text><text x="94" y="567" font-size="13" fill="#475569">rehidrasi forensik.</text>
+    </g>
+    <g id="card-5" data-pptx-bounds="462 395 365 235">
+      <rect x="462" y="395" width="365" height="235" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="462" y="395" width="6" height="235" rx="3" fill="#D97706"/>
+      <text x="484" y="431" font-size="16" font-weight="bold" fill="#0F172A">5. Universal Log Adapter</text>
+      <text x="484" y="459" font-size="12" font-weight="bold" fill="#D97706">ENTERPRISE CAPABILITY</text>
+      <text x="484" y="495" font-size="13" fill="#475569">Membaca 27 berkas log fisik autentik</text><text x="484" y="519" font-size="13" fill="#475569">(Nginx, Syslog, CSV, PGAudit JSONL,</text><text x="484" y="543" font-size="13" fill="#475569">MQTT) dengan timestamp shifting dinamis.</text>
+    </g>
+    <g id="card-6" data-pptx-bounds="852 395 365 235">
+      <rect x="852" y="395" width="365" height="235" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="852" y="395" width="6" height="235" rx="3" fill="#DC2626"/>
+      <text x="874" y="431" font-size="16" font-weight="bold" fill="#0F172A">6. OT Hardware Monitoring</text>
+      <text x="874" y="459" font-size="12" font-weight="bold" fill="#DC2626">ENTERPRISE CAPABILITY</text>
+      <text x="874" y="495" font-size="13" fill="#475569">Memonitor telemetri sensor dan kontrol</text><text x="874" y="519" font-size="13" fill="#475569">hardware fasilitas datacenter via</text><text x="874" y="543" font-size="13" fill="#475569">protokol MQTT untuk mencegah sabotase</text><text x="874" y="567" font-size="13" fill="#475569">thermal.</text>
+    </g>
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

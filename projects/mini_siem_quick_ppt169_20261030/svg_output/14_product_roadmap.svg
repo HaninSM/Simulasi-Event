@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">13 / ROADMAP PRODUK (PRD §9)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Roadmap Ekosistem SIEM &amp; Matriks PM 13 Fitur</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Pentahapan fitur dari pondasi MVP, intelijen analitik, hingga otomasi tingkat lanjut.</text>
+  </g>
+    <g id="phase-card-1" data-pptx-bounds="72 135 365 240">
+      <rect x="72" y="135" width="365" height="240" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="72" y="135" width="365" height="38" rx="8" fill="#0284C7" fill-opacity="0.08"/>
+      <rect x="72" y="135" width="6" height="240" rx="3" fill="#0284C7"/>
+      <text x="92" y="160" font-size="13" font-weight="bold" fill="#0284C7">MVP v1: Foundation (Fitur 1 - 6)</text>
+      <text x="92" y="205" font-size="11" fill="#334155">• 1. Log Ingestion Engine (Critical)</text><text x="92" y="231" font-size="11" fill="#334155">• 2. Data Parsing &amp; Normalization (Critical)</text><text x="92" y="257" font-size="11" fill="#334155">• 3. Hot Storage &amp; Indexing (Critical)</text><text x="92" y="283" font-size="11" fill="#334155">• 4. Search &amp; Query Interface (High)</text><text x="92" y="309" font-size="11" fill="#334155">• 5. Rule-Based Alerting (High)</text><text x="92" y="335" font-size="11" fill="#334155">• 6. Basic Dashboard &amp; Reporting (Medium)</text>
+    </g>
+    <g id="phase-card-2" data-pptx-bounds="462 135 365 240">
+      <rect x="462" y="135" width="365" height="240" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="462" y="135" width="365" height="38" rx="8" fill="#7C3AED" fill-opacity="0.08"/>
+      <rect x="462" y="135" width="6" height="240" rx="3" fill="#7C3AED"/>
+      <text x="482" y="160" font-size="13" font-weight="bold" fill="#7C3AED">Phase 2: Intelligence (Fitur 7 - 10)</text>
+      <text x="482" y="205" font-size="11" fill="#334155">• 7. Correlation Engine (High - Stateful)</text><text x="482" y="231" font-size="11" fill="#334155">• 8. Threat Intel Integration (High - IoC)</text><text x="482" y="257" font-size="11" fill="#334155">• 9. Incident &amp; Case Management (Medium)</text><text x="482" y="283" font-size="11" fill="#334155">• 10. Cold Storage / Archiving (Retensi 1-7 Thn)</text>
+    </g>
+    <g id="phase-card-3" data-pptx-bounds="852 135 365 240">
+      <rect x="852" y="135" width="365" height="240" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="852" y="135" width="365" height="38" rx="8" fill="#059669" fill-opacity="0.08"/>
+      <rect x="852" y="135" width="6" height="240" rx="3" fill="#059669"/>
+      <text x="872" y="160" font-size="13" font-weight="bold" fill="#059669">Phase 3: Advanced (Fitur 11 - 13)</text>
+      <text x="872" y="205" font-size="11" fill="#334155">• 11. UEBA (Behavioral ML Model)</text><text x="872" y="231" font-size="11" fill="#334155">• 12. SOAR (Automated Playbooks)</text><text x="872" y="257" font-size="11" fill="#334155">• 13. AI Adaptive Rule Generator</text><text x="872" y="283" font-size="11" fill="#334155">•     (DLQ, Canary Replay, &amp; HITL Approval)</text>
+    </g>
+    <!-- Bottom PM Dependency Box -->
+    <g id="pm-dependency" data-pptx-bounds="72 395 1136 260">
+      <rect x="72" y="395" width="1136" height="260" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="72" y="395" width="1136" height="40" rx="8" fill="#F8FAFC"/>
+      <text x="96" y="420" font-size="14" font-weight="bold" fill="#0F172A">💡 Tiga Prinsip Rantai Dependensi Manajemen Produk (PM Logic)</text>
+      
+      <g id="pm-points" transform="translate(96 455)">
+        <text y="10" font-size="13" font-weight="bold" fill="#1E3A8A">1. Fondasi Data Sebelum Analitik Lanjut:</text>
+        <text y="30" font-size="12" fill="#475569">Ingestion dan Hot Storage harus stabil sebelum UEBA aktif. Tanpa data historis terstandarisasi, model perilaku tidak memiliki baseline yang andal.</text>
+
+        <text y="70" font-size="13" font-weight="bold" fill="#1E3A8A">2. Pengendalian Risiko Sebelum Otomasi Penuh:</text>
+        <text y="90" font-size="12" fill="#475569">SOAR diimplementasikan pada Phase 3 setelah Case Management matang. Mitigasi otomatis tanpa akurasi tinggi berisiko memblokir trafik operasional sah.</text>
+
+        <text y="130" font-size="13" font-weight="bold" fill="#1E3A8A">3. Keseimbangan Performa &amp; Efisiensi Biaya:</text>
+        <text y="150" font-size="12" fill="#475569">Pemisahan Hot Storage dan Cold Archive menjaga performa korelasi real-time optimal sekaligus mengendalikan anggaran.</text>
+      </g>
+    </g>
+
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

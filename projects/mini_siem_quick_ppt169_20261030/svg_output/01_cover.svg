@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="cover">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Cover Hero Card -->
+  <g id="hero-card" data-pptx-bounds="72 60 1136 600">
+    <rect x="72" y="60" width="1136" height="600" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <rect x="72" y="60" width="12" height="600" rx="4" fill="#1E3A8A"/>
+    
+    <g id="cover-text" transform="translate(120 110)">
+      <rect x="0" y="0" width="360" height="30" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+      <text x="14" y="20" font-size="12" font-weight="bold" fill="#1D4ED8">ENTERPRISE CYBERSECURITY SIMULATION</text>
+      
+      <text x="0" y="80" font-size="44" font-weight="bold" fill="#0F172A">Mini-SIEM Command Center</text>
+      
+      <text x="0" y="125" font-size="20" font-weight="600" fill="#334155">Security Information &amp; Event Management Simulator</text>
+      
+      <text x="0" y="170" font-size="15" fill="#64748B">Platform Telemetri Heterogen Real-Time, Gatekeeper RFC Validation, SOAR Active Defense,</text>
+      <text x="0" y="195" font-size="15" fill="#64748B">Human-Supervised AI Adaptation &amp; Korelasi 9 Skenario Insiden Siber dan OT Hardware.</text>
+      
+      <!-- Meta Card Box -->
+      <g id="meta-box" transform="translate(0 240)">
+        <rect x="0" y="0" width="980" height="150" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+        
+        <text x="24" y="34" font-size="13" font-weight="bold" fill="#1E3A8A">DOKUMEN INDUK &amp; TIM PENGEMBANG</text>
+        <text x="24" y="60" font-size="13" fill="#334155">• Dokumen Sumber: mini_siem_product_requirements_document.md (V2.2 Enterprise SOC Edition)</text>
+        <text x="24" y="84" font-size="13" fill="#334155">• Tim Pengembang: JadiBegini (Bagus Hanindyo Kusuma, Anand Ferdiansyah, Fitus Yayan Ofnaio Zebua)</text>
+        <text x="24" y="108" font-size="13" fill="#334155">• Standard Compliance: ISO 27001, NIST SP 800-92, RFC 5424, OCSF Universal Taxonomy</text>
+        <text x="24" y="130" font-size="13" fill="#334155">• Arsitektur Stack: Python 3.11, FastAPI, Pydantic V2, MQTT Broker, SOAR Dynamic Isolation</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

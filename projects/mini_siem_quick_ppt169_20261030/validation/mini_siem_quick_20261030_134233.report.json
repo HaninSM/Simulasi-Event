@@ -1,0 +1,272 @@
+{
+  "schema": "ppt-master.pptx-postflight-report.v1",
+  "status": "passed-with-warnings",
+  "output": {
+    "path": "C:\\Users\\ZYREX\\Documents\\CommandCenter\\projects\\mini_siem_quick_ppt169_20261030\\exports\\mini_siem_quick_20261030_134233.pptx",
+    "bytes": 65405
+  },
+  "source": {
+    "svg_slide_count": 15,
+    "layout_definition_count": 0,
+    "fingerprint": {
+      "algorithm": "sha256",
+      "digest": "aa870a2276c1eecb2b90d7b85eefcf64ea1bacb2cead27029361a71f5585f853",
+      "file_count": 15,
+      "files": [
+        {
+          "file": "01_cover.svg",
+          "sha256": "c2837648acf7a53f7ac27dea1943f4585b7ac838bb8c381ff8313e7f3772a78c"
+        },
+        {
+          "file": "02_product_overview.svg",
+          "sha256": "0ab8f97a7e3bda6821a80e33963e17d2b4ace22771b1255c2e31e6757e8eca16"
+        },
+        {
+          "file": "03_architecture.svg",
+          "sha256": "d2ef7e0ff3a87768f174e1e4112334f229226b65263f99f779c23d711ccfc2fe"
+        },
+        {
+          "file": "04_data_contract.svg",
+          "sha256": "bbcb515800fb034a2f07f81e888cfad000ba188644ac6d47b238cd78518a302d"
+        },
+        {
+          "file": "05_correlation_matrix.svg",
+          "sha256": "25d5193c6a10d9463494cda474583a6db8bd4eeeaeb027fe05e68763e8ece9ff"
+        },
+        {
+          "file": "06_scenarios_1_3.svg",
+          "sha256": "cc07837165bd1fd6e9521517ffca1b150a0104cc1c4c2b2ca423d4afad6fae0a"
+        },
+        {
+          "file": "07_scenarios_4_6.svg",
+          "sha256": "db2c184171c28251a5e1998ad5a08f2155eb2c9a6789f137743d89402bc9fe69"
+        },
+        {
+          "file": "08_scenarios_7_8.svg",
+          "sha256": "00c3e06f1c641eb22f3cfbd90cee89d1ec513f421623f02b75657a6d2dc15824"
+        },
+        {
+          "file": "09_scenario_9_ot.svg",
+          "sha256": "45370371a92b5253c96a5a2b732fdb7334ab0cced0fdf35ea41af3a1ad3f6c77"
+        },
+        {
+          "file": "10_soar_defense.svg",
+          "sha256": "b7c1e0b725dbf2c46f4929c30370a57e7a94716e0ef68e23d2adfa4b8a534bfa"
+        },
+        {
+          "file": "11_ai_governance.svg",
+          "sha256": "e95aecb05f73e2f8e4ecf3190f0df9f3f14199f4fdf1e384ae0a4bdae77311bb"
+        },
+        {
+          "file": "12_integration_syllabus.svg",
+          "sha256": "441a9da1a2647b96738559d5447e061c21f8020788abbb01905da98c99bbe260"
+        },
+        {
+          "file": "13_storage_architecture.svg",
+          "sha256": "feb7ba89bf4200c90fe3fa1f69096ff3c60f54f67f0bc2c6f73f0cbf0c7c213d"
+        },
+        {
+          "file": "14_product_roadmap.svg",
+          "sha256": "cc441fa513744714a20fa4d66ae99c828f6100145d1804a0584e1621a1e6e66d"
+        },
+        {
+          "file": "15_qa_conclusion.svg",
+          "sha256": "daaa28620efd5ffff77de594d8a9bf523539bcbad5c5a7ef152bcd05dd2e3aa8"
+        }
+      ]
+    },
+    "authoring_roundtrip": null
+  },
+  "package": {
+    "zip_integrity": "passed",
+    "corrupt_member": null,
+    "slides": 15,
+    "notes": 0,
+    "masters": 1,
+    "layouts": 1
+  },
+  "checks": {
+    "zip_integrity": "passed",
+    "slide_count": "passed",
+    "internal_relationships": "enforced-at-build",
+    "structured_package": "not-applicable",
+    "transitions": "enforced-at-build",
+    "animations": "enforced-at-build",
+    "project_svg_contract": "enforced-at-build",
+    "compatibility_normalization": "not-applicable",
+    "authoring_roundtrip": "not-applicable",
+    "quality_gate": "passed",
+    "quality_warnings": "warning",
+    "template_tokens": "passed",
+    "external_images": "passed",
+    "font_portability": "passed"
+  },
+  "quality": {
+    "status": "loaded",
+    "path": "projects\\mini_siem_quick_ppt169_20261030\\validation\\svg_quality_report.json",
+    "schema": "ppt-master.svg-quality-report.v1",
+    "stage": "final",
+    "source_match": "passed",
+    "source_fingerprint": {
+      "algorithm": "sha256",
+      "digest": "aa870a2276c1eecb2b90d7b85eefcf64ea1bacb2cead27029361a71f5585f853",
+      "file_count": 15,
+      "files": [
+        {
+          "file": "01_cover.svg",
+          "sha256": "c2837648acf7a53f7ac27dea1943f4585b7ac838bb8c381ff8313e7f3772a78c"
+        },
+        {
+          "file": "02_product_overview.svg",
+          "sha256": "0ab8f97a7e3bda6821a80e33963e17d2b4ace22771b1255c2e31e6757e8eca16"
+        },
+        {
+          "file": "03_architecture.svg",
+          "sha256": "d2ef7e0ff3a87768f174e1e4112334f229226b65263f99f779c23d711ccfc2fe"
+        },
+        {
+          "file": "04_data_contract.svg",
+          "sha256": "bbcb515800fb034a2f07f81e888cfad000ba188644ac6d47b238cd78518a302d"
+        },
+        {
+          "file": "05_correlation_matrix.svg",
+          "sha256": "25d5193c6a10d9463494cda474583a6db8bd4eeeaeb027fe05e68763e8ece9ff"
+        },
+        {
+          "file": "06_scenarios_1_3.svg",
+          "sha256": "cc07837165bd1fd6e9521517ffca1b150a0104cc1c4c2b2ca423d4afad6fae0a"
+        },
+        {
+          "file": "07_scenarios_4_6.svg",
+          "sha256": "db2c184171c28251a5e1998ad5a08f2155eb2c9a6789f137743d89402bc9fe69"
+        },
+        {
+          "file": "08_scenarios_7_8.svg",
+          "sha256": "00c3e06f1c641eb22f3cfbd90cee89d1ec513f421623f02b75657a6d2dc15824"
+        },
+        {
+          "file": "09_scenario_9_ot.svg",
+          "sha256": "45370371a92b5253c96a5a2b732fdb7334ab0cced0fdf35ea41af3a1ad3f6c77"
+        },
+        {
+          "file": "10_soar_defense.svg",
+          "sha256": "b7c1e0b725dbf2c46f4929c30370a57e7a94716e0ef68e23d2adfa4b8a534bfa"
+        },
+        {
+          "file": "11_ai_governance.svg",
+          "sha256": "e95aecb05f73e2f8e4ecf3190f0df9f3f14199f4fdf1e384ae0a4bdae77311bb"
+        },
+        {
+          "file": "12_integration_syllabus.svg",
+          "sha256": "441a9da1a2647b96738559d5447e061c21f8020788abbb01905da98c99bbe260"
+        },
+        {
+          "file": "13_storage_architecture.svg",
+          "sha256": "feb7ba89bf4200c90fe3fa1f69096ff3c60f54f67f0bc2c6f73f0cbf0c7c213d"
+        },
+        {
+          "file": "14_product_roadmap.svg",
+          "sha256": "cc441fa513744714a20fa4d66ae99c828f6100145d1804a0584e1621a1e6e66d"
+        },
+        {
+          "file": "15_qa_conclusion.svg",
+          "sha256": "daaa28620efd5ffff77de594d8a9bf523539bcbad5c5a7ef152bcd05dd2e3aa8"
+        }
+      ]
+    },
+    "summary": {
+      "total": 15,
+      "passed": 11,
+      "warnings": 4,
+      "errors": 0
+    },
+    "categories": {
+      "blocking": {
+        "count": 0,
+        "issues": []
+      },
+      "introduced": {
+        "count": 4,
+        "issues": [
+          {
+            "file": "02_product_overview.svg",
+            "message": "Detected 6 paragraph-like line run(s) split across sibling <text> elements (<g id=\"card-1\"> x=94.0, y=235.0..283.0, 3 lines; <g id=\"card-2\"> x=484.0, y=235.0..307.0, 4 lines; <g id=\"card-3\"> x=874.0, y=235.0..283.0, 3 lines; +3 more). If each run is one prose paragraph, combine it into one <text>: keep its first line as direct text and use direct <tspan> children with the parent x and positive relative dy values for later lines. An all-<tspan> form may start with dy=\"0\". Keep semantically independent text frames separate."
+          },
+          {
+            "file": "09_scenario_9_ot.svg",
+            "message": "Detected 4 paragraph-like line run(s) split across sibling <text> elements (<g id=\"ot-col-1\"> x=92.0, y=354.0..374.0, 2 lines; <g id=\"ot-col-2\"> x=482.0, y=250.0..270.0, 2 lines; <g id=\"ot-col-2\"> x=482.0, y=322.0..342.0, 2 lines; +1 more). If each run is one prose paragraph, combine it into one <text>: keep its first line as direct text and use direct <tspan> children with the parent x and positive relative dy values for later lines. An all-<tspan> form may start with dy=\"0\". Keep semantically independent text frames separate."
+          },
+          {
+            "file": "10_soar_defense.svg",
+            "message": "Detected 4 paragraph-like line run(s) split across sibling <text> elements (<g id=\"soar-row-1\"> x=96.0, y=201.0..241.0, 3 lines; <g id=\"soar-row-2\"> x=96.0, y=331.0..371.0, 3 lines; <g id=\"soar-row-3\"> x=96.0, y=461.0..481.0, 2 lines; +1 more). If each run is one prose paragraph, combine it into one <text>: keep its first line as direct text and use direct <tspan> children with the parent x and positive relative dy values for later lines. An all-<tspan> form may start with dy=\"0\". Keep semantically independent text frames separate."
+          },
+          {
+            "file": "11_ai_governance.svg",
+            "message": "Detected 3 paragraph-like line run(s) split across sibling <text> elements (<g id=\"risk-1\"> x=92.0, y=195.0..235.0, 3 lines; <g id=\"risk-2\"> x=477.0, y=195.0..235.0, 3 lines; <g id=\"risk-3\"> x=862.0, y=195.0..235.0, 3 lines). If each run is one prose paragraph, combine it into one <text>: keep its first line as direct text and use direct <tspan> children with the parent x and positive relative dy values for later lines. An all-<tspan> form may start with dy=\"0\". Keep semantically independent text frames separate."
+          }
+        ]
+      },
+      "inherited": {
+        "count": 0,
+        "issues": []
+      },
+      "source-import": {
+        "count": 0,
+        "summary": {
+          "warning_count": 0,
+          "by_code": {}
+        }
+      }
+    }
+  },
+  "resources": {
+    "unresolved_template_tokens": [],
+    "fonts": {
+      "stacks": [
+        "Consolas, monospace",
+        "Segoe UI, Arial, sans-serif"
+      ],
+      "generic_only_stacks": [],
+      "unsafe_exported_faces": []
+    },
+    "images": {
+      "data_uri": 0,
+      "local": 0,
+      "external": 0,
+      "external_references": []
+    }
+  },
+  "export_policy": {
+    "project_svg_contract": "strict",
+    "dangerous_normalization_count": 0
+  },
+  "deck_motion": {
+    "transition": {
+      "effect": "fade",
+      "effect_options": {},
+      "duration": 0.4,
+      "auto_advance": null,
+      "sound": null
+    },
+    "animation": {
+      "effect": "none",
+      "effect_request": null,
+      "duration": 0.4,
+      "stagger": 0.5,
+      "trigger": "after-previous"
+    },
+    "cli_overrides": {
+      "transition": false,
+      "transition_duration": false,
+      "auto_advance": false,
+      "transition_sound": false,
+      "animation": false,
+      "animation_duration": false,
+      "animation_stagger": false,
+      "animation_trigger": false
+    },
+    "narration_timings": false
+  },
+  "backup_path": "C:\\Users\\ZYREX\\Documents\\CommandCenter\\projects\\mini_siem_quick_ppt169_20261030\\backup\\20261030_134233\\svg_output",
+  "conversion_trace_path": null
+}

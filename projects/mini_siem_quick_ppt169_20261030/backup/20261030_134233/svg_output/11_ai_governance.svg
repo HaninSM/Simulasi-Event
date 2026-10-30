@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">10 / TATA KELOLA AI (PRD §6)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Arsitektur Pengaman: Human-Supervised AI Adaptation</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Mencegah keracunan model (poisoning) dan pemadaman tak disengaja dengan verifikasi Human-in-the-Loop.</text>
+  </g>
+    <!-- Top 3 Risks Cards -->
+    <g id="risk-1" data-pptx-bounds="72 135 365 160">
+      <rect x="72" y="135" width="365" height="160" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="72" y="135" width="6" height="160" rx="3" fill="#DC2626"/>
+      <text x="92" y="165" font-size="14" font-weight="bold" fill="#991B1B">1. Concept Drift Poisoning</text>
+      <text x="92" y="195" font-size="12" fill="#475569">Penyerang menyuntikkan anomali berfrekuensi</text>
+      <text x="92" y="215" font-size="12" fill="#475569">rendah bertahap. AI tanpa supervisi menganggap</text>
+      <text x="92" y="235" font-size="12" fill="#475569">tren jahat tersebut sebagai pola normal.</text>
+    </g>
+    <g id="risk-2" data-pptx-bounds="457 135 365 160">
+      <rect x="457" y="135" width="365" height="160" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="457" y="135" width="6" height="160" rx="3" fill="#D97706"/>
+      <text x="477" y="165" font-size="14" font-weight="bold" fill="#B45309">2. Self-Inflicted DoS</text>
+      <text x="477" y="195" font-size="12" fill="#475569">Aturan adaptif salah mengklasifikasikan lonjakan</text>
+      <text x="477" y="215" font-size="12" fill="#475569">checkout promo (Flash Sale) sebagai DDoS,</text>
+      <text x="477" y="235" font-size="12" fill="#475569">sehingga memutus pelanggan sah.</text>
+    </g>
+    <g id="risk-3" data-pptx-bounds="842 135 365 160">
+      <rect x="842" y="135" width="365" height="160" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="842" y="135" width="6" height="160" rx="3" fill="#7C3AED"/>
+      <text x="862" y="165" font-size="14" font-weight="bold" fill="#6B21A8">3. Pelanggaran Kepatuhan</text>
+      <text x="862" y="195" font-size="12" fill="#475569">ISO 27001 melarang keputusan black-box</text>
+      <text x="862" y="215" font-size="12" fill="#475569">tanpa tiket persetujuan formal dan verifikator</text>
+      <text x="862" y="235" font-size="12" fill="#475569">penanggung jawab yang jelas.</text>
+    </g>
+
+    <!-- Bottom 5-Step Safe Cycle -->
+    <g id="safe-cycle" data-pptx-bounds="72 315 1136 340">
+      <rect x="72" y="315" width="1136" height="340" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="72" y="315" width="1136" height="42" rx="8" fill="#EFF6FF"/>
+      <text x="96" y="342" font-size="15" font-weight="bold" fill="#1E3A8A">🏛️ Blueprint 5-Tahap Siklus Aman: Deteksi Anomali hingga Implementasi Produksi</text>
+      
+      <g id="steps-list" transform="translate(96 380)">
+        <text y="15" font-size="13" font-weight="bold" fill="#0F172A">1. Gatekeeper Ingest:</text>
+        <text y="35" font-size="12" fill="#64748B">Validasi deterministik di gerbang (Tolak HTTP 422 jika format atau timestamp rusak).</text>
+
+        <text y="70" font-size="13" font-weight="bold" fill="#0F172A">2. Dead-Letter Queue (DLQ):</text>
+        <text y="90" font-size="12" fill="#64748B">Payload anomali baru diisolasi ke antrean karantina tanpa mengganggu pipeline utama.</text>
+
+        <text y="125" font-size="13" font-weight="bold" fill="#0F172A">3. AI Suggestion Engine:</text>
+        <text y="145" font-size="12" fill="#64748B">Sintesis pola klaster anomali dan perumusan 'Candidate Rule' secara terprogram.</text>
+
+        <text y="180" font-size="13" font-weight="bold" fill="#0F172A">4. Canary Replay Test:</text>
+        <text y="200" font-size="12" fill="#64748B">Pengujian regresi aturan pada 30 hari data historis; auto-rollback jika False Positive > 2%.</text>
+
+        <text y="235" font-size="13" font-weight="bold" fill="#059669">5. HITL Approval (Shadow Mode):</text>
+        <text y="255" font-size="12" fill="#059669">Aturan berjalan di mode bayangan hingga Lead Analis menyetujui promosi aturan ke produksi.</text>
+      </g>
+    </g>
+
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

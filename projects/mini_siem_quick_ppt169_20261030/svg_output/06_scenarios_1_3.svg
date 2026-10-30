@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">05 / SKENARIO INSIDEN (PRD §4)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Bedah Skenario 1 s/d 3: Trafik Normal, DDoS &amp; Impossible Travel</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Pengujian baseline tanpa false-alarm, serangan volumetrik L7, dan anomali geolokasi identitas.</text>
+  </g>
+    <g id="scenario-card-1" data-pptx-bounds="72 135 365 520">
+      <rect x="72" y="135" width="365" height="520" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="72" y="135" width="365" height="50" rx="8" fill="#059669" fill-opacity="0.08"/>
+      <rect x="72" y="135" width="6" height="520" rx="3" fill="#059669"/>
+      <text x="92" y="165" font-size="14" font-weight="bold" fill="#059669">SKENARIO 1: TRAFIK NORMAL</text>
+      <text x="92" y="210" font-size="12" font-weight="600" fill="#64748B">Baseline Operasional Sah</text>
+      <line x1="92" y1="230" x2="417" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="92" y="260" font-size="12" fill="#334155">• Sumber: sample_logs/web_access_normal_[1..3].log</text><text x="92" y="302" font-size="12" fill="#334155">• Aktivitas: Akses portal HR &amp; CRM pada jam wajar.</text><text x="92" y="344" font-size="12" fill="#334155">• Target: Bebas alarm palsu (False Positive Zero).</text><text x="92" y="386" font-size="12" fill="#334155">• Hasil: 0 Alarm Dipicu (Trafik Lolos Bersih).</text>
+    </g>
+    <g id="scenario-card-2" data-pptx-bounds="462 135 365 520">
+      <rect x="462" y="135" width="365" height="520" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="462" y="135" width="365" height="50" rx="8" fill="#D97706" fill-opacity="0.08"/>
+      <rect x="462" y="135" width="6" height="520" rx="3" fill="#D97706"/>
+      <text x="482" y="165" font-size="14" font-weight="bold" fill="#D97706">SKENARIO 2: DDOS / BOTNET FLOOD</text>
+      <text x="482" y="210" font-size="12" font-weight="600" fill="#64748B">Memicu Rule 1 (Severity: TINGGI)</text>
+      <line x1="482" y1="230" x2="807" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="482" y="260" font-size="12" fill="#334155">• Sumber: sample_logs/nginx_ddos_flood_[1..3].log</text><text x="482" y="302" font-size="12" fill="#334155">• Serangan: IP penyerang membanjiri &gt; 10 req/10 detik.</text><text x="482" y="344" font-size="12" fill="#334155">• Respon: Alarm &#x27;DDoS / Botnet Flood&#x27; TINGGI dipicu.</text><text x="482" y="386" font-size="12" fill="#334155">• Mitigasi: SOAR Isolate Host memutus penyerang.</text>
+    </g>
+    <g id="scenario-card-3" data-pptx-bounds="852 135 365 520">
+      <rect x="852" y="135" width="365" height="520" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="852" y="135" width="365" height="50" rx="8" fill="#DC2626" fill-opacity="0.08"/>
+      <rect x="852" y="135" width="6" height="520" rx="3" fill="#DC2626"/>
+      <text x="872" y="165" font-size="14" font-weight="bold" fill="#DC2626">SKENARIO 3: IMPOSSIBLE TRAVEL</text>
+      <text x="872" y="210" font-size="12" font-weight="600" fill="#64748B">Memicu Rule 2 (Severity: KRITIS)</text>
+      <line x1="872" y1="230" x2="1197" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="872" y="260" font-size="12" fill="#334155">• Sumber: sample_logs/vpn_and_gate_access_[1..3].csv</text><text x="872" y="302" font-size="12" fill="#334155">• Anomali: RFID tap Jakarta, VPN login Frankfurt (selang 1s).</text><text x="872" y="344" font-size="12" fill="#334155">• Kecepatan: Mustahil berpindah ribuan km seketika.</text><text x="872" y="386" font-size="12" fill="#334155">• Mitigasi: Memicu alarm Kritis &amp; Suspend User.</text>
+    </g>
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

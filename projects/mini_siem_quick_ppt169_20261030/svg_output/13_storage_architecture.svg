@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">12 / ARSITEKTUR STORAGE (PRD §8)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Arsitektur Storage Bertingkat: Hot Storage vs Cold Storage</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Mengatasi dilema biaya dan latensi pencarian data dalam mendeteksi ancaman APT jangka panjang.</text>
+  </g>
+    <!-- Left: The Brute Force Fallacy -->
+    <g id="bf-card" data-pptx-bounds="72 135 550 520">
+      <rect x="72" y="135" width="550" height="520" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="72" y="135" width="8" height="520" rx="4" fill="#DC2626"/>
+      <text x="96" y="175" font-size="16" font-weight="bold" fill="#991B1B">⚠️ Limitasi Linier (The Brute-Force Fallacy)</text>
+      <text x="96" y="200" font-size="13" font-weight="600" fill="#64748B">Mengapa memperbesar Hot Storage hingga 90 hari itu gagal?</text>
+      
+      <g id="bf-body" transform="translate(96 230)">
+        <text y="15" font-size="13" font-weight="bold" fill="#0F172A">1. Biaya Eksponensial:</text>
+        <text y="35" font-size="12" fill="#64748B">Menyimpan petabyte log mentah di tier RAM/NVMe SSD menaikkan biaya</text>
+        <text y="53" font-size="12" fill="#64748B">infrastruktur data secara membengkak tak terkendali.</text>
+
+        <text y="90" font-size="13" font-weight="bold" fill="#0F172A">2. Degradasi Latensi Kueri:</text>
+        <text y="110" font-size="12" fill="#64748B">Indeks pencarian yang membesar menurunkan performa evaluasi aturan</text>
+        <text y="128" font-size="12" fill="#64748B">korelasi dari &lt; 10ms menjadi hitungan detik hingga menit.</text>
+
+        <text y="165" font-size="13" font-weight="bold" fill="#0F172A">3. Rasio Noise-to-Signal Tinggi:</text>
+        <text y="185" font-size="12" fill="#64748B">98% data adalah telemetri rutin; mengalokasikan tier premium untuk</text>
+        <text y="203" font-size="12" fill="#64748B">data non-kritis memboroskan anggaran keamanan secara signifikan.</text>
+      </g>
+    </g>
+
+    <!-- Right: Mini-SIEM Dual Solutions -->
+    <g id="sol-card" data-pptx-bounds="650 135 558 520">
+      <rect x="650" y="135" width="558" height="520" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="650" y="135" width="8" height="520" rx="4" fill="#059669"/>
+      <text x="674" y="175" font-size="16" font-weight="bold" fill="#065F46">✔ Solusi Arsitektural Mini-SIEM</text>
+      <text x="674" y="200" font-size="13" font-weight="600" fill="#059669">Stateful Tracking &amp; Rehidrasi Log Terarah</text>
+      
+      <g id="sol-body" transform="translate(674 230)">
+        <text y="15" font-size="13" font-weight="bold" fill="#0F172A">1. Stateful Entity Tracking (Lightweight Memory):</text>
+        <text y="35" font-size="12" fill="#475569">Alih-alih menahan puluhan GB log mentah, SIEM hanya menyimpan status:</text>
+        <rect x="0" y="45" width="510" height="32" rx="4" fill="#F1F5F9"/>
+        <text x="10" y="66" font-size="11" font-family="Consolas, monospace" fill="#1E3A8A">{"ip": "198.51.100.77", "risk": "HIGH", "reason": "recon_day_1"}</text>
+        <text y="95" font-size="12" fill="#64748B">Jejak memori minimal ini dipertahankan lintas siklus retensi.</text>
+
+        <text y="140" font-size="13" font-weight="bold" fill="#0F172A">2. Cold Log Rehydration (On-Demand Forensic):</text>
+        <text y="160" font-size="12" fill="#475569">Saat exploit tiba di Hari ke-20, sistem mengekstraksi log dari arsip:</text>
+        <rect x="0" y="170" width="510" height="32" rx="4" fill="#F1F5F9"/>
+        <text x="10" y="191" font-size="11" font-family="Consolas, monospace" fill="#1E3A8A">cold_s3://logs/{yyyy}/{mm}/{dd}/{ip_hash}/</text>
+        <text y="220" font-size="12" fill="#64748B">Log ditarik kembali ke memori aktif untuk rekonstruksi Kill Chain.</text>
+      </g>
+    </g>
+
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

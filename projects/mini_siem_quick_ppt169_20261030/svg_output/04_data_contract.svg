@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">03 / KONTRAK DATA &amp; GATEKEEPER (PRD §2 &amp; §3A)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Spesifikasi Kontrak Kanonikal &amp; Ketahanan Validasi</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Standarisasi payload log dan 5 pemeriksaan ketat untuk menolak data cacat di gerbang ingestion.</text>
+  </g>
+    <!-- Left Column: JSON Schema -->
+    <g id="contract-card" data-pptx-bounds="72 135 550 520">
+      <rect x="72" y="135" width="550" height="520" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="72" y="135" width="550" height="42" rx="8" fill="#F1F5F9"/>
+      <text x="92" y="162" font-size="15" font-weight="bold" fill="#1E3A8A">Canonical JSON Schema (Contract)</text>
+      
+      <g id="code-block" transform="translate(92 195)" font-family="Consolas, monospace" font-size="12" fill="#0F172A">
+        <text y="20">{</text>
+        <text y="40" fill="#2563EB">  "timestamp": "2026-10-30T10:15:00Z",</text>
+        <text y="60" fill="#2563EB">  "event_type": "login_attempt | web_request |</text>
+        <text y="80" fill="#2563EB">                database_download | recon_probe |</text>
+        <text y="100" fill="#2563EB">                ot_command | mqtt_command",</text>
+        <text y="125" fill="#059669">  "user_id": "sarah_security",</text>
+        <text y="145" fill="#059669">  "ip_address": "192.168.1.100",</text>
+        <text y="165" fill="#059669">  "location": "Jakarta, ID",</text>
+        <text y="185" fill="#059669">  "status": "success | failed",</text>
+        <text y="215" fill="#D97706">  // Metadata Opsional Telemetri Hardware OT:</text>
+        <text y="235" fill="#D97706">  "protocol": "MQTT",</text>
+        <text y="255" fill="#D97706">  "target_device": "CRAC-AC-CENTRAL-01",</text>
+        <text y="275" fill="#D97706">  "command": "POWER_OFF | STATUS_REPORT"</text>
+        <text y="300">}</text>
+      </g>
+    </g>
+
+    <!-- Right Column: 5 Gatekeeper Checks -->
+    <g id="gatekeeper-card" data-pptx-bounds="650 135 558 520">
+      <rect x="650" y="135" width="558" height="520" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="650" y="135" width="558" height="42" rx="8" fill="#FEF2F2"/>
+      <text x="674" y="162" font-size="15" font-weight="bold" fill="#991B1B">5 Ketahanan Gatekeeper (Validasi Negatif)</text>
+      
+      <g id="checks-list" transform="translate(674 200)">
+        <text y="10" font-size="13" font-weight="bold" fill="#991B1B">1. Format IPv4 Strict</text>
+        <text y="30" font-size="12" fill="#475569">Menolak string rusak atau bukan 4 oktet desimal (misal 999.999.999.999).</text>
+        
+        <text y="70" font-size="13" font-weight="bold" fill="#991B1B">2. Missing / Null Mandatory Fields</text>
+        <text y="90" font-size="12" fill="#475569">Menolak jika user_id, ip_address, atau location kosong atau null.</text>
+        
+        <text y="130" font-size="13" font-weight="bold" fill="#991B1B">3. Past Time Drift Error (> 24 Jam)</text>
+        <text y="150" font-size="12" fill="#475569">Mencegah injeksi log basi lampau (seperti baterai CMOS router reset ke 1970) -> HTTP 422.</text>
+        
+        <text y="190" font-size="13" font-weight="bold" fill="#991B1B">4. Future Clock Drift Error (> 30 Detik)</text>
+        <text y="210" font-size="12" fill="#475569">Menolak stempel waktu di masa depan yang melompat dari waktu sistem riil.</text>
+        
+        <text y="250" font-size="13" font-weight="bold" fill="#991B1B">5. SOAR Active Rejection</text>
+        <text y="270" font-size="12" fill="#475569">Jika IP di isolated_hosts atau user di suspended_users, tolak langsung di HTTP 403 Forbidden.</text>
+
+        <rect x="0" y="320" width="510" height="70" rx="6" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1"/>
+        <text x="16" y="345" font-size="12" font-weight="bold" fill="#166534">✔ HASIL AUDIT GATEKEEPER:</text>
+        <text x="16" y="370" font-size="12" fill="#166534">100% data cacat &amp; time drift tertolak secara deterministik tanpa crash server.</text>
+      </g>
+    </g>
+
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">07 / SKENARIO INSIDEN (PRD §4)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Bedah Skenario 7 &amp; 8: Data Cacat &amp; The Low and Slow APT</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Validasi integritas data telemetri dan penanganan serangan berjarak 20 hari melintasi retensi storage.</text>
+  </g>
+    <!-- Left: Scenario 7 -->
+    <g id="sc7-card" data-pptx-bounds="72 135 550 520">
+      <rect x="72" y="135" width="550" height="520" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="72" y="135" width="8" height="520" rx="4" fill="#0284C7"/>
+      <text x="96" y="175" font-size="16" font-weight="bold" fill="#0F172A">SKENARIO 7: DATA CACAT &amp; TIME DRIFT</text>
+      <text x="96" y="200" font-size="13" font-weight="600" fill="#0284C7">Uji Ketahanan Gatekeeper terhadap Log Korup (HTTP 422)</text>
+      
+      <g id="sc7-body" transform="translate(96 230)">
+        <text y="10" font-size="13" fill="#334155">• Sumber: sample_logs/legacy_corrupted_device_[1..3].log</text>
+        
+        <text y="50" font-size="13" font-weight="bold" fill="#0F172A">Kasus Uji 1 (Malformed JSON):</text>
+        <text y="70" font-size="12" fill="#64748B">Data terpotong di tengah transmisi jaringan -> HTTP 422.</text>
+        
+        <text y="105" font-size="13" font-weight="bold" fill="#0F172A">Kasus Uji 2 (Missing IP):</text>
+        <text y="125" font-size="12" fill="#64748B">Log telemetri tanpa atribut alamat IP pengirim -> Ditolak.</text>
+        
+        <text y="160" font-size="13" font-weight="bold" fill="#0F172A">Kasus Uji 3 (CMOS Battery Reset 1970):</text>
+        <text y="180" font-size="12" fill="#64748B">Timestamp reset ke era UNIX 1970 (> 24 jam lampau) -> Ditolak.</text>
+
+        <text y="215" font-size="13" font-weight="bold" fill="#0F172A">Kasus Uji 4 (Future Time Drift):</text>
+        <text y="235" font-size="12" fill="#64748B">Jam melompat ke masa depan (> 30s dari waktu nyata) -> Ditolak.</text>
+        
+        <rect x="0" y="270" width="500" height="60" rx="6" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1"/>
+        <text x="14" y="295" font-size="12" font-weight="bold" fill="#166534">✔ HASIL GATEKEEPER:</text>
+        <text x="14" y="315" font-size="12" fill="#166534">100% data cacat ditolak tanpa menyebabkan server crash.</text>
+      </g>
+    </g>
+
+    <!-- Right: Scenario 8 -->
+    <g id="sc8-card" data-pptx-bounds="650 135 558 520">
+      <rect x="650" y="135" width="558" height="520" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+      <rect x="650" y="135" width="8" height="520" rx="4" fill="#7C3AED"/>
+      <text x="674" y="175" font-size="16" font-weight="bold" fill="#0F172A">SKENARIO 8: THE LOW &amp; SLOW APT</text>
+      <text x="674" y="200" font-size="13" font-weight="600" fill="#7C3AED">Jebakan Hot vs Cold Storage &amp; Stateful Watchlist</text>
+      
+      <g id="sc8-body" transform="translate(674 230)">
+        <text y="10" font-size="13" fill="#334155">• Masalah: Log hanya ditahan di Hot Storage 7-14 hari demi biaya.</text>
+        <text y="30" font-size="13" fill="#334155">  Serangan APT Hari ke-20 lolos karena recon sudah ke Cold Storage.</text>
+        
+        <text y="70" font-size="13" font-weight="bold" fill="#0F172A">Alur Serangan Dua Babak:</text>
+        <text y="92" font-size="12" fill="#64748B">• Tanggal 1: Penyerang meluncurkan Reconnaissance Probe (/recon).</text>
+        <text y="112" font-size="12" fill="#64748B">• Tanggal 20: Penyerang melancarkan Exploit Request ke server.</text>
+        
+        <text y="155" font-size="13" font-weight="bold" fill="#059669">Solusi Arsitektural Mini-SIEM:</text>
+        <text y="177" font-size="12" fill="#475569">1. Saat recon terdeteksi, IP dicatat ke Stateful Watchlist (Greylist).</text>
+        <text y="197" font-size="12" fill="#475569">2. Saat exploit tiba di Tanggal 20, alarm APT Kritis dipicu seketika.</text>
+        <text y="217" font-size="12" fill="#475569">3. Log historis dari Cold Storage direhidrasi untuk bukti forensik.</text>
+
+        <rect x="0" y="270" width="510" height="60" rx="6" fill="#FAF5FF" stroke="#E9D5FF" stroke-width="1"/>
+        <text x="14" y="295" font-size="12" font-weight="bold" fill="#6B21A8">✔ KEUNGGULAN:</text>
+        <text x="14" y="315" font-size="12" fill="#6B21A8">Menghilangkan blind spot tanpa memboroskan RAM storage tier.</text>
+      </g>
+    </g>
+
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>

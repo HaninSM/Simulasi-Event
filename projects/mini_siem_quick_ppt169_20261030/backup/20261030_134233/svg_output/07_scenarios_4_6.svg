@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" lang="id-ID" font-family="Segoe UI, Arial, sans-serif" data-pptx-page-role="content">
+  <!-- Canvas Background -->
+  <rect id="page-bg" x="0" y="0" width="1280" height="720" fill="#F8FAFC" data-pptx-role="background"/>
+  <!-- Top Accent Bar -->
+  <rect id="top-bar" x="0" y="0" width="1280" height="6" fill="#1E3A8A" data-pptx-role="decoration"/>
+
+  <!-- Slide Header -->
+  <g id="header-group" data-pptx-bounds="72 32 1136 80">
+    <rect id="tag-bg" x="72" y="32" width="340" height="26" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="82" y="49" font-size="11" font-weight="bold" fill="#1E3A8A">06 / SKENARIO INSIDEN (PRD §4)</text>
+    <text x="72" y="86" font-size="24" font-weight="bold" fill="#0F172A">Bedah Skenario 4 s/d 6: Brute Force, Exfiltration &amp; Whitelisting</text>
+    <text x="72" y="108" font-size="14" fill="#64748B">Deteksi brute force terdistribusi, ancaman orang dalam (insider threat), dan risiko blind spot whitelisting.</text>
+  </g>
+    <g id="scenario-card-4" data-pptx-bounds="72 135 365 520">
+      <rect x="72" y="135" width="365" height="520" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="72" y="135" width="365" height="50" rx="8" fill="#D97706" fill-opacity="0.08"/>
+      <rect x="72" y="135" width="6" height="520" rx="3" fill="#D97706"/>
+      <text x="92" y="165" font-size="14" font-weight="bold" fill="#D97706">SKENARIO 4: DISTRIBUTED BRUTE FORCE</text>
+      <text x="92" y="210" font-size="12" font-weight="600" fill="#64748B">Memicu Rule 3 (Severity: TINGGI)</text>
+      <line x1="92" y1="230" x2="417" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="92" y="260" font-size="12" fill="#334155">• Sumber: sample_logs/auth_sshd_bruteforce_[1..3].log</text><text x="92" y="302" font-size="12" fill="#334155">• Taktik: Tebak password SSH terdistribusi 4 node Tor.</text><text x="92" y="344" font-size="12" fill="#334155">• Kriteria: &gt; 5 gagal login untuk 1 user dari &gt; 3 IP.</text><text x="92" y="386" font-size="12" fill="#334155">• Hasil: Alarm Distributed Brute Force berbunyi.</text>
+    </g>
+    <g id="scenario-card-5" data-pptx-bounds="462 135 365 520">
+      <rect x="462" y="135" width="365" height="520" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="462" y="135" width="365" height="50" rx="8" fill="#DC2626" fill-opacity="0.08"/>
+      <rect x="462" y="135" width="6" height="520" rx="3" fill="#DC2626"/>
+      <text x="482" y="165" font-size="14" font-weight="bold" fill="#DC2626">SKENARIO 5: DATA EXFILTRATION</text>
+      <text x="482" y="210" font-size="12" font-weight="600" fill="#64748B">Memicu Rule 5 (Severity: KRITIS)</text>
+      <line x1="482" y1="230" x2="807" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="482" y="260" font-size="12" fill="#334155">• Sumber: sample_logs/postgres_audit_exfiltration_[1..3].jsonl</text><text x="482" y="302" font-size="12" fill="#334155">• Ancaman: Rogue dev unduh PII &gt; 50 kali dalam 1 menit.</text><text x="482" y="344" font-size="12" fill="#334155">• Respon: Alarm KRITIS eksfiltrasi data dibunyikan.</text><text x="482" y="386" font-size="12" fill="#334155">• Mitigasi: Pembatasan akses DB &amp; suspend akun user.</text>
+    </g>
+    <g id="scenario-card-6" data-pptx-bounds="852 135 365 520">
+      <rect x="852" y="135" width="365" height="520" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+      <rect x="852" y="135" width="365" height="50" rx="8" fill="#7C3AED" fill-opacity="0.08"/>
+      <rect x="852" y="135" width="6" height="520" rx="3" fill="#7C3AED"/>
+      <text x="872" y="165" font-size="14" font-weight="bold" fill="#7C3AED">SKENARIO 6: CARELESS WHITELISTING</text>
+      <text x="872" y="210" font-size="12" font-weight="600" fill="#64748B">Demonstrasi Fatal Error &amp; Blind Spot</text>
+      <line x1="872" y1="230" x2="1197" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="872" y="260" font-size="12" fill="#334155">• Konsep: Admin memasukkan IP jahat ke Whitelist.</text><text x="872" y="302" font-size="12" fill="#334155">• Dampak: Mesin korelasi MENGABAIKAN log IP tsb.</text><text x="872" y="344" font-size="12" fill="#334155">• Edukasi: Membuktikan risiko fatal bypass whitelist.</text><text x="872" y="386" font-size="12" fill="#334155">• Pemulihan: Hapus IP dari whitelist memulihkan alarm.</text>
+    </g>
+  <!-- Footer -->
+  <g id="footer-group" data-pptx-bounds="72 685 1136 30">
+    <line x1="72" y1="685" x2="1208" y2="685" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="72" y="704" font-size="12" fill="#64748B">Mini-SIEM Command Center | Tim 'JadiBegini' | Enterprise Cybersecurity Architecture</text>
+  </g>
+</svg>
