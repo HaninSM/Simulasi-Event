@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta
 import requests
 
 from app.log_adapter import LogAdapter
+from app.models import LogEvent
 
 # Ensure UTF-8 output on Windows terminal
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
@@ -345,6 +346,45 @@ def scenario_8_low_and_slow_apt(api_base, variant=None):
     print(f"\n{GREEN}[OK] Hasil Skenario 8: Terbukti berhasil mengatasi jebakan Low & Slow APT dari file log riil!{RESET}")
 
 
+# ---------------- SCENARIO 9: OT HARDWARE SABOTAGE (AC CENTRAL SHUTDOWN VIA MQTT) ----------------
+def scenario_9_ot_ac_shutdown(api_base, variant=None):
+    print(f"\n{BOLD}{RED}>>> Skenario 9: OT Hardware Sabotage - AC Central Shutdown via MQTT (Memicu Rule Kritis OT){RESET}")
+    events = LogAdapter.load_scenario_from_file(9, variant=variant)
+    variant_str = f" (Varian {events.variant}/3: {events.description})" if hasattr(events, "variant") and events.variant else ""
+    source_str = getattr(events, "source_file", "sample_logs/mqtt_datacenter_hvac.jsonl")
+    print(f"  {YELLOW}📁 Berkas Sumber: {source_str}{variant_str}{RESET}")
+    print("Kriteria Rule: Pembacaan telemetri hardware OT diikuti pengiriman perintah ilegal SHUTDOWN AC Central via protokol MQTT.")
+
+    if len(events) >= 2:
+        # Event 1: Normal Hardware Reading / Telemetry
+        p1 = {k: v for k, v in events[0].items() if k in LogEvent.model_fields}
+        target_dev1 = p1.get("target_device", "AC Central")
+        loc1 = p1.get("location", "Datacenter")
+        proto1 = p1.get("protocol", "MQTT")
+        topic1 = p1.get("topic", "datacenter/cooling/telemetry")
+        cmd1 = p1.get("command", "STATUS_REPORT")
+        print(f"  [1] Event Hardware: Membaca status sensor hardware OT '{target_dev1}' di {loc1} via {proto1} (Topic: {topic1}, Cmd: {cmd1})...")
+        post_log(api_base, p1)
+        time.sleep(1)
+
+        # Event 2: Unauthorized Shutdown Command via MQTT
+        p2 = {k: v for k, v in events[1].items() if k in LogEvent.model_fields}
+        target_dev2 = p2.get("target_device", "AC Central")
+        loc2 = p2.get("location", "Datacenter")
+        proto2 = p2.get("protocol", "MQTT")
+        topic2 = p2.get("topic", "datacenter/cooling/power")
+        cmd2 = p2.get("command", "POWER_OFF")
+        ip2 = p2.get("ip_address", "192.168.30.99")
+        user2 = p2.get("user_id", "ot_intruder")
+        print(f"  [2] Event OT Command: Mengirim perintah ilegal '{cmd2}' ke hardware '{target_dev2}' dari IP {ip2} (User: {user2}) via {proto2} (Topic: {topic2})...")
+        res = post_log(api_base, p2)
+        if res and res.status_code == 201:
+            data = res.json()
+            print(f"  {RED}[!] ALARM KRITIS TERCATAT: {data.get('alerts_triggered')} alarm dipicu! (OT Sabotage AC Central Shutdown){RESET}")
+
+    print(f"{GREEN}[OK] Hasil Skenario 9: Rule OT Hardware Sabotage berhasil dideteksi dari log MQTT.{RESET}")
+
+
 def demo_soar_containment(api_base):
     print(f"\n{BOLD}{CYAN}>>> DEMO SOAR: Active Defense & Host Containment Playbook{RESET}")
     print("Konsep: Begitu SIEM mendeteksi ancaman, analis mengeksekusi Playbook 'Isolate Host'.")
@@ -414,7 +454,7 @@ def reset_siem_database(api_base):
 
 
 def run_all_scenarios(api_base, variant=None):
-    print(f"\n{BOLD}{CYAN}===== MENJALANKAN SELURUH 8 SKENARIO SECARA BERUNTUN ====={RESET}")
+    print(f"\n{BOLD}{CYAN}===== MENJALANKAN SELURUH 9 SKENARIO SECARA BERUNTUN ====={RESET}")
     reset_siem_database(api_base)
     scenario_1_normal_traffic(api_base, variant=variant)
     time.sleep(1)
@@ -431,7 +471,9 @@ def run_all_scenarios(api_base, variant=None):
     scenario_7_corrupted_data_and_time_drift(api_base, variant=variant)
     time.sleep(1)
     scenario_8_low_and_slow_apt(api_base, variant=variant)
-    print(f"\n{BOLD}{GREEN}===== SELURUH 8 SKENARIO SELESAI DIJALANKAN ====={RESET}")
+    time.sleep(1)
+    scenario_9_ot_ac_shutdown(api_base, variant=variant)
+    print(f"\n{BOLD}{GREEN}===== SELURUH 9 SKENARIO SELESAI DIJALANKAN ====={RESET}")
 
 
 def interactive_menu(api_base):
@@ -446,9 +488,10 @@ def interactive_menu(api_base):
         print("  6. Skenario 6 - Careless Whitelisting (Demonstrasi Blind Spot Fatal)")
         print("  7. Skenario 7 - Data Cacat & Time Drift (Validasi Gatekeeper HTTP 422)")
         print("  8. Skenario 8 - The Low & Slow APT (Hot vs Cold Storage Dilemma & Stateful Watchlist)")
+        print("  9. Skenario 9 - OT Hardware Sabotage: AC Central Shutdown (Protokol MQTT - Rule KRITIS)")
         print("  C. Demo SOAR - Active Defense (Isolate Host, Drop Traffic & Release Quarantine)")
         print("  -------------------------------------------------------------")
-        print("  9. Jalankan Seluruh Skenario (1 - 8 Tour Lengkap)")
+        print("  A. Jalankan Seluruh Skenario (1 - 9 Tour Lengkap)")
         print("  R. Reset SIEM Memory (Bersihkan log, alarm & whitelist)")
         print("  0. Keluar (Exit)")
         print("  *(Setiap skenario otomatis memilih acak 1 dari 3 varian berkas log)*")
@@ -471,9 +514,11 @@ def interactive_menu(api_base):
             scenario_7_corrupted_data_and_time_drift(api_base)
         elif choice == "8":
             scenario_8_low_and_slow_apt(api_base)
+        elif choice == "9":
+            scenario_9_ot_ac_shutdown(api_base)
         elif choice.upper() == "C":
             demo_soar_containment(api_base)
-        elif choice == "9":
+        elif choice.upper() == "A":
             run_all_scenarios(api_base)
         elif choice.upper() == "R":
             reset_siem_database(api_base)
@@ -489,7 +534,7 @@ def interactive_menu(api_base):
 def main():
     parser = argparse.ArgumentParser(description="Mini-SIEM Attack & Telemetry Simulator")
     parser.add_argument("--api", default=DEFAULT_API_BASE, help="SIEM API base URL (default: http://127.0.0.1:8000)")
-    parser.add_argument("--scenario", "-s", type=int, choices=range(1, 9), help="Jalankan skenario tertentu (1-8)")
+    parser.add_argument("--scenario", "-s", type=int, choices=range(1, 10), help="Jalankan skenario tertentu (1-9)")
     parser.add_argument("--variant", "-v", type=int, choices=[1, 2, 3], default=None, help="Pilih varian berkas log tertentu (1-3, default: acak)")
     parser.add_argument("--soar", action="store_true", help="Jalankan demonstrasi SOAR Active Defense & Host Containment")
     parser.add_argument("--all", action="store_true", help="Jalankan semua skenario secara berurutan")
@@ -519,6 +564,7 @@ def main():
             6: scenario_6_careless_whitelisting,
             7: scenario_7_corrupted_data_and_time_drift,
             8: scenario_8_low_and_slow_apt,
+            9: scenario_9_ot_ac_shutdown,
         }
         scenarios[args.scenario](args.api, variant=args.variant)
         return

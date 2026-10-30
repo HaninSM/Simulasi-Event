@@ -4,7 +4,7 @@ from typing import Optional, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-EventType = Literal["login_attempt", "web_request", "database_download", "recon_probe"]
+EventType = Literal["login_attempt", "web_request", "database_download", "recon_probe", "ot_command", "mqtt_command"]
 EventStatus = Literal["success", "failed"]
 SeverityLevel = Literal["KRITIS", "TINGGI", "MENENGAH"]
 
@@ -16,6 +16,11 @@ class LogEvent(BaseModel):
     ip_address: str
     location: str = Field(..., min_length=1)
     status: EventStatus
+    protocol: Optional[str] = "MQTT"
+    device_type: Optional[str] = None
+    target_device: Optional[str] = None
+    command: Optional[str] = None
+    topic: Optional[str] = None
 
     @field_validator("ip_address")
     @classmethod

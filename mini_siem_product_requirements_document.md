@@ -43,9 +43,10 @@ Semua log yang masuk ke sistem (Ingestion) wajib memenuhi format JSON kanonikal 
   * **Skenario 6 (Careless Whitelist):** `careless_whitelist_attack_1.log` (IP `203.0.113.88`), `careless_whitelist_attack_2.log` (IP `198.51.100.50`), `careless_whitelist_attack_3.log` (IP `192.0.2.77`).
   * **Skenario 7 (Data Cacat/Drift):** `legacy_corrupted_device_1.log` (IoT Gateway), `legacy_corrupted_device_2.log` (Branch Router), `legacy_corrupted_device_3.log` (SCADA PLC).
   * **Skenario 8 (Low & Slow APT):** `apt_recon_and_exploit_1.log` (IP `198.51.100.77`), `apt_recon_and_exploit_2.log` (IP `203.0.113.144`), `apt_recon_and_exploit_3.log` (IP `192.0.2.199`).
+  * **Skenario 9 (OT Hardware Sabotage - AC Central Shutdown via MQTT):** `mqtt_datacenter_hvac_1.jsonl` (CRAC-AC-CENTRAL-01 / Hall A), `mqtt_datacenter_hvac_2.jsonl` (HVAC-CHILLER-MAIN-02 / Plant), `mqtt_datacenter_hvac_3.jsonl` (PAC-SERVER-ROW-C03 / AI Cluster).
 * **Random Variant Selection & Deterministic Overrides:** Logika pemanggilan simulator secara otomatis memilih acak 1 dari 3 varian berkas log per skenario (`variant=None` -> `random.choice([1, 2, 3])`). Analis juga dapat memilih varian spesifik secara deterministik via query parameter `?variant=1..3` pada API atau flag CLI `--variant 1..3`.
 * **Dynamic Timestamp Shifting:** Mengonversi timestamp historis secara dinamis relatif terhadap waktu nyata sistem (`NOW()`) saat di-replay, sehingga data audit asli tetap utuh sekaligus lolos Gatekeeper Time Drift Check dan memicu sliding windows korelasi.
-* Endpoint `POST /api/simulator/replay?scenario={1..8}&variant={1..3}`: Menjalankan eksekusi replay langsung di sisi backend untuk CLI maupun Dashboard Browser.
+* Endpoint `POST /api/simulator/replay?scenario={1..9}&variant={1..3}`: Menjalankan eksekusi replay langsung di sisi backend untuk CLI maupun Dashboard Browser.
 
 ### Fitur C: Mesin Korelasi Berbasis Aturan (The Brain)
 Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
@@ -55,6 +56,7 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 4. **Off-Hours Anomaly (Level: MENENGAH):** Aktivitas `status: success` oleh pengguna manusia di luar jam operasional kantor (00:00 - 05:00 waktu lokal).
 5. **Data Exfiltration / Insider Threat (Level: KRITIS):** 1 `user_id` melakukan `database_download` > 50 kali dalam rentang 1 menit.
 6. **Advanced Persistent Threat (APT) / Temporal Correlation:** Korelasi jejak *reconnaissance* dari *Cold Storage* yang diaktifkan kembali (*rehydrated*) terhadap *exploit request* di *Hot Storage* menggunakan tabel stateful *Suspicious Greylist/Watchlist*.
+7. **OT / Industrial Control Sabotage (Level: KRITIS):** Deteksi perintah tidak sah (`POWER_OFF`, `EMERGENCY_SHUTDOWN`, `STOP_COOLING`, `KILL_SWITCH`) via protokol **MQTT** yang menargetkan perangkat hardware pendingin datacenter (AC Central / CRAC / Chiller), yang berpotensi memicu kegagalan termal katastropik (*thermal runaway*).
 
 ### Fitur D: SOAR Active Defense (Host & Identity Containment Playbook)
 * **Karantina Host Jaringan (`POST /api/soar/isolate`):**
@@ -85,7 +87,8 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 6. **Skenario 6 (Careless Whitelisting):** Replay dari `careless_whitelist_attack.log` membuktikan IP yang di-whitelist membutakan SIEM.
 7. **Skenario 7 (Data Cacat & Time Drift):** Replay dari `legacy_corrupted_device.log` membuktikan Gatekeeper menolak log rusak tanpa membuat server crash (HTTP 422).
 8. **Skenario 8 (Low & Slow APT):** Replay dari `apt_recon_and_exploit.log` mendemonstrasikan mitigasi kebutaan korelasi akibat rotasi Hot ke Cold Storage menggunakan persistent watchlist.
-9. **Demo SOAR Active Defense:** Menjalankan `python simulator.py --soar` untuk memperagakan isolasi IP `45.33.32.156`, pemutusan traffic penyerang secara instan di Gatekeeper (HTTP 403), dan pemulihan karantina.
+9. **Skenario 9 (OT Hardware Sabotage - AC Central Shutdown via MQTT):** Replay dari `mqtt_datacenter_hvac.jsonl` mendemonstrasikan pembacaan status sensor hardware AC Central disusul deteksi perintah ilegal mematikan AC Central di datacenter via protokol MQTT (Rule Kritis OT Sabotage).
+10. **Demo SOAR Active Defense:** Menjalankan `python simulator.py --soar` untuk memperagakan isolasi IP `45.33.32.156`, pemutusan traffic penyerang secara instan di Gatekeeper (HTTP 403), dan pemulihan karantina.
 
 ## 5. Tumpukan Teknologi (Tech Stack)
 * **Backend:** Python 3.11 + FastAPI (Asynchronous, High-Performance, ASGI).
@@ -93,4 +96,4 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 * **Adapter & Ingestion:** Universal Log Adapter (`app/log_adapter.py`) dengan regex parser multi-format.
 * **Penyimpanan Telemetri:** *In-memory stateful store* (Event cache, Active Alerts, Whitelist, Suspicious Greylist, Isolated Hosts, SOAR Audit Trail).
 * **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, SOAR Active Panel, tanpa dependencies eksternal).
-* **Simulator & Testing:** Python Requests, Pytest test suite (26 automated test cases).
+* **Simulator & Testing:** Python Requests, Pytest test suite (29 automated test cases).

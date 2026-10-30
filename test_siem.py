@@ -694,3 +694,110 @@ def test_soar_user_suspension_blocks_logins_and_replays():
     })
     assert restore_res.status_code == 201
 
+
+# ---------------- 10. SCENARIO 9: OT HARDWARE SABOTAGE (AC CENTRAL SHUTDOWN VIA MQTT) ----------------
+
+def test_rule_ot_ac_central_shutdown_mqtt_detection():
+    client.post("/api/reset")
+
+    # Step 1: Normal hardware sensor telemetry via MQTT should NOT trigger alerts
+    telemetry_payload = {
+        "timestamp": get_iso_now(-2),
+        "protocol": "MQTT",
+        "topic": "datacenter/cooling/crac01/telemetry",
+        "user_id": "bms_monitor",
+        "ip_address": "10.10.1.50",
+        "location": "Datacenter Hall A",
+        "event_type": "ot_command",
+        "device_type": "AC_CENTRAL",
+        "target_device": "CRAC-AC-CENTRAL-01",
+        "command": "STATUS_REPORT",
+        "status": "success"
+    }
+    r1 = client.post("/api/ingest", json=telemetry_payload)
+    assert r1.status_code == 201
+    assert r1.json()["alerts_triggered"] == 0
+
+    # Step 2: Malicious command shutting down AC Central via MQTT triggers KRITIS alert
+    shutdown_payload = {
+        "timestamp": get_iso_now(0),
+        "protocol": "MQTT",
+        "topic": "datacenter/cooling/crac01/power",
+        "user_id": "ot_intruder",
+        "ip_address": "192.168.30.99",
+        "location": "Datacenter Hall A",
+        "event_type": "ot_command",
+        "device_type": "AC_CENTRAL",
+        "target_device": "CRAC-AC-CENTRAL-01",
+        "command": "POWER_OFF",
+        "status": "success"
+    }
+    r2 = client.post("/api/ingest", json=shutdown_payload)
+    assert r2.status_code == 201
+    assert r2.json()["alerts_triggered"] == 1
+    
+    alert = r2.json()["alerts"][0]
+    assert alert["rule_name"] == "OT Sabotage: Datacenter AC Central Shutdown (MQTT)"
+    assert alert["severity"] == "KRITIS"
+    assert alert["details"]["protocol"] == "MQTT"
+    assert alert["details"]["target_device"] == "CRAC-AC-CENTRAL-01"
+    assert alert["details"]["command"] == "POWER_OFF"
+    assert "thermal" in alert["description"].lower() or "overheating" in alert["description"].lower()
+
+
+def test_scenario_9_replay_all_variants():
+    # Test variant 1: CRAC-AC-CENTRAL-01
+    client.post("/api/reset")
+    r_v1 = client.post("/api/simulator/replay?scenario=9&variant=1")
+    assert r_v1.status_code == 200
+    data_v1 = r_v1.json()
+    assert data_v1["scenario"] == 9
+    assert data_v1["variant"] == 1
+    assert data_v1["alerts_triggered"] == 1
+    assert "CRAC-AC-CENTRAL-01" in data_v1["variant_description"]
+
+    # Test variant 2: HVAC-CHILLER-MAIN-02
+    client.post("/api/reset")
+    r_v2 = client.post("/api/simulator/replay?scenario=9&variant=2")
+    assert r_v2.status_code == 200
+    data_v2 = r_v2.json()
+    assert data_v2["scenario"] == 9
+    assert data_v2["variant"] == 2
+    assert data_v2["alerts_triggered"] == 1
+    assert "HVAC-CHILLER-MAIN-02" in data_v2["variant_description"]
+
+    # Test variant 3: PAC-SERVER-ROW-C03
+    client.post("/api/reset")
+    r_v3 = client.post("/api/simulator/replay?scenario=9&variant=3")
+    assert r_v3.status_code == 200
+    data_v3 = r_v3.json()
+    assert data_v3["scenario"] == 9
+    assert data_v3["variant"] == 3
+    assert data_v3["alerts_triggered"] == 1
+    assert "PAC-SERVER-ROW-C03" in data_v3["variant_description"]
+
+
+def test_scenario_9_soar_isolation_defense():
+    client.post("/api/reset")
+    # 1. Run Scenario 9 variant 1: Alert is triggered
+    r1 = client.post("/api/simulator/replay?scenario=9&variant=1")
+    assert r1.status_code == 200
+    assert r1.json()["alerts_triggered"] == 1
+    attacker_ip = "192.168.30.99"
+
+    # 2. SOC Analyst quarantines the OT intruder IP via SOAR
+    iso_res = client.post("/api/soar/isolate", json={
+        "ip_address": attacker_ip,
+        "reason": "Host quarantined due to unauthorized OT AC shutdown sabotage via MQTT",
+        "analyst": "SOC OT Specialist"
+    })
+    assert iso_res.status_code == 200
+
+    # 3. Replay Scenario 9 variant 1 again: Attacker command is dropped at Gatekeeper by SOAR!
+    r2 = client.post("/api/simulator/replay?scenario=9&variant=1")
+    assert r2.status_code == 200
+    assert r2.json()["logs_blocked_by_soar"] >= 1
+    assert r2.json()["soar_containment_active"] is True
+    assert r2.json()["alerts_triggered"] == 0
+
+

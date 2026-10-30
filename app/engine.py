@@ -548,6 +548,55 @@ class CorrelationEngine:
                 if alert:
                     triggered_alerts.append(alert)
 
+        # --- Rule: OT / Industrial Sabotage: Datacenter AC Central Shutdown (MQTT) (Level: KRITIS) ---
+        if event.event_type in ["ot_command", "mqtt_command"]:
+            cmd_upper = (event.command or "").upper()
+            topic_str = (event.topic or "").lower()
+            target_str = (event.target_device or "").upper()
+            device_str = (event.device_type or "").upper()
+
+            is_shutdown_cmd = any(s in cmd_upper for s in ["OFF", "SHUTDOWN", "STOP", "KILL"]) or any(s in topic_str for s in ["power", "control", "set_power"])
+            is_ac_device = (
+                "AC" in device_str
+                or any(k in target_str for k in ["AC", "CRAC", "HVAC", "CHILLER", "COOLING", "PAC"])
+                or any(k in topic_str for k in ["cooling", "ac_central", "hvac", "chiller", "crac"])
+            )
+
+            if is_shutdown_cmd and (is_ac_device or cmd_upper in ["POWER_OFF", "EMERGENCY_SHUTDOWN", "STOP_COOLING", "KILL_SWITCH", "SHUTDOWN"]):
+                protocol = event.protocol or "MQTT"
+                target_device = event.target_device or "AC Central Datacenter"
+                topic_display = event.topic or "datacenter/cooling/ac_central/power"
+                cmd_display = event.command or "POWER_OFF"
+
+                alert = self._create_alert(
+                    rule_name="OT Sabotage: Datacenter AC Central Shutdown (MQTT)",
+                    severity="KRITIS",
+                    description=(
+                        f"CRITICAL OT SABOTAGE ALERT: Perintah tidak sah '{cmd_display}' terdeteksi via protokol {protocol} "
+                        f"menargetkan pendingin datacenter '{target_device}' ({topic_display}) di {event.location} "
+                        f"dari IP {event.ip_address} (User: {event.user_id}). Bahaya overheating / thermal runaway datacenter terancam!"
+                    ),
+                    ip_address=event.ip_address,
+                    user_id=event.user_id,
+                    details={
+                        "protocol": protocol,
+                        "topic": topic_display,
+                        "command": cmd_display,
+                        "target_device": target_device,
+                        "device_type": event.device_type or "AC_CENTRAL",
+                        "facility_impact": "Datacenter Cooling Loss / Thermal Overheating Risk",
+                        "status": event.status,
+                        "ip_address": event.ip_address,
+                        "user_id": event.user_id,
+                        "location": event.location
+                    },
+                    cooldown_key=f"ot_ac_shutdown_{event.ip_address}_{target_device}_{cmd_display}",
+                    cooldown_seconds=5,
+                    ref_time=ts_utc
+                )
+                if alert:
+                    triggered_alerts.append(alert)
+
         # Store triggered alerts in history
         for a in triggered_alerts:
             self.alerts.append(a)

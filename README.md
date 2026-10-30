@@ -31,8 +31,9 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
    - [Skenario 6: Careless Whitelisting (Fatal Error / Blind Spot Demo)](#skenario-6-careless-whitelisting-fatal-error--blind-spot-demo)
    - [Skenario 7: Data Cacat & Time Drift (Gatekeeper Negative Testing)](#skenario-7-data-cacat--time-drift-gatekeeper-negative-testing)
    - [Skenario 8: The Low & Slow APT (Hot vs Cold Storage & Greylist Demo)](#skenario-8-the-low--slow-apt-hot-vs-cold-storage--greylist-demo)
+   - [Skenario 9: OT Hardware Sabotage - AC Central Datacenter Shutdown (MQTT)](#skenario-9-ot-hardware-sabotage---ac-central-datacenter-shutdown-mqtt)
    - [Demo SOAR: Host Isolation & Active Traffic Dropping](#demo-soar-host-isolation--active-traffic-dropping)
-9. [Otomasi Pengujian (Automated Unit & Integration Tests - 26 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---26-passed)
+9. [Otomasi Pengujian (Automated Unit & Integration Tests - 29 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---29-passed)
 10. [Daftar Endpoint API SIEM & SOAR](#-daftar-endpoint-api-siem--soar)
 11. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
 
@@ -64,6 +65,7 @@ Setiap log yang dikirim ke `POST /api/ingest` wajib memenuhi format JSON kanonik
 | **Rule 3** | **Distributed Brute Force** | **TINGGI** | > 5 `login_attempt` gagal untuk 1 `user_id` yang sama, berasal dari > 3 `ip_address` berbeda dalam 1 menit. |
 | **Rule 4** | **Off-Hours Anomaly** | **MENENGAH** | Aktivitas `status: success` oleh user manusia yang terjadi di luar jam kerja (00:00 - 05:00 waktu lokal). |
 | **Rule 5** | **Data Exfiltration** | **KRITIS** | 1 `user_id` melakukan `database_download` > 50 kali dalam rentang 1 menit. |
+| **Rule OT** | **OT Sabotage: AC Central Shutdown** | **KRITIS** | Deteksi perintah tidak sah (`POWER_OFF`, `EMERGENCY_SHUTDOWN`, `STOP_COOLING`, `KILL_SWITCH`) via protokol **MQTT** yang mematikan hardware pendingin datacenter (AC Central / CRAC / Chiller) yang memicu bahaya *thermal runaway*. |
 | **APT Watchlist** | **Low & Slow APT Correlation**| **KRITIS** | IP yang sebelumnya melakukan *reconnaissance* terdaftar dalam *stateful greylist*. Saat IP tersebut mengirim *exploit request* di masa depan, SIEM merehidrasi riwayat dari *Cold Storage* dan membunyikan alarm APT. |
 
 ---
@@ -205,9 +207,10 @@ Mini-SIEM mengintegrasikan modul **Universal Log Adapter** (`app/log_adapter.py`
 | **6. Careless Whitelist** | Nginx Web Access | `careless_whitelist_attack_1.log` (203.0.113.88) | `careless_whitelist_attack_2.log` (198.51.100.50) | `careless_whitelist_attack_3.log` (192.0.2.77) |
 | **7. Malformed / Drift** | Raw Telemetry Injection | `legacy_corrupted_device_1.log` (IoT Gateway) | `legacy_corrupted_device_2.log` (Branch Router) | `legacy_corrupted_device_3.log` (SCADA PLC) |
 | **8. Low & Slow APT** | Multi-phase APT Log | `apt_recon_and_exploit_1.log` (198.51.100.77) | `apt_recon_and_exploit_2.log` (203.0.113.144) | `apt_recon_and_exploit_3.log` (192.0.2.199) |
+| **9. OT AC Central Shutdown**| MQTT Broker JSONL | `mqtt_datacenter_hvac_1.jsonl` (CRAC-01 / Hall A) | `mqtt_datacenter_hvac_2.jsonl` (Chiller-02 / Plant) | `mqtt_datacenter_hvac_3.jsonl` (PAC-C03 / AI Row) |
 
 ```
-[Raw Log Sources (24 Files)]        [Universal Log Adapter]               [Gatekeeper & Correlation Engine]
+[Raw Log Sources (27 Files)]        [Universal Log Adapter]               [Gatekeeper & Correlation Engine]
 sample_logs/                         app/log_adapter.py                     app/engine.py
 ├── web_access_normal_[1..3].log  -> Nginx Combined Regex Parser --------> POST /api/ingest (Canonical JSON)
 ├── nginx_ddos_flood_[1..3].log   -> HTTP Flood Regex Parser -------------> POST /api/ingest
@@ -216,6 +219,8 @@ sample_logs/                         app/log_adapter.py                     app/
 ├── postgres_audit_exfil_[1..3].. -> PGAudit JSON Lines Parser -----------> POST /api/ingest
 ├── careless_whitelist_[1..3].log -> Dynamic Attacker IP Parser ----------> POST /api/ingest
 ├── legacy_corrupted_[1..3].log   -> Raw Corrupted Injector --------------> POST /api/ingest (Negative Test)
+├── apt_recon_and_exploit_[1..3]  -> APT Multi-stage Parser --------------> POST /api/ingest (Rehydration)
+└── mqtt_datacenter_hvac_[1..3]   -> MQTT OT Protocol Parser -------------> POST /api/ingest (OT Sabotage)
 └── apt_recon_exploit_[1..3].log  -> Multi-phase APT Parser --------------> POST /api/ingest (Temporal Demo)
 ```
 
@@ -337,6 +342,16 @@ Anda dapat menjalankan skenario melalui:
 
 ---
 
+### Skenario 9: OT Hardware Sabotage - AC Central Datacenter Shutdown (MQTT)
+* **Sumber Data**: `sample_logs/mqtt_datacenter_hvac.jsonl` (3 Varian Telemetri & Kontrol Hardware OT/HVAC)
+* **Tujuan**: Membuktikan kapabilitas SIEM dalam memantau perangkat keras fisik Operational Technology (OT / BMS / SCADA) di datacenter (AC Central / CRAC unit / Chiller plant) dan mengenali perintah sabotase fisik berbahaya (`POWER_OFF`, `EMERGENCY_SHUTDOWN`, `STOP_COOLING`, `KILL_SWITCH`) yang dikirimkan via protokol **MQTT**. Jika dibiarkan, pendingin datacenter akan mati dan memicu *thermal runaway* (server overheat dan mati massal).
+* **Alur Eksekusi**:
+  1. **Event 1 (Membaca Hardware):** Sensor membaca telemetri suhu dan status operasional pendingin secara berkala via topik MQTT (`STATUS_REPORT`) — diterima secara normal tanpa alarm palsu.
+  2. **Event 2 (Perintah Sabotase):** Penyerang/akun ilegal mengirimkan perintah mematikan unit pendingin (`POWER_OFF`) via topik MQTT — SIEM mengenali protokol MQTT dan jenis hardware OT tersebut, langsung memicu **Rule OT Sabotage (Level: KRITIS)**.
+* **Perintah**: `python simulator.py --scenario 9`
+
+---
+
 ### Demo SOAR: Host Isolation & Active Traffic Dropping
 * **Tujuan**: Memperagakan penanganan insiden aktif saat analis mengisolasi host yang terinfeksi dan memutus serangannya secara instan.
 * **Perintah**:
@@ -351,7 +366,7 @@ Anda dapat menjalankan skenario melalui:
 
 ---
 
-### 🌟 Menjalankan Tur Lengkap (Semua 8 Skenario Sekaligus)
+### 🌟 Menjalankan Tur Lengkap (Semua 9 Skenario Sekaligus)
 Untuk mendemonstrasikan seluruh skenario secara sekuensial dalam satu perintah:
 ```powershell
 python simulator.py --all
@@ -359,7 +374,7 @@ python simulator.py --all
 
 ---
 
-## 🧪 Otomasi Pengujian (Automated Unit & Integration Tests - 24 Passed)
+## 🧪 Otomasi Pengujian (Automated Unit & Integration Tests - 29 Passed)
 
 Untuk memvalidasi integritas seluruh fungsionalitas sistem secara otomatis, jalankan rangkaian uji menggunakan `pytest`:
 
@@ -371,36 +386,39 @@ pytest test_siem.py -v
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.1.1
-collected 24 items
+collected 29 items
 
-test_siem.py::test_missing_ip_address_rejected PASSED                    [  4%]
-test_siem.py::test_null_ip_address_rejected PASSED                       [  8%]
-test_siem.py::test_missing_ip_key_completely_rejected PASSED             [ 12%]
-test_siem.py::test_truncated_malformed_json_rejected PASSED              [ 16%]
-test_siem.py::test_invalid_ipv4_rejected PASSED                          [ 20%]
-test_siem.py::test_time_drift_cmos_battery_reset_1970_rejected PASSED    [ 25%]
-test_siem.py::test_time_drift_future_rejected PASSED                     [ 29%]
-test_siem.py::test_invalid_event_type_rejected PASSED                    [ 33%]
-test_siem.py::test_rule_1_ddos_detection PASSED                          [ 37%]
-test_siem.py::test_rule_2_impossible_travel PASSED                       [ 41%]
-test_siem.py::test_rule_3_distributed_brute_force PASSED                 [ 45%]
-test_siem.py::test_rule_4_off_hours_anomaly PASSED                       [ 50%]
-test_siem.py::test_rule_5_data_exfiltration PASSED                       [ 54%]
-test_siem.py::test_careless_whitelisting_blinds_correlation_engine PASSED [ 58%]
-test_siem.py::test_scenario_8_recon_probe_and_cold_storage_aging PASSED  [ 62%]
-test_siem.py::test_scenario_8_apt_correlation_blind_spot_without_watchlist PASSED [ 66%]
-test_siem.py::test_scenario_8_apt_correlation_success_with_persistent_watchlist PASSED [ 70%]
-test_siem.py::test_stats_and_reset_endpoints PASSED                      [ 75%]
-test_siem.py::test_log_adapter_parses_real_sample_files PASSED           [ 79%]
-test_siem.py::test_api_simulator_replay_scenarios PASSED                 [ 83%]
-test_siem.py::test_soar_isolate_host_blocks_subsequent_ingestion_http_403 PASSED [ 87%]
-test_siem.py::test_soar_release_host_restores_ingestion PASSED           [ 91%]
-test_siem.py::test_soar_alert_status_transitions_to_contained PASSED     [ 95%]
-test_siem.py::test_soar_stats_and_audit_trail PASSED                     [ 92%]
-test_siem.py::test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay PASSED [ 96%]
-test_siem.py::test_soar_user_suspension_blocks_logins_and_replays PASSED [100%]
+test_siem.py::test_missing_ip_address_rejected PASSED                    [  3%]
+test_siem.py::test_null_ip_address_rejected PASSED                       [  6%]
+test_siem.py::test_missing_ip_key_completely_rejected PASSED             [ 10%]
+test_siem.py::test_truncated_malformed_json_rejected PASSED              [ 13%]
+test_siem.py::test_invalid_ipv4_rejected PASSED                          [ 17%]
+test_siem.py::test_time_drift_cmos_battery_reset_1970_rejected PASSED    [ 20%]
+test_siem.py::test_time_drift_future_rejected PASSED                     [ 24%]
+test_siem.py::test_invalid_event_type_rejected PASSED                    [ 27%]
+test_siem.py::test_rule_1_ddos_detection PASSED                          [ 31%]
+test_siem.py::test_rule_2_impossible_travel PASSED                       [ 34%]
+test_siem.py::test_rule_3_distributed_brute_force PASSED                 [ 37%]
+test_siem.py::test_rule_4_off_hours_anomaly PASSED                       [ 41%]
+test_siem.py::test_rule_5_data_exfiltration PASSED                       [ 44%]
+test_siem.py::test_careless_whitelisting_blinds_correlation_engine PASSED [ 48%]
+test_siem.py::test_scenario_8_recon_probe_and_cold_storage_aging PASSED  [ 51%]
+test_siem.py::test_scenario_8_apt_correlation_blind_spot_without_watchlist PASSED [ 55%]
+test_siem.py::test_scenario_8_apt_correlation_success_with_persistent_watchlist PASSED [ 58%]
+test_siem.py::test_stats_and_reset_endpoints PASSED                      [ 62%]
+test_siem.py::test_log_adapter_parses_real_sample_files PASSED           [ 65%]
+test_siem.py::test_api_simulator_replay_scenarios PASSED                 [ 68%]
+test_siem.py::test_soar_isolate_host_blocks_subsequent_ingestion_http_403 PASSED [ 72%]
+test_siem.py::test_soar_release_host_restores_ingestion PASSED           [ 75%]
+test_siem.py::test_soar_alert_status_transitions_to_contained PASSED     [ 79%]
+test_siem.py::test_soar_stats_and_audit_trail PASSED                     [ 82%]
+test_siem.py::test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay PASSED [ 86%]
+test_siem.py::test_soar_user_suspension_blocks_logins_and_replays PASSED [ 89%]
+test_siem.py::test_rule_ot_ac_central_shutdown_mqtt_detection PASSED    [ 93%]
+test_siem.py::test_scenario_9_replay_all_variants PASSED                 [ 96%]
+test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 
-======================== 26 passed, 1 warning in 1.10s ========================
+======================== 29 passed, 1 warning in 2.06s ========================
 ```
 
 ---

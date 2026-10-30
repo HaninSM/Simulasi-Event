@@ -88,6 +88,11 @@ class LogAdapter:
             1: ("apt_recon_and_exploit_1.log", "198.51.100.77: Dirbuster /.env vs Log4j RCE"),
             2: ("apt_recon_and_exploit_2.log", "203.0.113.144: Actuator Scan vs Spring4Shell RCE"),
             3: ("apt_recon_and_exploit_3.log", "192.0.2.199: SQLi Recon vs Webshell Upload")
+        },
+        9: {
+            1: ("mqtt_datacenter_hvac_1.jsonl", "CRAC-AC-CENTRAL-01 Shutdown (Datacenter Hall A via MQTT)"),
+            2: ("mqtt_datacenter_hvac_2.jsonl", "HVAC-CHILLER-MAIN-02 Shutdown (Datacenter Facility Plant via MQTT)"),
+            3: ("mqtt_datacenter_hvac_3.jsonl", "PAC-SERVER-ROW-C03 Shutdown (High-Density Server Row via MQTT)")
         }
     }
 
@@ -210,7 +215,8 @@ class LogAdapter:
                 5: "postgres_audit_exfiltration.jsonl",
                 6: "careless_whitelist_attack.log",
                 7: "legacy_corrupted_device.log",
-                8: "apt_recon_and_exploit.log"
+                8: "apt_recon_and_exploit.log",
+                9: "mqtt_datacenter_hvac.jsonl"
             }
             filename = legacy_names.get(scenario_id, "")
             file_path = os.path.join(SAMPLE_LOGS_DIR, filename)
@@ -308,6 +314,28 @@ class LogAdapter:
                         p2["timestamp"] = get_current_utc_iso(1)
                         p2["stage"] = "day_20_exploit"
                         events.append(p2)
+
+        elif scenario_id == 9:
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    for idx, line in enumerate(f):
+                        line = line.strip()
+                        if line:
+                            data = json.loads(line)
+                            event = {
+                                "timestamp": get_current_utc_iso(delta_seconds=idx * 1.0),
+                                "event_type": data.get("event_type", "ot_command"),
+                                "user_id": data.get("user_id", "ot_operator"),
+                                "ip_address": data.get("ip_address", "192.168.30.99"),
+                                "location": data.get("location", "Datacenter Cooling Plant"),
+                                "status": data.get("status", "success"),
+                                "protocol": data.get("protocol", "MQTT"),
+                                "device_type": data.get("device_type", "AC_CENTRAL"),
+                                "target_device": data.get("target_device", "CRAC-AC-CENTRAL-01"),
+                                "command": data.get("command", "POWER_OFF"),
+                                "topic": data.get("topic", "datacenter/cooling/ac_central/power")
+                            }
+                            events.append(event)
 
         return ScenarioEventList(
             events,

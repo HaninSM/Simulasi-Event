@@ -320,7 +320,7 @@ def reset_siem():
 
 @app.post("/api/simulator/replay")
 def replay_scenario(
-    scenario: int = Query(..., ge=1, le=8),
+    scenario: int = Query(..., ge=1, le=9),
     variant: Optional[int] = Query(None, ge=1, le=3, description="Varian berkas log (1-3). Kosongkan untuk pemilihan acak.")
 ):
     """
@@ -451,8 +451,18 @@ def replay_scenario(
         all_alerts.extend(al)
         accepted_count += 1
 
+    scenario_titles = {
+        1: "Normal Traffic Replay",
+        2: "DDoS / Botnet Flood Attack",
+        3: "Impossible Travel Detection (Physical vs Remote)",
+        4: "Distributed SSH Brute Force",
+        5: "Database Exfiltration Insider Threat",
+        9: "OT Hardware Sabotage: Datacenter AC Central Shutdown (MQTT)"
+    }
+
     return {
         "scenario": scenario,
+        "title": scenario_titles.get(scenario, f"Skenario {scenario}"),
         "variant": variant_num,
         "variant_description": variant_desc,
         "source_file": source_file,
