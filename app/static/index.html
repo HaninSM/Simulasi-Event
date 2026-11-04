@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -15,28 +15,28 @@
     <header class="header">
         <div class="header-container">
             <div class="brand">
-                <div class="brand-icon">⚡</div>
+                <div class="brand-icon" aria-hidden="true">⚡</div>
                 <div>
                     <h1 class="brand-title">
                         MINI-SIEM COMMAND CENTER
-                        <span class="brand-badge">V1.0 - FULL SCENARIO</span>
+                        <span class="brand-badge">V1.0 PRODUCTION</span>
                     </h1>
                 </div>
             </div>
 
-            <div class="status-indicator">
-                <div class="pulse-dot"></div>
-                <span>LIVE CORRELATION ENGINE ACTIVE (2s POLLING)</span>
+            <div class="status-indicator" role="status" aria-live="polite">
+                <div class="status-dot"></div>
+                <span>Live Correlation Engine (2s Interval)</span>
             </div>
 
             <div class="header-actions">
-                <button id="btnReset" class="btn btn-outline" title="Reset all in-memory logs and alerts">
+                <button id="btnReset" class="btn btn-outline" type="button" title="Reset all in-memory logs and correlation alerts">
                     🔄 Reset SIEM State
                 </button>
-                <a href="/presentation" target="_blank" class="btn btn-outline" title="Lihat Slide Presentasi Arsitektur & Concern AI SIEM">
+                <a href="/presentation" target="_blank" class="btn btn-outline" title="Open SIEM Architecture and AI Evolution Slides">
                     📊 AI Evolution Deck
                 </a>
-                <a href="/docs" target="_blank" class="btn btn-primary" title="Open FastAPI Interactive OpenAPI Docs">
+                <a href="/docs" target="_blank" class="btn btn-primary" title="Open OpenAPI Interactive Documentation">
                     📖 API Docs
                 </a>
             </div>
@@ -46,48 +46,76 @@
     <!-- Main Container -->
     <main class="container">
 
-        <!-- Top Metrics Bar -->
-        <section class="metrics-grid">
-            <div class="metric-card">
-                <span class="metric-label">Ingested Logs</span>
-                <span class="metric-value" id="valTotalLogs">0</span>
+        <!-- Top Metrics Clusters -->
+        <section class="metrics-clusters" aria-label="SIEM Operational Metrics">
+            
+            <!-- Cluster 1: Ingestion & Telemetry -->
+            <div class="metric-cluster">
+                <div class="cluster-header">
+                    <span class="cluster-title">📡 Ingestion &amp; Storage</span>
+                </div>
+                <div class="cluster-items">
+                    <div class="metric-card">
+                        <span class="metric-label">Total Ingested Logs</span>
+                        <span class="metric-value" id="valTotalLogs">0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Stateful Watchlist</span>
+                        <span class="metric-value" id="valWatchlistCount">0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Cold Archive (&gt;14d)</span>
+                        <span class="metric-value" id="valColdCount">0</span>
+                    </div>
+                </div>
             </div>
-            <div class="metric-card critical">
-                <span class="metric-label">Critical Alerts (KRITIS)</span>
-                <span class="metric-value" id="valCriticalAlerts">0</span>
+
+            <!-- Cluster 2: Active Threat Detections -->
+            <div class="metric-cluster">
+                <div class="cluster-header">
+                    <span class="cluster-title">🚨 Threat Detections</span>
+                </div>
+                <div class="cluster-items">
+                    <div class="metric-card critical">
+                        <span class="metric-label">Critical (KRITIS)</span>
+                        <span class="metric-value" id="valCriticalAlerts">0</span>
+                    </div>
+                    <div class="metric-card high">
+                        <span class="metric-label">High (TINGGI)</span>
+                        <span class="metric-value" id="valHighAlerts">0</span>
+                    </div>
+                    <div class="metric-card medium">
+                        <span class="metric-label">Medium (MENENGAH)</span>
+                        <span class="metric-value" id="valMediumAlerts">0</span>
+                    </div>
+                </div>
             </div>
-            <div class="metric-card high">
-                <span class="metric-label">High Alerts (TINGGI)</span>
-                <span class="metric-value" id="valHighAlerts">0</span>
+
+            <!-- Cluster 3: SOAR Defense & Containment -->
+            <div class="metric-cluster">
+                <div class="cluster-header">
+                    <span class="cluster-title">🔒 SOAR Active Defense</span>
+                </div>
+                <div class="cluster-items">
+                    <div class="metric-card quarantine">
+                        <span class="metric-label">Quarantined Hosts</span>
+                        <span class="metric-value" id="valIsolatedCount">0</span>
+                    </div>
+                    <div class="metric-card suspended">
+                        <span class="metric-label">Suspended Users</span>
+                        <span class="metric-value" id="valSuspendedUsersCount">0</span>
+                    </div>
+                    <div class="metric-card blocked">
+                        <span class="metric-label">Blocked Traffic</span>
+                        <span class="metric-value" id="valBlockedCount">0</span>
+                    </div>
+                    <div class="metric-card whitelist">
+                        <span class="metric-label">Whitelisted IPs</span>
+                        <span class="metric-value" id="valWhitelistCount">0</span>
+                    </div>
+                </div>
             </div>
-            <div class="metric-card medium">
-                <span class="metric-label">Medium Alerts (MENENGAH)</span>
-                <span class="metric-value" id="valMediumAlerts">0</span>
-            </div>
-            <div class="metric-card whitelist">
-                <span class="metric-label">Whitelisted IPs (Blind Spots)</span>
-                <span class="metric-value" id="valWhitelistCount">0</span>
-            </div>
-            <div class="metric-card" style="border-left-color: #8b5cf6;">
-                <span class="metric-label">Stateful Watchlist (Greylist)</span>
-                <span class="metric-value" id="valWatchlistCount">0</span>
-            </div>
-            <div class="metric-card" style="border-left-color: #06b6d4;">
-                <span class="metric-label">Cold Storage Archive (&gt;14d)</span>
-                <span class="metric-value" id="valColdCount">0</span>
-            </div>
-            <div class="metric-card" style="border-left-color: #ec4899;">
-                <span class="metric-label">🔒 Quarantined Hosts (SOAR)</span>
-                <span class="metric-value" id="valIsolatedCount">0</span>
-            </div>
-            <div class="metric-card" style="border-left-color: #ef4444;">
-                <span class="metric-label">🚫 Suspended Users (SOAR)</span>
-                <span class="metric-value" id="valSuspendedUsersCount">0</span>
-            </div>
-            <div class="metric-card" style="border-left-color: #10b981;">
-                <span class="metric-label">🛡️ Blocked Traffic (SOAR)</span>
-                <span class="metric-value" id="valBlockedCount">0</span>
-            </div>
+
         </section>
 
         <!-- Main Dashboard Split Layout -->
@@ -97,153 +125,112 @@
             <div class="col-main">
 
                 <!-- Real-time Alerts Panel -->
-                <div class="panel">
+                <section class="panel" aria-labelledby="alertsPanelTitle">
                     <div class="panel-header">
-                        <h2 class="panel-title">
-                            🚨 Real-Time Security Alerts (Live Feed)
+                        <h2 id="alertsPanelTitle" class="panel-title">
+                            🚨 Real-Time Security Incident Feed
                         </h2>
                         <span class="panel-badge" id="alertCountBadge">0 Total</span>
                     </div>
                     <div class="panel-body">
-                        <div id="alertList" class="alert-list">
+                        <div id="alertList" class="alert-list" role="region" aria-live="polite">
                             <div class="empty-state">
-                                Menunggu deteksi insiden keamanan...<br>
-                                Gunakan Simulator di sebelah kanan untuk memicu skenario serangan.
+                                Awaiting security incident detection.<br>
+                                Trigger an attack scenario from the Simulator tab to evaluate detection rules.
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Recent Raw Ingestion Stream -->
-                <div class="panel">
+                <section class="panel" aria-labelledby="logsPanelTitle">
                     <div class="panel-header">
-                        <h2 class="panel-title">
-                            📡 Ingestion Event Stream (Raw Logs)
+                        <h2 id="logsPanelTitle" class="panel-title">
+                            📡 Ingestion Event Stream (Raw Telemetry)
                         </h2>
-                        <span class="panel-badge" id="logCountBadge">0 Logs</span>
+                        <span class="panel-badge" id="logCountBadge">0 Recent</span>
                     </div>
                     <div class="panel-body">
                         <div class="table-container">
                             <table id="logTable">
                                 <thead>
                                     <tr>
-                                        <th>Timestamp (UTC)</th>
-                                        <th>Event Type</th>
-                                        <th>User ID</th>
-                                        <th>Source IP</th>
-                                        <th>Location</th>
-                                        <th>Status</th>
+                                        <th scope="col">Timestamp (UTC)</th>
+                                        <th scope="col">Event Type</th>
+                                        <th scope="col">User ID</th>
+                                        <th scope="col">Source IP</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="logTableBody">
                                     <tr>
-                                        <td colspan="6" class="empty-state">Belum ada log yang masuk via POST /api/ingest</td>
+                                        <td colspan="6" class="empty-state">No ingestion events recorded yet via POST /api/ingest</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
+                </section>
 
             </div>
 
-            <!-- Right Column: Careless Whitelisting & Interactive Simulation Launcher -->
+            <!-- Right Column: Tabbed Management Console -->
             <div class="col-side">
 
-                <!-- Feature C: Careless Whitelisting Panel -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">
-                            🛡️ Careless Whitelisting Tuning
-                        </h2>
+                <div class="panel panel-tabs">
+                    <!-- Tab Navigation Header -->
+                    <div class="tab-nav" role="tablist" aria-label="Security Management Tools">
+                        <button class="tab-btn active" role="tab" id="tabBtnSoar" aria-selected="true" aria-controls="tabPaneSoar" type="button">
+                            🔒 Active Defense
+                        </button>
+                        <button class="tab-btn" role="tab" id="tabBtnWhitelist" aria-selected="false" aria-controls="tabPaneWhitelist" type="button">
+                            🛡️ Whitelist Tuning
+                        </button>
+                        <button class="tab-btn" role="tab" id="tabBtnSimulator" aria-selected="false" aria-controls="tabPaneSimulator" type="button">
+                            🎯 Scenario Simulator
+                        </button>
                     </div>
-                    <div class="panel-body">
-                        <div class="warning-banner">
-                            ⚠️ <strong>FATAL ERROR SIMULATION:</strong> IP yang di-whitelist di sini akan <strong>diabaikan sepenuhnya</strong> oleh Mesin Korelasi (menciptakan Blind Spot fatal!).
+
+                    <!-- Tab 1: SOAR Active Defense -->
+                    <div class="tab-content active" id="tabPaneSoar" role="tabpanel" aria-labelledby="tabBtnSoar">
+                        <div class="tab-section-intro">
+                            Automated active containment. Quarantined hosts are dropped immediately at Gatekeeper (HTTP 403 Forbidden).
                         </div>
 
-                        <form id="whitelistForm">
+                        <!-- Manual Host Isolation Form -->
+                        <form id="isolateForm" class="control-form">
                             <div class="form-group">
-                                <label class="form-label" for="whitelistIp">IPv4 Address to Whitelist</label>
-                                <input type="text" id="whitelistIp" class="form-control" placeholder="Contoh: 203.0.113.50" required pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
+                                <label class="form-label" for="isolateIp">Target IPv4 to Quarantine</label>
+                                <input type="text" id="isolateIp" class="form-control" placeholder="e.g. 45.33.32.156" required pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="whitelistReason">Reason / Catatan Kapten</label>
-                                <input type="text" id="whitelistReason" class="form-control" placeholder="e.g. CEO Laptop / VIP bypass">
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                                + Whitelist IP Ini (Ciptakan Blind Spot)
-                            </button>
-                        </form>
-
-                        <div style="margin-top: 1.25rem;">
-                            <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
-                                Active Whitelisted IPs
-                            </h3>
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>IP Address</th>
-                                            <th>Reason</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="whitelistTableBody">
-                                        <tr>
-                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada IP yang di-whitelist</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- SOAR Active Defense & Containment Panel -->
-                <div class="panel" style="border-top: 2px solid #ec4899;">
-                    <div class="panel-header">
-                        <h2 class="panel-title">
-                            🔒 SOAR Active Defense (Network Quarantine)
-                        </h2>
-                        <span class="panel-badge" id="isolatedCountBadge" style="background: rgba(236,72,153,0.15); color: #ec4899; border-color: rgba(236,72,153,0.4);">0 Quarantined</span>
-                    </div>
-                    <div class="panel-body">
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem; line-height: 1.4;">
-                            Mekanisme penanganan otomatis (Active Containment). Host yang diisolasi akan <strong>diputus total</strong> di Gatekeeper (HTTP 403 Dropped).
-                        </div>
-
-                        <form id="isolateForm">
-                            <div class="form-group">
-                                <label class="form-label" for="isolateIp">IP Target untuk Diisolasi</label>
-                                <input type="text" id="isolateIp" class="form-control" placeholder="Contoh: 45.33.32.156" required pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="isolateReason">Alasan Penindakan SOAR</label>
-                                <input type="text" id="isolateReason" class="form-control" placeholder="Contoh: Terdeteksi L7 HTTP Flooding">
+                                <label class="form-label" for="isolateReason">Playbook Justification</label>
+                                <input type="text" id="isolateReason" class="form-control" placeholder="e.g. High-rate L7 HTTP flooding detected">
                             </div>
                             <button type="submit" class="btn btn-isolate-primary" style="width: 100%;">
-                                🔒 Eksekusi Playbook: Isolate Host
+                                🔒 Execute Playbook: Isolate Host
                             </button>
                         </form>
 
-                        <div style="margin-top: 1.25rem;">
-                            <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
-                                Active Quarantined Hosts
-                            </h3>
+                        <!-- Quarantined Hosts List -->
+                        <div class="subpanel">
+                            <div class="subpanel-header">
+                                <h3 class="subpanel-title">Active Quarantined Hosts</h3>
+                                <span class="panel-badge badge-quarantine" id="isolatedCountBadge">0 Quarantined</span>
+                            </div>
                             <div class="table-container">
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>IP Address</th>
-                                            <th>Reason</th>
-                                            <th>Action</th>
+                                            <th scope="col">IP Address</th>
+                                            <th scope="col">Reason</th>
+                                            <th scope="col">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="isolatedTableBody">
                                         <tr>
-                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada host dalam karantina</td>
+                                            <td colspan="3" class="table-empty">No hosts currently in network quarantine</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -251,93 +238,129 @@
                         </div>
 
                         <!-- Suspended Accounts Section -->
-                        <div style="margin-top: 1.25rem;">
-                            <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
-                                🚫 Suspended User Accounts (Compromised Identity)
-                            </h3>
+                        <div class="subpanel">
+                            <div class="subpanel-header">
+                                <h3 class="subpanel-title">🚫 Suspended User Accounts</h3>
+                            </div>
                             <div class="table-container">
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>User ID</th>
-                                            <th>Reason</th>
-                                            <th>Action</th>
+                                            <th scope="col">User ID</th>
+                                            <th scope="col">Reason</th>
+                                            <th scope="col">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="suspendedUsersTableBody">
                                         <tr>
-                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada akun user yang dibekukan</td>
+                                            <td colspan="3" class="table-empty">No user accounts currently suspended</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- SOAR Audit Trail Stream -->
-                        <div style="margin-top: 1rem;">
-                            <h3 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase;">
-                                📜 SOAR Action Audit Trail
-                            </h3>
+                        <!-- SOAR Action Audit Trail -->
+                        <div class="subpanel">
+                            <div class="subpanel-header">
+                                <h3 class="subpanel-title">📜 SOAR Playbook Audit Trail</h3>
+                            </div>
                             <div id="soarAuditList" class="soar-audit-container">
-                                <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">
-                                    Belum ada aksi penindakan SOAR
+                                <div class="table-empty">
+                                    No SOAR playbook containment actions recorded
                                 </div>
                             </div>
                         </div>
-
                     </div>
-                </div>
 
-                <!-- Interactive Scenario Demo Launcher -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">
-                            🎯 Quick Scenario Launcher
-                        </h2>
+                    <!-- Tab 2: Whitelist Tuning -->
+                    <div class="tab-content" id="tabPaneWhitelist" role="tabpanel" aria-labelledby="tabBtnWhitelist" hidden>
+                        <div class="warning-banner" role="alert">
+                            ⚠️ <strong>DETECTION BLIND SPOT WARNING:</strong> Whitelisted IP addresses bypass correlation rules entirely to simulate misconfiguration and blind spot risks.
+                        </div>
+
+                        <form id="whitelistForm" class="control-form">
+                            <div class="form-group">
+                                <label class="form-label" for="whitelistIp">IPv4 Address to Whitelist</label>
+                                <input type="text" id="whitelistIp" class="form-control" placeholder="e.g. 203.0.113.50" required pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="whitelistReason">Tuning Justification / SOC Notes</label>
+                                <input type="text" id="whitelistReason" class="form-control" placeholder="e.g. VIP laptop or penetration test bypass">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                + Whitelist IP (Create Blind Spot)
+                            </button>
+                        </form>
+
+                        <div class="subpanel">
+                            <div class="subpanel-header">
+                                <h3 class="subpanel-title">Active Whitelisted IPs</h3>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">IP Address</th>
+                                            <th scope="col">Reason</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="whitelistTableBody">
+                                        <tr>
+                                            <td colspan="3" class="table-empty">No active whitelisted IP addresses</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div class="panel-body">
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-                            Replay skenario membaca langsung berkas log mentah (Nginx, Syslog, CSV, PGAudit) dari folder <code>sample_logs/</code> via browser atau terminal <code>python simulator.py</code>:
+
+                    <!-- Tab 3: Interactive Scenario Launcher -->
+                    <div class="tab-content" id="tabPaneSimulator" role="tabpanel" aria-labelledby="tabBtnSimulator" hidden>
+                        <p class="tab-section-intro">
+                            Replay attack scenarios directly from raw telemetry files in <code>sample_logs/</code> (Nginx, Syslog, CSV, PGAudit) or via CLI <code>python simulator.py</code>:
                         </p>
                         <div class="scenario-grid">
-                            <button class="btn-scenario" data-scenario="1">
+                            <button class="btn-scenario" data-scenario="1" type="button">
                                 <span>1. Normal Traffic</span>
-                                <span class="rule-tag" style="background:#1e293b; color:#94a3b8;">Normal</span>
+                                <span class="rule-tag tag-normal">Baseline</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="2">
+                            <button class="btn-scenario" data-scenario="2" type="button">
                                 <span>2. DDoS Attack (&gt;10 req/10s)</span>
-                                <span class="rule-tag" style="background:rgba(249,115,22,0.2); color:var(--high-orange);">Rule 1 - TINGGI</span>
+                                <span class="rule-tag tag-high">Rule 1 - HIGH</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="3">
-                                <span>3. Impossible Travel (&lt;1 jam)</span>
-                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">Rule 2 - KRITIS</span>
+                            <button class="btn-scenario" data-scenario="3" type="button">
+                                <span>3. Impossible Travel (&lt;1h)</span>
+                                <span class="rule-tag tag-critical">Rule 2 - CRITICAL</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="4">
+                            <button class="btn-scenario" data-scenario="4" type="button">
                                 <span>4. Distributed Brute Force</span>
-                                <span class="rule-tag" style="background:rgba(249,115,22,0.2); color:var(--high-orange);">Rule 3 - TINGGI</span>
+                                <span class="rule-tag tag-high">Rule 3 - HIGH</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="5">
+                            <button class="btn-scenario" data-scenario="5" type="button">
                                 <span>5. Data Exfiltration (&gt;50 dl)</span>
-                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">Rule 5 - KRITIS</span>
+                                <span class="rule-tag tag-critical">Rule 5 - CRITICAL</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="6">
+                            <button class="btn-scenario" data-scenario="6" type="button">
                                 <span>6. Careless Whitelist Attack</span>
-                                <span class="rule-tag" style="background:rgba(6,182,212,0.2); color:var(--accent-cyan);">Blind Spot Demo</span>
+                                <span class="rule-tag tag-cyan">Blind Spot Demo</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="7">
-                                <span>7. Data Cacat / Time Drift</span>
-                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">HTTP 422 Test</span>
+                            <button class="btn-scenario" data-scenario="7" type="button">
+                                <span>7. Malformed Data / Clock Drift</span>
+                                <span class="rule-tag tag-critical">HTTP 422 Test</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="8">
+                            <button class="btn-scenario" data-scenario="8" type="button">
                                 <span>8. The Low &amp; Slow APT</span>
-                                <span class="rule-tag" style="background:rgba(139,92,246,0.2); color:#a78bfa;">Hot vs Cold &amp; Watchlist</span>
+                                <span class="rule-tag tag-purple">Hot/Cold &amp; Watchlist</span>
                             </button>
-                            <button class="btn-scenario" data-scenario="9">
+                            <button class="btn-scenario" data-scenario="9" type="button">
                                 <span>9. OT: AC Central Shutdown (MQTT)</span>
-                                <span class="rule-tag" style="background:rgba(239,68,68,0.2); color:var(--critical-red);">Rule OT - KRITIS</span>
+                                <span class="rule-tag tag-critical">Rule OT - CRITICAL</span>
                             </button>
                         </div>
                     </div>
+
                 </div>
 
             </div>
@@ -345,6 +368,30 @@
         </div>
 
     </main>
+
+    <!-- Accessible Modal Container (Replaces blocking native alert/prompt/confirm) -->
+    <div id="modalOverlay" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title">Confirm Action</h3>
+                <button id="modalCloseBtn" class="modal-close" type="button" aria-label="Close dialog">&times;</button>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <p id="modalMessage"></p>
+                <div id="modalInputWrapper" class="modal-input-group" hidden>
+                    <label id="modalInputLabel" class="form-label" for="modalInputField">Reason:</label>
+                    <input type="text" id="modalInputField" class="form-control" autocomplete="off">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modalCancelBtn" class="btn btn-outline" type="button">Cancel</button>
+                <button id="modalConfirmBtn" class="btn btn-primary" type="button">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-blocking Toast Notification Stack -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
     <script src="/static/app.js"></script>
 </body>

@@ -1,11 +1,16 @@
-// Mini-SIEM Dashboard Logic
+// Mini-SIEM Command Center Console Logic
 
 const API_BASE = "";
 
 // State
-let lastAlertIds = new Set();
 let isolatedIpsSet = new Set();
 let suspendedUsersSet = new Set();
+let lastAlertsDataHash = "";
+let lastLogsDataHash = "";
+let lastAuditDataHash = "";
+let lastWhitelistDataHash = "";
+let lastIsolatedDataHash = "";
+let lastSuspendedDataHash = "";
 
 // Elements
 const alertList = document.getElementById("alertList");
@@ -35,6 +40,177 @@ const valColdCount = document.getElementById("valColdCount");
 const alertCountBadge = document.getElementById("alertCountBadge");
 const logCountBadge = document.getElementById("logCountBadge");
 
+// Modal Elements
+const modalOverlay = document.getElementById("modalOverlay");
+const modalTitle = document.getElementById("modalTitle");
+const modalMessage = document.getElementById("modalMessage");
+const modalInputWrapper = document.getElementById("modalInputWrapper");
+const modalInputLabel = document.getElementById("modalInputLabel");
+const modalInputField = document.getElementById("modalInputField");
+const modalCancelBtn = document.getElementById("modalCancelBtn");
+const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+const modalCloseBtn = document.getElementById("modalCloseBtn");
+const toastContainer = document.getElementById("toastContainer");
+
+let activeModalResolve = null;
+
+// Tab Switching Initialization
+function initTabs() {
+    const tabs = [
+        { btn: document.getElementById("tabBtnSoar"), pane: document.getElementById("tabPaneSoar") },
+        { btn: document.getElementById("tabBtnWhitelist"), pane: document.getElementById("tabPaneWhitelist") },
+        { btn: document.getElementById("tabBtnSimulator"), pane: document.getElementById("tabPaneSimulator") }
+    ];
+
+    tabs.forEach(({ btn, pane }) => {
+        if (!btn || !pane) return;
+        btn.addEventListener("click", () => {
+            tabs.forEach(t => {
+                if (!t.btn || !t.pane) return;
+                const isActive = t.btn === btn;
+                t.btn.classList.toggle("active", isActive);
+                t.btn.setAttribute("aria-selected", isActive ? "true" : "false");
+                t.pane.classList.toggle("active", isActive);
+                t.pane.hidden = !isActive;
+            });
+        });
+    });
+}
+initTabs();
+
+// ======================= NON-BLOCKING MODAL & TOAST SYSTEM =======================
+
+function closeModal(result = null) {
+    if (modalOverlay) {
+        modalOverlay.hidden = true;
+    }
+    if (activeModalResolve) {
+        const resolve = activeModalResolve;
+        activeModalResolve = null;
+        resolve(result);
+    }
+}
+
+if (modalCloseBtn) modalCloseBtn.addEventListener("click", () => closeModal(null));
+if (modalCancelBtn) modalCancelBtn.addEventListener("click", () => closeModal(null));
+if (modalOverlay) {
+    modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) closeModal(null);
+    });
+}
+
+function showConfirmModal({ title = "Confirm Action", message = "", confirmText = "Confirm", cancelText = "Cancel", danger = false }) {
+    return new Promise((resolve) => {
+        activeModalResolve = resolve;
+        if (!modalOverlay) return resolve(false);
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalInputWrapper.hidden = true;
+        modalCancelBtn.hidden = false;
+        modalCancelBtn.textContent = cancelText;
+        modalConfirmBtn.textContent = confirmText;
+
+        if (danger) {
+            modalConfirmBtn.className = "btn btn-danger";
+        } else {
+            modalConfirmBtn.className = "btn btn-primary";
+        }
+
+        modalOverlay.hidden = false;
+        modalConfirmBtn.onclick = () => closeModal(true);
+        modalConfirmBtn.focus();
+    });
+}
+
+function showPromptModal({ title = "Input Required", message = "", defaultValue = "", placeholder = "", confirmText = "Submit", cancelText = "Cancel" }) {
+    return new Promise((resolve) => {
+        activeModalResolve = resolve;
+        if (!modalOverlay) return resolve(null);
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalInputWrapper.hidden = false;
+        modalInputField.value = defaultValue;
+        modalInputField.placeholder = placeholder;
+        modalCancelBtn.hidden = false;
+        modalCancelBtn.textContent = cancelText;
+        modalConfirmBtn.textContent = confirmText;
+        modalConfirmBtn.className = "btn btn-primary";
+
+        modalOverlay.hidden = false;
+        modalInputField.focus();
+        modalInputField.select();
+
+        modalConfirmBtn.onclick = () => {
+            const val = modalInputField.value.trim();
+            closeModal(val || defaultValue || "");
+        };
+
+        modalInputField.onkeydown = (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                modalConfirmBtn.click();
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                closeModal(null);
+            }
+        };
+    });
+}
+
+function showNoticeModal({ title = "System Report", message = "" }) {
+    return new Promise((resolve) => {
+        activeModalResolve = resolve;
+        if (!modalOverlay) return resolve();
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalInputWrapper.hidden = true;
+        modalCancelBtn.hidden = true;
+        modalConfirmBtn.textContent = "Close";
+        modalConfirmBtn.className = "btn btn-primary";
+
+        modalOverlay.hidden = false;
+        modalConfirmBtn.onclick = () => closeModal();
+        modalConfirmBtn.focus();
+    });
+}
+
+function showToast(message, type = "info") {
+    if (!toastContainer) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute("role", "status");
+
+    const textDiv = document.createElement("div");
+    textDiv.className = "toast-message";
+    textDiv.textContent = message;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "toast-close";
+    closeBtn.type = "button";
+    closeBtn.setAttribute("aria-label", "Close notification");
+    closeBtn.innerHTML = "&times;";
+
+    toast.appendChild(textDiv);
+    toast.appendChild(closeBtn);
+    toastContainer.appendChild(toast);
+
+    let dismissed = false;
+    const dismiss = () => {
+        if (dismissed) return;
+        dismissed = true;
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(10px)";
+        setTimeout(() => toast.remove(), 200);
+    };
+
+    closeBtn.addEventListener("click", dismiss);
+    setTimeout(dismiss, 4000);
+}
+
 // Format Date Utility
 function formatTimestamp(isoStr) {
     if (!isoStr) return "-";
@@ -47,7 +223,8 @@ function formatTimestamp(isoStr) {
     }
 }
 
-// 1. Fetch Alerts (Runs every 2 seconds as required by PRD)
+// ======================= ALERT FEED & RECONCILIATION =======================
+
 async function fetchAlerts() {
     try {
         const res = await fetch(`${API_BASE}/api/alerts?limit=50`);
@@ -60,95 +237,120 @@ async function fetchAlerts() {
 }
 
 function renderAlerts(alerts) {
-    alertCountBadge.textContent = `${alerts.length} Total`;
+    if (alertCountBadge) alertCountBadge.textContent = `${alerts.length} Total`;
 
     if (!alerts || alerts.length === 0) {
-        alertList.innerHTML = `
-            <div class="empty-state">
-                Menunggu deteksi insiden keamanan...<br>
-                Gunakan Simulator di sebelah kanan untuk memicu skenario serangan.
-            </div>`;
+        if (lastAlertsDataHash !== "empty") {
+            lastAlertsDataHash = "empty";
+            alertList.innerHTML = `
+                <div class="empty-state">
+                    Awaiting security incident detection.<br>
+                    Trigger an attack scenario from the Simulator tab to evaluate detection rules.
+                </div>`;
+        }
         return;
     }
 
-    alertList.innerHTML = alerts.map(a => {
-        const isCritical = a.severity === "KRITIS";
+    const currentHash = alerts.map(a => `${a.id}_${a.severity}_${a.status}_${isolatedIpsSet.has(a.ip_address)}_${suspendedUsersSet.has(a.user_id)}`).join("|");
+    if (currentHash === lastAlertsDataHash) {
+        return; // No DOM mutation needed, prevents selection wipe and repaint
+    }
+    lastAlertsDataHash = currentHash;
+
+    const fragment = document.createDocumentFragment();
+
+    alerts.forEach(a => {
         const isHostContained = a.ip_address && isolatedIpsSet.has(a.ip_address);
         const isUserSuspended = a.user_id && suspendedUsersSet.has(a.user_id);
         const isContained = a.status === "CONTAINED" || isHostContained || isUserSuspended;
 
+        const card = document.createElement("div");
+        card.className = `alert-card ${a.severity} ${isContained ? 'CONTAINED' : ''}`;
+        card.id = `alert-${a.id}`;
+
         const metaDetails = a.details ? Object.entries(a.details)
-            .map(([k, v]) => `<span class="meta-item"><strong>${k}:</strong> ${typeof v === 'object' ? JSON.stringify(v) : v}</span>`)
+            .map(([k, v]) => `<span class="meta-item"><strong>${escapeHtml(k)}:</strong> ${typeof v === 'object' ? escapeHtml(JSON.stringify(v)) : escapeHtml(String(v))}</span>`)
             .join("") : "";
 
-        let soarHostButton = "";
+        let hostButtonHtml = "";
         if (a.ip_address) {
             if (isHostContained) {
-                soarHostButton = `
-                    <button class="btn-action-release" onclick="releaseHost('${escapeHtml(a.ip_address)}')">
-                        🔓 Release Host
-                    </button>
-                `;
+                hostButtonHtml = `<button class="btn-action-release" data-action="release-host" data-ip="${escapeHtml(a.ip_address)}" type="button">🔓 Release Host</button>`;
             } else {
-                soarHostButton = `
-                    <button class="btn-action-isolate" onclick="isolateHost('${escapeHtml(a.ip_address)}', 'Containment for alert ${a.id}')">
-                        🔒 Isolate Host
-                    </button>
-                `;
+                hostButtonHtml = `<button class="btn-action-isolate" data-action="isolate-host" data-ip="${escapeHtml(a.ip_address)}" data-alert="${a.id}" type="button">🔒 Isolate Host</button>`;
             }
         }
 
-        let soarUserButton = "";
+        let userButtonHtml = "";
         if (a.user_id) {
             if (isUserSuspended) {
-                soarUserButton = `
-                    <button class="btn-action-release" onclick="unsuspendUser('${escapeHtml(a.user_id)}')">
-                        🔓 Unsuspend User
-                    </button>
-                `;
+                userButtonHtml = `<button class="btn-action-release" data-action="unsuspend-user" data-user="${escapeHtml(a.user_id)}" type="button">🔓 Unsuspend User</button>`;
             } else {
-                soarUserButton = `
-                    <button class="btn-action-suspend" onclick="suspendUser('${escapeHtml(a.user_id)}', 'Identity lockdown for alert ${a.id}')">
-                        🚫 Suspend User
-                    </button>
-                `;
+                userButtonHtml = `<button class="btn-action-suspend" data-action="suspend-user" data-user="${escapeHtml(a.user_id)}" data-alert="${a.id}" type="button">🚫 Suspend User</button>`;
             }
         }
 
-        return `
-            <div class="alert-card ${a.severity} ${isContained ? 'CONTAINED' : ''}" id="alert-${a.id}">
-                <div class="alert-header">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                        <span class="alert-badge ${a.severity}">${a.severity}</span>
-                        ${isHostContained ? `<span class="badge-contained">🔒 HOST ISOLATED</span>` : ""}
-                        ${isUserSuspended ? `<span class="badge-contained" style="border-color:#ef4444; color:#f87171;">🚫 USER SUSPENDED</span>` : ""}
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                        <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
-                        ${soarHostButton}
-                        ${soarUserButton}
-                    </div>
+        card.innerHTML = `
+            <div class="alert-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <span class="alert-badge ${a.severity}">${a.severity}</span>
+                    ${isHostContained ? `<span class="badge-contained">🔒 HOST QUARANTINED</span>` : ""}
+                    ${isUserSuspended ? `<span class="badge-contained" style="border-color: rgba(239,68,68,0.5); color: #f87171;">🚫 USER SUSPENDED</span>` : ""}
                 </div>
-                <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
-                <div class="alert-desc">${escapeHtml(a.description)}</div>
-                ${metaDetails ? `<div class="alert-meta">${metaDetails}</div>` : ""}
+                <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+                    <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
+                    ${hostButtonHtml}
+                    ${userButtonHtml}
+                </div>
             </div>
+            <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
+            <div class="alert-desc">${escapeHtml(a.description)}</div>
+            ${metaDetails ? `<div class="alert-meta">${metaDetails}</div>` : ""}
         `;
-    }).join("");
+
+        fragment.appendChild(card);
+    });
+
+    alertList.innerHTML = "";
+    alertList.appendChild(fragment);
 }
 
-// 2. Fetch Stats & Metrics
+// Event Delegation for Alert Buttons
+alertList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    if (action === "isolate-host") {
+        const ip = btn.dataset.ip;
+        const alertId = btn.dataset.alert;
+        await window.isolateHost(ip, `Active containment for Incident #${alertId}`);
+    } else if (action === "release-host") {
+        const ip = btn.dataset.ip;
+        await window.releaseHost(ip);
+    } else if (action === "suspend-user") {
+        const userId = btn.dataset.user;
+        const alertId = btn.dataset.alert;
+        await window.suspendUser(userId, `Identity lockdown for Incident #${alertId}`);
+    } else if (action === "unsuspend-user") {
+        const userId = btn.dataset.user;
+        await window.unsuspendUser(userId);
+    }
+});
+
+// ======================= STATS & METRICS =======================
+
 async function fetchStats() {
     try {
         const res = await fetch(`${API_BASE}/api/stats`);
         if (!res.ok) return;
         const stats = await res.json();
 
-        valTotalLogs.textContent = stats.total_logs_ingested;
-        valCriticalAlerts.textContent = stats.alerts_by_severity.KRITIS || 0;
-        valHighAlerts.textContent = stats.alerts_by_severity.TINGGI || 0;
-        valMediumAlerts.textContent = stats.alerts_by_severity.MENENGAH || 0;
-        valWhitelistCount.textContent = stats.whitelist_count || 0;
+        if (valTotalLogs) valTotalLogs.textContent = stats.total_logs_ingested || 0;
+        if (valCriticalAlerts) valCriticalAlerts.textContent = stats.alerts_by_severity?.KRITIS || 0;
+        if (valHighAlerts) valHighAlerts.textContent = stats.alerts_by_severity?.TINGGI || 0;
+        if (valMediumAlerts) valMediumAlerts.textContent = stats.alerts_by_severity?.MENENGAH || 0;
+        if (valWhitelistCount) valWhitelistCount.textContent = stats.whitelist_count || 0;
         if (valWatchlistCount) valWatchlistCount.textContent = stats.watchlist_count || 0;
         if (valColdCount) valColdCount.textContent = stats.cold_archive_count || 0;
         if (valIsolatedCount) valIsolatedCount.textContent = stats.isolated_hosts_count || 0;
@@ -159,9 +361,8 @@ async function fetchStats() {
     }
 }
 
+// ======================= RECENT INGESTION STREAM =======================
 
-
-// 3. Fetch Recent Ingestion Logs
 async function fetchLogs() {
     try {
         const res = await fetch(`${API_BASE}/api/logs?limit=15`);
@@ -174,20 +375,27 @@ async function fetchLogs() {
 }
 
 function renderLogs(logs) {
-    logCountBadge.textContent = `${logs.length} Recent`;
+    if (logCountBadge) logCountBadge.textContent = `${logs.length} Recent`;
 
     if (!logs || logs.length === 0) {
-        logTableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-state">Belum ada log yang masuk via POST /api/ingest</td>
-            </tr>`;
+        if (lastLogsDataHash !== "empty") {
+            lastLogsDataHash = "empty";
+            logTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="table-empty">No ingestion events recorded yet via POST /api/ingest</td>
+                </tr>`;
+        }
         return;
     }
+
+    const currentHash = logs.map(l => `${l.timestamp}_${l.ip_address}_${l.event_type}_${l.status}`).join("|");
+    if (currentHash === lastLogsDataHash) return;
+    lastLogsDataHash = currentHash;
 
     logTableBody.innerHTML = logs.map(l => `
         <tr class="log-row">
             <td>${formatTimestamp(l.timestamp)}</td>
-            <td><code style="color:var(--accent-cyan);">${escapeHtml(l.event_type)}</code></td>
+            <td><code style="color: #38bdf8;">${escapeHtml(l.event_type)}</code></td>
             <td><strong>${escapeHtml(l.user_id)}</strong></td>
             <td>${escapeHtml(l.ip_address)}</td>
             <td>${escapeHtml(l.location)}</td>
@@ -200,7 +408,8 @@ function renderLogs(logs) {
     `).join("");
 }
 
-// 4. Fetch Whitelist
+// ======================= WHITELIST TUNING =======================
+
 async function fetchWhitelist() {
     try {
         const res = await fetch(`${API_BASE}/api/whitelist`);
@@ -214,71 +423,102 @@ async function fetchWhitelist() {
 
 function renderWhitelist(list) {
     if (!list || list.length === 0) {
-        whitelistTableBody.innerHTML = `
-            <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada IP yang di-whitelist</td>
-            </tr>`;
+        if (lastWhitelistDataHash !== "empty") {
+            lastWhitelistDataHash = "empty";
+            whitelistTableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="table-empty">No active whitelisted IP addresses</td>
+                </tr>`;
+        }
         return;
     }
+
+    const currentHash = list.map(i => `${i.ip_address}_${i.reason}`).join("|");
+    if (currentHash === lastWhitelistDataHash) return;
+    lastWhitelistDataHash = currentHash;
 
     whitelistTableBody.innerHTML = list.map(item => `
         <tr>
             <td><strong>${escapeHtml(item.ip_address)}</strong></td>
             <td>${escapeHtml(item.reason || "-")}</td>
             <td>
-                <button class="btn-sm-delete" onclick="removeWhitelist('${escapeHtml(item.ip_address)}')">
-                    🗑️ Hapus
+                <button class="btn-sm-delete" data-ip="${escapeHtml(item.ip_address)}" type="button">
+                    🗑️ Remove
                 </button>
             </td>
         </tr>
     `).join("");
 }
 
-// Add IP to Whitelist
-whitelistForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const ip = document.getElementById("whitelistIp").value.trim();
-    const reason = document.getElementById("whitelistReason").value.trim();
+if (whitelistTableBody) {
+    whitelistTableBody.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".btn-sm-delete");
+        if (!btn) return;
+        const ip = btn.dataset.ip;
+        await window.removeWhitelist(ip);
+    });
+}
 
-    try {
-        const res = await fetch(`${API_BASE}/api/whitelist`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ip_address: ip, reason: reason })
-        });
-        if (res.ok) {
-            document.getElementById("whitelistIp").value = "";
-            document.getElementById("whitelistReason").value = "";
-            fetchWhitelist();
-            fetchStats();
-        } else {
-            const err = await res.json();
-            alert(`Gagal menambah whitelist: ${JSON.stringify(err.detail || err)}`);
+// Add IP to Whitelist
+if (whitelistForm) {
+    whitelistForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const ipInput = document.getElementById("whitelistIp");
+        const reasonInput = document.getElementById("whitelistReason");
+        const ip = ipInput.value.trim();
+        const reason = reasonInput.value.trim() || "Manual whitelist tuning";
+
+        try {
+            const res = await fetch(`${API_BASE}/api/whitelist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ip_address: ip, reason: reason })
+            });
+            if (res.ok) {
+                ipInput.value = "";
+                reasonInput.value = "";
+                showToast(`IP ${ip} added to whitelist (blind spot active)`, "success");
+                fetchWhitelist();
+                fetchStats();
+            } else {
+                const err = await res.json();
+                showToast(`Failed to whitelist IP: ${JSON.stringify(err.detail || err)}`, "error");
+            }
+        } catch (err) {
+            showToast(`Error: ${err.message}`, "error");
         }
-    } catch (err) {
-        alert(`Error: ${err.message}`);
-    }
-});
+    });
+}
 
 // Remove IP from Whitelist
 window.removeWhitelist = async function(ip) {
-    if (!confirm(`Hapus ${ip} dari whitelist?`)) return;
+    const confirmed = await showConfirmModal({
+        title: "Remove Whitelist Entry",
+        message: `Remove ${ip} from the whitelist? Correlation rules will resume monitoring telemetry from this IP address.`,
+        confirmText: "Remove Whitelist",
+        danger: true
+    });
+    if (!confirmed) return;
+
     try {
         const res = await fetch(`${API_BASE}/api/whitelist/${encodeURIComponent(ip)}`, {
             method: "DELETE"
         });
         if (res.ok) {
+            showToast(`IP ${ip} removed from whitelist`, "success");
             fetchWhitelist();
             fetchStats();
+        } else {
+            const err = await res.json();
+            showToast(`Failed to remove whitelist: ${JSON.stringify(err.detail || err)}`, "error");
         }
     } catch (err) {
-        alert(`Error deleting whitelist: ${err.message}`);
+        showToast(`Error deleting whitelist: ${err.message}`, "error");
     }
 };
 
-// ---------------- SOAR ACTIVE DEFENSE (CONTAINMENT) ----------------
+// ======================= SOAR ACTIVE DEFENSE =======================
 
-// Fetch Quarantined / Isolated Hosts
 async function fetchIsolatedHosts() {
     try {
         const res = await fetch(`${API_BASE}/api/soar/isolated`);
@@ -295,28 +535,44 @@ function renderIsolatedHosts(list) {
     if (isolatedCountBadge) isolatedCountBadge.textContent = `${list ? list.length : 0} Quarantined`;
 
     if (!list || list.length === 0) {
-        if (isolatedTableBody) {
-            isolatedTableBody.innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada host dalam karantina</td>
-                </tr>`;
+        if (lastIsolatedDataHash !== "empty") {
+            lastIsolatedDataHash = "empty";
+            if (isolatedTableBody) {
+                isolatedTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="table-empty">No hosts currently in network quarantine</td>
+                    </tr>`;
+            }
         }
         return;
     }
 
+    const currentHash = list.map(i => `${i.ip_address}_${i.reason}`).join("|");
+    if (currentHash === lastIsolatedDataHash) return;
+    lastIsolatedDataHash = currentHash;
+
     if (isolatedTableBody) {
         isolatedTableBody.innerHTML = list.map(item => `
             <tr>
-                <td><strong style="color: #ec4899;">🔒 ${escapeHtml(item.ip_address)}</strong></td>
-                <td><span style="font-size: 0.72rem;">${escapeHtml(item.reason || "Manual containment")}</span></td>
+                <td><strong style="color: #f472b6;">🔒 ${escapeHtml(item.ip_address)}</strong></td>
+                <td><span>${escapeHtml(item.reason || "Active containment")}</span></td>
                 <td>
-                    <button class="btn-action-release" onclick="releaseHost('${escapeHtml(item.ip_address)}')">
+                    <button class="btn-action-release" data-action="release-host" data-ip="${escapeHtml(item.ip_address)}" type="button">
                         🔓 Release
                     </button>
                 </td>
             </tr>
         `).join("");
     }
+}
+
+if (isolatedTableBody) {
+    isolatedTableBody.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const ip = btn.dataset.ip;
+        await window.releaseHost(ip);
+    });
 }
 
 // Fetch SOAR Action Audit Trail
@@ -335,12 +591,19 @@ function renderSoarAudit(items) {
     if (!soarAuditList) return;
 
     if (!items || items.length === 0) {
-        soarAuditList.innerHTML = `
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">
-                Belum ada aksi penindakan SOAR
-            </div>`;
+        if (lastAuditDataHash !== "empty") {
+            lastAuditDataHash = "empty";
+            soarAuditList.innerHTML = `
+                <div class="table-empty">
+                    No SOAR playbook containment actions recorded
+                </div>`;
+        }
         return;
     }
+
+    const currentHash = items.map(i => `${i.timestamp}_${i.ip_address}_${i.action}`).join("|");
+    if (currentHash === lastAuditDataHash) return;
+    lastAuditDataHash = currentHash;
 
     soarAuditList.innerHTML = items.map(item => `
         <div class="soar-audit-item ${item.action}">
@@ -349,10 +612,10 @@ function renderSoarAudit(items) {
                 <span>${formatTimestamp(item.timestamp)}</span>
             </div>
             <div>
-                Target: <code style="color: #fff;">${escapeHtml(item.ip_address)}</code>
+                Target: <code style="color: #ffffff;">${escapeHtml(item.ip_address)}</code>
             </div>
-            <div style="color: var(--text-secondary); font-size: 0.7rem;">
-                ${escapeHtml(item.reason || "-")} (${escapeHtml(item.analyst || "SOC Analyst")})
+            <div style="color: var(--text-secondary); font-size: 0.75rem;">
+                ${escapeHtml(item.reason || "-")} (${escapeHtml(item.analyst || "SOC Analyst Tier-1")})
             </div>
         </div>
     `).join("");
@@ -360,7 +623,15 @@ function renderSoarAudit(items) {
 
 // Global Isolate Host Action
 window.isolateHost = async function(ip, reason) {
-    const actionReason = reason || prompt(`Alasan penindakan isolasi host ${ip}:`, "Host quarantined due to critical security alert");
+    let actionReason = reason;
+    if (!actionReason) {
+        actionReason = await showPromptModal({
+            title: "Execute SOAR Quarantine",
+            message: `Enter containment justification for host ${ip}:`,
+            defaultValue: "Host quarantined due to critical security alert",
+            placeholder: "e.g. Inbound volumetric anomaly or brute-force"
+        });
+    }
     if (!actionReason) return;
 
     try {
@@ -375,22 +646,29 @@ window.isolateHost = async function(ip, reason) {
         });
 
         if (res.ok) {
+            showToast(`Host ${ip} placed in network quarantine`, "success");
             fetchIsolatedHosts();
             fetchAlerts();
             fetchStats();
             fetchSoarAudit();
         } else {
             const err = await res.json();
-            alert(`Gagal mengisolasi host: ${JSON.stringify(err.detail || err)}`);
+            showToast(`Failed to isolate host: ${JSON.stringify(err.detail || err)}`, "error");
         }
     } catch (err) {
-        alert(`Error executing SOAR containment: ${err.message}`);
+        showToast(`Error executing SOAR containment: ${err.message}`, "error");
     }
 };
 
 // Global Release Host Action
 window.releaseHost = async function(ip) {
-    if (!confirm(`Lepas karantina jaringan untuk host ${ip}?`)) return;
+    const confirmed = await showConfirmModal({
+        title: "Release Quarantine",
+        message: `Lift network quarantine for host ${ip}? Inbound traffic from this address will no longer be dropped at Gatekeeper.`,
+        confirmText: "Release Host",
+        danger: false
+    });
+    if (!confirmed) return;
 
     try {
         const res = await fetch(`${API_BASE}/api/soar/release`, {
@@ -403,20 +681,22 @@ window.releaseHost = async function(ip) {
         });
 
         if (res.ok) {
+            showToast(`Host ${ip} quarantine lifted`, "success");
             fetchIsolatedHosts();
             fetchAlerts();
             fetchStats();
             fetchSoarAudit();
         } else {
             const err = await res.json();
-            alert(`Gagal melepas karantina: ${JSON.stringify(err.detail || err)}`);
+            showToast(`Failed to release quarantine: ${JSON.stringify(err.detail || err)}`, "error");
         }
     } catch (err) {
-        alert(`Error releasing quarantine: ${err.message}`);
+        showToast(`Error releasing quarantine: ${err.message}`, "error");
     }
 };
 
-// Fetch Suspended Users
+// ======================= SUSPENDED USER ACCOUNTS =======================
+
 async function fetchSuspendedUsers() {
     try {
         const res = await fetch(`${API_BASE}/api/soar/suspended-users`);
@@ -433,19 +713,26 @@ function renderSuspendedUsers(list) {
     if (!suspendedUsersTableBody) return;
 
     if (!list || list.length === 0) {
-        suspendedUsersTableBody.innerHTML = `
-            <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-muted);">Tidak ada akun user yang dibekukan</td>
-            </tr>`;
+        if (lastSuspendedDataHash !== "empty") {
+            lastSuspendedDataHash = "empty";
+            suspendedUsersTableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="table-empty">No user accounts currently suspended</td>
+                </tr>`;
+        }
         return;
     }
 
+    const currentHash = list.map(i => `${i.user_id}_${i.reason}`).join("|");
+    if (currentHash === lastSuspendedDataHash) return;
+    lastSuspendedDataHash = currentHash;
+
     suspendedUsersTableBody.innerHTML = list.map(item => `
         <tr>
-            <td><strong style="color: #f87171;">🚫 ${escapeHtml(item.user_id)}</strong></td>
-            <td><span style="font-size: 0.72rem;">${escapeHtml(item.reason || "Account compromised")}</span></td>
+            <td><strong style="color: #fca5a5;">🚫 ${escapeHtml(item.user_id)}</strong></td>
+            <td><span>${escapeHtml(item.reason || "Account compromised")}</span></td>
             <td>
-                <button class="btn-action-release" onclick="unsuspendUser('${escapeHtml(item.user_id)}')">
+                <button class="btn-action-release" data-action="unsuspend-user" data-user="${escapeHtml(item.user_id)}" type="button">
                     🔓 Unsuspend
                 </button>
             </td>
@@ -453,9 +740,26 @@ function renderSuspendedUsers(list) {
     `).join("");
 }
 
+if (suspendedUsersTableBody) {
+    suspendedUsersTableBody.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const userId = btn.dataset.user;
+        await window.unsuspendUser(userId);
+    });
+}
+
 // Global Suspend User Action
 window.suspendUser = async function(userId, reason) {
-    const actionReason = reason || prompt(`Alasan pembekuan akun ${userId}:`, "Compromised credentials / impossible travel anomaly");
+    let actionReason = reason;
+    if (!actionReason) {
+        actionReason = await showPromptModal({
+            title: "Suspend User Account",
+            message: `Enter justification for account suspension on ${userId}:`,
+            defaultValue: "Compromised credentials / impossible travel anomaly",
+            placeholder: "e.g. Impossible geo-velocity anomaly detected"
+        });
+    }
     if (!actionReason) return;
 
     try {
@@ -470,22 +774,29 @@ window.suspendUser = async function(userId, reason) {
         });
 
         if (res.ok) {
+            showToast(`User account ${userId} suspended`, "success");
             fetchSuspendedUsers();
             fetchAlerts();
             fetchStats();
             fetchSoarAudit();
         } else {
             const err = await res.json();
-            alert(`Gagal membekukan akun user: ${JSON.stringify(err.detail || err)}`);
+            showToast(`Failed to suspend account: ${JSON.stringify(err.detail || err)}`, "error");
         }
     } catch (err) {
-        alert(`Error executing user suspension: ${err.message}`);
+        showToast(`Error executing user suspension: ${err.message}`, "error");
     }
 };
 
 // Global Unsuspend User Action
 window.unsuspendUser = async function(userId) {
-    if (!confirm(`Pulihkan dan aktifkan kembali akun user ${userId}?`)) return;
+    const confirmed = await showConfirmModal({
+        title: "Reactivate User Account",
+        message: `Restore and reactivate user account ${userId}?`,
+        confirmText: "Reactivate Account",
+        danger: false
+    });
+    if (!confirmed) return;
 
     try {
         const res = await fetch(`${API_BASE}/api/soar/unsuspend-user`, {
@@ -498,51 +809,68 @@ window.unsuspendUser = async function(userId) {
         });
 
         if (res.ok) {
+            showToast(`User account ${userId} reactivated`, "success");
             fetchSuspendedUsers();
             fetchAlerts();
             fetchStats();
             fetchSoarAudit();
         } else {
             const err = await res.json();
-            alert(`Gagal memulihkan akun user: ${JSON.stringify(err.detail || err)}`);
+            showToast(`Failed to restore user: ${JSON.stringify(err.detail || err)}`, "error");
         }
     } catch (err) {
-        alert(`Error restoring user account: ${err.message}`);
+        showToast(`Error restoring user account: ${err.message}`, "error");
     }
 };
-
 
 // Isolate Form Submission
 if (isolateForm) {
     isolateForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const ip = document.getElementById("isolateIp").value.trim();
-        const reason = document.getElementById("isolateReason").value.trim() || "Manual containment via SOAR Panel";
+        const ipInput = document.getElementById("isolateIp");
+        const reasonInput = document.getElementById("isolateReason");
+        const ip = ipInput.value.trim();
+        const reason = reasonInput.value.trim() || "Manual containment via SOAR Panel";
         await window.isolateHost(ip, reason);
-        document.getElementById("isolateIp").value = "";
-        document.getElementById("isolateReason").value = "";
+        ipInput.value = "";
+        reasonInput.value = "";
     });
 }
 
-
 // Reset SIEM
-btnReset.addEventListener("click", async () => {
-    if (!confirm("Reset database dan state korelasi SIEM?")) return;
-    try {
-        const res = await fetch(`${API_BASE}/api/reset`, { method: "POST" });
-        if (res.ok) {
-            fetchAlerts();
-            fetchStats();
-            fetchLogs();
-            fetchWhitelist();
-            fetchIsolatedHosts();
-            fetchSuspendedUsers();
-            fetchSoarAudit();
+if (btnReset) {
+    btnReset.addEventListener("click", async () => {
+        const confirmed = await showConfirmModal({
+            title: "Reset SIEM State",
+            message: "Reset all in-memory log ingestion buffers, correlation engine detections, and SOAR active quarantines?",
+            confirmText: "Reset State",
+            danger: true
+        });
+        if (!confirmed) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/reset`, { method: "POST" });
+            if (res.ok) {
+                showToast("SIEM state reset successfully", "success");
+                lastAlertsDataHash = "";
+                lastLogsDataHash = "";
+                lastAuditDataHash = "";
+                lastWhitelistDataHash = "";
+                lastIsolatedDataHash = "";
+                lastSuspendedDataHash = "";
+                fetchAlerts();
+                fetchStats();
+                fetchLogs();
+                fetchWhitelist();
+                fetchIsolatedHosts();
+                fetchSuspendedUsers();
+                fetchSoarAudit();
+            }
+        } catch (err) {
+            showToast(`Reset error: ${err.message}`, "error");
         }
-    } catch (err) {
-        alert(`Reset error: ${err.message}`);
-    }
-});
+    });
+}
 
 // Browser-based Quick Scenario Execution
 document.querySelectorAll(".btn-scenario").forEach(btn => {
@@ -564,25 +892,28 @@ async function runScenarioFromBrowser(scNum) {
 
         if (btn) btn.style.opacity = "1";
 
-        let alertMsg = `[LOG REPLAY DARI BERKAS FISIK]\n`;
-        alertMsg += `Skenario: ${scNum} - ${data.title || "Attack Telemetry"}\n`;
-        if (data.variant) alertMsg += `Varian: ${data.variant}/3 (${data.variant_description || ""})\n`;
-        alertMsg += `Berkas Sumber: ${data.source_file}\n`;
-        if (data.logs_processed !== undefined) alertMsg += `Jumlah Log Diproses: ${data.logs_processed}\n`;
-        if (data.logs_blocked_by_soar) alertMsg += `Log Diblokir SOAR (Karantina/Suspensi): ${data.logs_blocked_by_soar}\n`;
-        if (data.alerts_triggered !== undefined) alertMsg += `Alarm Dipicu: ${data.alerts_triggered}\n`;
-        if (data.message) alertMsg += `\nKeterangan:\n${data.message}`;
+        let reportMsg = `[TELEMETRY REPLAY FROM LOG FILES]\n\n`;
+        reportMsg += `Scenario: ${scNum} - ${data.title || "Attack Telemetry"}\n`;
+        if (data.variant) reportMsg += `Variant: ${data.variant}/3 (${data.variant_description || ""})\n`;
+        reportMsg += `Source File: ${data.source_file}\n`;
+        if (data.logs_processed !== undefined) reportMsg += `Logs Ingested: ${data.logs_processed}\n`;
+        if (data.logs_blocked_by_soar) reportMsg += `Blocked by SOAR Gatekeeper: ${data.logs_blocked_by_soar}\n`;
+        if (data.alerts_triggered !== undefined) reportMsg += `Alerts Triggered: ${data.alerts_triggered}\n`;
+        if (data.message) reportMsg += `\nAnalysis / Findings:\n${data.message}`;
 
         if (scNum === "6" || scNum === "7" || scNum === "8") {
-            alert(alertMsg);
+            await showNoticeModal({
+                title: `Telemetry Replay: Scenario ${scNum}`,
+                message: reportMsg
+            });
         } else {
-            console.log(alertMsg);
+            showToast(`Scenario ${scNum} (${data.title || "Telemetry"}) executed: ${data.alerts_triggered || 0} alert(s) triggered`, "info");
         }
     } catch (e) {
-        console.error("Replay scenario failed:", e);
+        showToast(`Replay scenario failed: ${e.message}`, "error");
     }
 
-    // Refresh immediately
+    // Refresh telemetry immediately
     setTimeout(() => {
         fetchAlerts();
         fetchStats();
@@ -591,7 +922,7 @@ async function runScenarioFromBrowser(scNum) {
         fetchIsolatedHosts();
         fetchSuspendedUsers();
         fetchSoarAudit();
-    }, 300);
+    }, 250);
 }
 
 // Escape HTML utility
