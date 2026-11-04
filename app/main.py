@@ -45,6 +45,14 @@ def get_dashboard():
     return {"message": "Mini-SIEM API is active. Static dashboard not yet found."}
 
 
+@app.get("/sentinel")
+def get_sentinel_platform():
+    sentinel_file = os.path.join(static_dir, "sentinel.html")
+    if os.path.exists(sentinel_file):
+        return FileResponse(sentinel_file)
+    return {"message": "SentinelAI platform page not found."}
+
+
 @app.get("/presentation")
 def get_presentation():
     pres_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "presentation.html")

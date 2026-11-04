@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentinelAI | Autonomous SOC &amp; Neural Incident Defense Platform</title>
+    <link rel="stylesheet" href="/static/sentinel.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Platform Header Navigation -->
+    <header class="sentinel-header">
+        <div class="header-inner">
+            <div class="brand-group">
+                <div class="brand-logo" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-headline">
+                        <span class="brand-name">SENTINEL<strong>AI</strong></span>
+                        <span class="brand-tag">AUTONOMOUS SOC v2.4</span>
+                    </div>
+                    <div class="brand-sub">Neural Threat Hunting &amp; Active Containment</div>
+                </div>
+            </div>
+
+            <!-- Neural Engine Health Badge -->
+            <div class="engine-status-pill" role="status" aria-live="polite">
+                <div class="status-indicator-dot"></div>
+                <div class="status-meta">
+                    <span class="status-title">NEURAL CORE ACTIVE</span>
+                    <span class="status-detail">Model: Sentinel-Correlator-70B &bull; 42ms p99</span>
+                </div>
+            </div>
+
+            <!-- Global Actions -->
+            <div class="header-controls">
+                <button id="toggleStreamBtn" class="btn btn-outline" type="button" aria-pressed="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                    <span>Pause Stream</span>
+                </button>
+                <button id="triggerSimModalBtn" class="btn btn-primary" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <span>Simulate Incident</span>
+                </button>
+                <a href="/" class="btn btn-outline" title="Switch to Mini-SIEM Console">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Mini-SIEM</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="platform-container">
+
+        <!-- Executive Telemetry Clusters -->
+        <section class="telemetry-bar" aria-label="Executive Security Telemetry">
+            
+            <!-- Cluster 1: Response Velocity -->
+            <div class="telemetry-card">
+                <div class="card-caption">AUTONOMOUS VELOCITY</div>
+                <div class="telemetry-values">
+                    <div class="metric-item">
+                        <span class="metric-num text-emerald">1.2s</span>
+                        <span class="metric-desc">Mean Time to Detect (MTTD)</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-item">
+                        <span class="metric-num text-emerald">4.8s</span>
+                        <span class="metric-desc">Mean Time to Remediate (MTTR)</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-item">
+                        <span class="metric-num text-indigo">96.4%</span>
+                        <span class="metric-desc">Auto-Remediated (Zero Human)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cluster 2: Active Containment Perimeter -->
+            <div class="telemetry-card">
+                <div class="card-caption">ACTIVE DEFENSE PERIMETER</div>
+                <div class="telemetry-values">
+                    <div class="metric-item">
+                        <span class="metric-num text-rose" id="activeThreatsCount">3</span>
+                        <span class="metric-desc">Critical Threat Campaigns</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-item">
+                        <span class="metric-num text-amber" id="quarantinedHostsCount">7</span>
+                        <span class="metric-desc">Quarantined Gatekeeper Hosts</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-item">
+                        <span class="metric-num text-indigo" id="revokedTokensCount">14</span>
+                        <span class="metric-desc">Suspended Identity Tokens</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cluster 3: Neural Ingestion Capacity -->
+            <div class="telemetry-card">
+                <div class="card-caption">NEURAL TELEMETRY INGESTION</div>
+                <div class="telemetry-values">
+                    <div class="metric-item">
+                        <span class="metric-num" id="telemetryEps">28,450</span>
+                        <span class="metric-desc">Events per Second (EPS)</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-item">
+                        <span class="metric-num text-emerald">99.8%</span>
+                        <span class="metric-desc">Noise &amp; False Positives Purged</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-item">
+                        <span class="metric-num" id="totalProcessedLogs">1.48M</span>
+                        <span class="metric-desc">24h Ingested Telemetry</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Core Operations Matrix Layout -->
+        <div class="workbench-grid">
+
+            <!-- Column 1: Autonomous Triage Queue -->
+            <section class="workbench-col col-triage" aria-labelledby="triageQueueTitle">
+                <div class="panel-box">
+                    <div class="panel-box-header">
+                        <div class="title-with-badge">
+                            <h2 id="triageQueueTitle" class="section-heading">Autonomous Triage Queue</h2>
+                            <span class="badge-count" id="triageCountBadge">5 Active</span>
+                        </div>
+                        <div class="filter-pills" role="tablist" aria-label="Incident Severity Filters">
+                            <button class="pill-btn active" data-filter="all" type="button" role="tab" aria-selected="true">All</button>
+                            <button class="pill-btn" data-filter="critical" type="button" role="tab" aria-selected="false">Critical</button>
+                            <button class="pill-btn" data-filter="mitigated" type="button" role="tab" aria-selected="false">Mitigated</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-box-body">
+                        <div class="incident-card-stack" id="incidentStack">
+                            <!-- Populated dynamically via sentinel.js -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Neural Threat Correlation Matrix & Live Telemetry -->
+            <section class="workbench-col col-center" aria-labelledby="matrixTitle">
+                
+                <!-- MITRE ATT&CK Kill-Chain Phase Map -->
+                <div class="panel-box">
+                    <div class="panel-box-header">
+                        <h2 id="matrixTitle" class="section-heading">Neural Kill-Chain Correlation Matrix</h2>
+                        <span class="panel-meta-sub">Live Telemetry Mapping</span>
+                    </div>
+                    <div class="panel-box-body">
+                        <div class="killchain-grid">
+                            
+                            <div class="killchain-stage" id="stageRecon">
+                                <div class="stage-header">
+                                    <span class="stage-tag">TA0043</span>
+                                    <span class="stage-name">Reconnaissance</span>
+                                </div>
+                                <div class="stage-node-list" id="reconNodes">
+                                    <div class="node-pill">
+                                        <span class="node-ip">185.220.101.5</span>
+                                        <span class="node-desc">Distributed Port Sweep</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="killchain-stage" id="stageAccess">
+                                <div class="stage-header">
+                                    <span class="stage-tag">TA0001</span>
+                                    <span class="stage-name">Initial Access</span>
+                                </div>
+                                <div class="stage-node-list" id="accessNodes">
+                                    <div class="node-pill node-amber">
+                                        <span class="node-ip">user: s.marcus</span>
+                                        <span class="node-desc">MFA Push Spray (Okta)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="killchain-stage" id="stageLateral">
+                                <div class="stage-header">
+                                    <span class="stage-tag">TA0008</span>
+                                    <span class="stage-name">Lateral Movement</span>
+                                </div>
+                                <div class="stage-node-list" id="lateralNodes">
+                                    <div class="node-pill node-rose">
+                                        <span class="node-ip">10.0.12.84 &rarr; DC-01</span>
+                                        <span class="node-desc">WMI Remote Exec</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="killchain-stage" id="stageExfil">
+                                <div class="stage-header">
+                                    <span class="stage-tag">TA0010</span>
+                                    <span class="stage-name">Exfiltration</span>
+                                </div>
+                                <div class="stage-node-list" id="exfilNodes">
+                                    <div class="node-pill node-emerald">
+                                        <span class="node-ip">s3://prod-fin-vault</span>
+                                        <span class="node-desc">Gatekeeper Blocked (403)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Multi-Vector Telemetry Stream -->
+                <div class="panel-box stream-panel">
+                    <div class="panel-box-header">
+                        <div class="stream-title-group">
+                            <h2 class="section-heading">Multi-Vector Telemetry Ingestion</h2>
+                            <span class="panel-meta-sub">AWS &bull; Cloudflare &bull; Okta &bull; Linux Syslog</span>
+                        </div>
+                        <div class="stream-controls">
+                            <input type="text" id="streamSearch" class="search-input" placeholder="Filter by IP, Actor, or Event...">
+                        </div>
+                    </div>
+                    <div class="panel-box-body p-0">
+                        <div class="telemetry-table-container">
+                            <table class="telemetry-table" id="telemetryTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Timestamp</th>
+                                        <th scope="col">Source / Vector</th>
+                                        <th scope="col">Entity</th>
+                                        <th scope="col">Event Payload</th>
+                                        <th scope="col">Neural Score</th>
+                                        <th scope="col">Enforcement</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="telemetryTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Column 3: AI Explainability & Playbook Console -->
+            <section class="workbench-col col-copilot" aria-labelledby="copilotTitle">
+                
+                <!-- AI Incident Reasoning Inspector -->
+                <div class="panel-box">
+                    <div class="panel-box-header">
+                        <div class="title-with-badge">
+                            <h2 id="copilotTitle" class="section-heading">AI Reasoning Inspector</h2>
+                            <span class="badge-tag">EXPLAINABLE ML</span>
+                        </div>
+                    </div>
+                    <div class="panel-box-body">
+                        <div id="inspectorContent" class="inspector-content">
+                            <div class="inspector-card">
+                                <div class="inspector-header">
+                                    <div class="incident-ref">CAMPAIGN-2026-X81</div>
+                                    <div class="confidence-badge">99.1% Confidence</div>
+                                </div>
+                                <div class="inspector-summary">
+                                    <strong>Multi-Stage Cloud Intrusion Detected:</strong> Threat actor leveraged compromised Okta credentials from Tokyo (impossible velocity) to request IAM privilege escalation, followed by unauthorized S3 snapshot enumeration.
+                                </div>
+
+                                <div class="evidence-ladder">
+                                    <div class="evidence-step">
+                                        <span class="step-num">01</span>
+                                        <div class="step-body">
+                                            <span class="step-title">Geo-Velocity Anomaly</span>
+                                            <span class="step-desc">Login Jakarta (08:12 UTC) &rarr; Tokyo (08:34 UTC)</span>
+                                        </div>
+                                    </div>
+                                    <div class="evidence-step">
+                                        <span class="step-num">02</span>
+                                        <div class="step-body">
+                                            <span class="step-title">Autonomous Action Taken</span>
+                                            <span class="step-desc">Token revoked in 1.4s; Host quarantined at Gatekeeper</span>
+                                        </div>
+                                    </div>
+                                    <div class="evidence-step">
+                                        <span class="step-num">03</span>
+                                        <div class="step-body">
+                                            <span class="step-title">Blast Radius Containment</span>
+                                            <span class="step-desc">Zero data egress observed. 0 bytes leaked.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="inspector-actions">
+                                    <button class="btn btn-outline btn-sm" id="btnExportReport" type="button">
+                                        Export Executive Brief
+                                    </button>
+                                    <button class="btn btn-emerald btn-sm" id="btnAcknowledge" type="button">
+                                        Confirm Incident Closed
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Perimeter Gatekeeper Management -->
+                <div class="panel-box">
+                    <div class="panel-box-header">
+                        <h2 class="section-heading">Gatekeeper Quarantines</h2>
+                        <span class="badge-tag badge-quarantine">7 Active Dropped</span>
+                    </div>
+                    <div class="panel-box-body">
+                        <div class="quarantine-list" id="quarantineList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Simulation Trigger Modal -->
+    <div id="simModalOverlay" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="simModalTitle">
+        <div class="modal-window">
+            <div class="modal-window-header">
+                <h3 id="simModalTitle" class="modal-heading">Launch Attack Simulation</h3>
+                <button id="closeSimModalBtn" class="btn-close" type="button" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-window-body">
+                <p class="modal-prompt-text">
+                    Select an adversarial scenario to stream synthetic attack telemetry through the SentinelAI neural correlation engine:
+                </p>
+                <div class="scenario-picker-grid">
+                    <button class="scenario-pick-card" data-scenario="ddos" type="button">
+                        <span class="pick-title">Layer-7 Inbound Flooding</span>
+                        <span class="pick-meta">Volumetric HTTP/2 rapid-reset anomaly (&gt;45,000 rps)</span>
+                    </button>
+                    <button class="scenario-pick-card" data-scenario="travel" type="button">
+                        <span class="pick-title">Impossible Geo-Velocity</span>
+                        <span class="pick-meta">Concurrent Okta sessions across two non-contiguous continents</span>
+                    </button>
+                    <button class="scenario-pick-card" data-scenario="exfil" type="button">
+                        <span class="pick-title">Cloud S3 Exfiltration Sweep</span>
+                        <span class="pick-meta">High-volume database snapshot download via anomalous IAM key</span>
+                    </button>
+                    <button class="scenario-pick-card" data-scenario="lateral" type="button">
+                        <span class="pick-title">Distributed Kerberoasting</span>
+                        <span class="pick-meta">Multi-host SPN enumeration &amp; Active Directory ticket extraction</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-window-footer">
+                <button id="cancelSimModalBtn" class="btn btn-outline" type="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Stack -->
+    <div id="sentinelToastStack" class="sentinel-toast-stack" aria-live="polite"></div>
+
+    <script src="/static/sentinel.js"></script>
+</body>
+</html>
