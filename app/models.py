@@ -137,6 +137,20 @@ class WatchlistRequest(BaseModel):
             raise ValueError(f"'{v}' is not a valid IPv4 address")
 
 
+class ThreatIntelData(BaseModel):
+    ip_address: str
+    verdict: str  # "MALICIOUS" | "SUSPICIOUS" | "BENIGN"
+    abuse_score: int  # 0 to 100
+    threat_actor: Optional[str] = None
+    category: str
+    asn: str
+    country: str
+    country_code: str
+    flag: str
+    indicators: List[str] = Field(default_factory=list)
+    last_seen: Optional[str] = None
+
+
 class Alert(BaseModel):
     id: str
     timestamp: datetime
@@ -149,6 +163,7 @@ class Alert(BaseModel):
     details: dict = Field(default_factory=dict)
     rule_id: Optional[str] = None
     mitre: Optional[MitreAttack] = None
+    threat_intel: Optional[ThreatIntelData] = None
 
 
 class IsolateHostRequest(BaseModel):

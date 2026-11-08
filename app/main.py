@@ -10,7 +10,7 @@ from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
     IsolateHostRequest, ReleaseHostRequest,
     SuspendUserRequest, UnsuspendUserRequest,
-    ToggleRuleRequest, DetectionRule
+    ToggleRuleRequest, DetectionRule, ThreatIntelData
 )
 from app.engine import CorrelationEngine
 from app.log_adapter import LogAdapter
@@ -331,6 +331,18 @@ def toggle_detection_rule(rule_id: str, req: ToggleRuleRequest):
     }
 
 
+# ---------------- THREAT INTELLIGENCE (CTI / CORTEX ENGINE) ----------------
+
+@app.get("/api/cti/{ip_address}", response_model=ThreatIntelData)
+def get_threat_intelligence(ip_address: str):
+    """
+    Cortex-inspired Observable Analyzer:
+    Queries threat intelligence profile (verdict, abuse score, ASN, geo, and threat actor)
+    for a given IP address observable.
+    """
+    return engine.cti.lookup(ip_address)
+
+
 @app.get("/api/stats")
 def get_stats():
     """
@@ -357,7 +369,8 @@ def get_stats():
         "isolated_hosts_count": len(engine.isolated_hosts),
         "suspended_users_count": len(engine.suspended_users),
         "blocked_containment_count": engine.blocked_containment_count,
-        "total_detection_rules": len(engine.rules)
+        "total_detection_rules": len(engine.rules),
+        "total_cti_lookups": engine.cti.lookup_counter
     }
 
 

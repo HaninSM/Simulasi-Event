@@ -7,9 +7,10 @@ from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
     IsolateHostRequest, ReleaseHostRequest,
     SuspendUserRequest, UnsuspendUserRequest,
-    DetectionRule, MitreAttack
+    DetectionRule, MitreAttack, ThreatIntelData
 )
 from app.rule_loader import RuleLoader
+from app.cti_engine import ThreatIntelEngine
 
 
 class CorrelationEngine:
@@ -18,6 +19,9 @@ class CorrelationEngine:
         self.rules_dir = rules_dir
         self.rules: Dict[str, DetectionRule] = {}
         self.load_rules(self.rules_dir)
+
+        # Threat Intelligence & Observable Analyzer Engine (Cortex-style)
+        self.cti = ThreatIntelEngine()
 
         # Whitelisted IP addresses: ip_address -> dict(reason, added_at)
         self.whitelist: Dict[str, dict] = {}
@@ -708,6 +712,10 @@ class CorrelationEngine:
                 return None
 
         self.alert_cooldowns[cooldown_key] = ref_time
+
+        # Automatic CTI Enrichment (Cortex-style observable enrichment)
+        cti_data = self.cti.enrich(ip_address) if ip_address else None
+
         return Alert(
             id=str(uuid.uuid4())[:8],
             timestamp=datetime.now(timezone.utc),
@@ -718,5 +726,6 @@ class CorrelationEngine:
             user_id=user_id,
             details=details,
             rule_id=rule_id,
-            mitre=mitre
+            mitre=mitre,
+            threat_intel=cti_data
         )

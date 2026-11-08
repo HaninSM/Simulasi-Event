@@ -901,4 +901,58 @@ def test_alert_contains_mitre_and_rule_id():
     assert bf_alert["mitre"]["tactic"] == "Credential Access"
 
 
+# ---------------- 10. THREAT INTELLIGENCE (CTI / CORTEX ENRICHMENT) ----------------
+
+def test_cti_engine_lookup_known_tor_node():
+    res = client.get("/api/cti/185.220.101.45")
+    assert res.status_code == 200
+    cti = res.json()
+    assert cti["ip_address"] == "185.220.101.45"
+    assert cti["verdict"] == "MALICIOUS"
+    assert cti["abuse_score"] == 100
+    assert "Tor Exit Relay" in cti["category"]
+    assert cti["flag"] == "🇩🇪"
+    assert "Tor Exit Node" in cti["indicators"]
+
+
+def test_cti_engine_lookup_private_ip():
+    res = client.get("/api/cti/192.168.1.100")
+    assert res.status_code == 200
+    cti = res.json()
+    assert cti["ip_address"] == "192.168.1.100"
+    assert cti["verdict"] == "BENIGN"
+    assert cti["abuse_score"] == 0
+    assert "RFC1918" in cti["category"]
+    assert cti["flag"] == "🏢"
+
+
+def test_alert_automatically_enriched_with_cti():
+    client.post("/api/reset")
+    attacker_ip = "45.33.32.156"
+
+    # Trigger DDoS from Mirai botnet IP 45.33.32.156 (> 10 web requests in 10s)
+    for _ in range(12):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": attacker_ip,
+            "location": "Jakarta",
+            "status": "success"
+        })
+
+    alerts = client.get("/api/alerts").json()
+    assert len(alerts) >= 1
+    ddos_alert = alerts[0]
+    assert ddos_alert["rule_name"] == "DDoS / Botnet"
+    assert ddos_alert["threat_intel"] is not None
+    ti = ddos_alert["threat_intel"]
+    assert ti["ip_address"] == attacker_ip
+    assert ti["verdict"] == "MALICIOUS"
+    assert ti["abuse_score"] >= 90
+    assert ti["threat_actor"] == "Mirai-Variant Botnet"
+    assert ti["flag"] == "🇺🇸"
+
+
+
 

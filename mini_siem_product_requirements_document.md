@@ -1,4 +1,4 @@
-# 📄 PRD.md: Mini-SIEM Simulator (V2.2 - Enterprise SOC, Real Log Replay, Detection as Code & SOAR Active Defense Edition)
+# 📄 PRD.md: Mini-SIEM Simulator (V2.3 - Enterprise SOC, Real Log Replay, Detection as Code, CTI & SOAR Active Defense Edition)
 
 ## 1. Ringkasan Produk & Latar Belakang Desain
 
@@ -8,11 +8,12 @@
 2. Membaca format log autentik dunia nyata (Nginx/Apache Combined, Linux Syslog RFC 3164, RFID Access CSV, PostgreSQL PGAudit JSONL, dan MQTT OT JSONL) melalui Universal Log Adapter.
 3. Mendeteksi anomali melalui mesin korelasi berbasis aturan (*Rule-based Correlation Engine*).
 4. Mengadopsi pendekatan **Detection as Code** dengan format aturan deklaratif terstandarisasi YAML (ala SigmaHQ) yang terpetakan ke **MITRE ATT&CK** dan mendukung *hot-reloading* tanpa henti server.
-5. Menangani *Alert Fatigue* dengan debouncing cerdas (*alert cooldown*).
-6. Memitigasi kegagalan transmisi data cacat dan *Time Drift Error* (HTTP 422).
-7. Mengungkap bahaya *Blind Spot* akibat *Careless Whitelisting* dan serangan *Low & Slow APT* (tantangan *Hot vs Cold Storage*).
-8. Menjalankan penanganan insiden aktif melalui **SOAR Playbook (Host Containment / Network Quarantine & User Suspension)** yang memutus paket penyerang di gerbang masuk (*Gatekeeper HTTP 403 Dropped*).
-9. Mendeteksi upaya sabotase hardware fisik fasilitas datacenter (AC Central / Chiller) via protokol telemetri IoT/OT (**MQTT**).
+5. Memperkaya setiap alert secara otomatis menggunakan **Threat Intelligence (CTI) Cortex Observable Analyzer** untuk mengidentifikasi reputasi IP, atribusi aktor ancaman, ASN/ISP, dan geolokasi.
+6. Menangani *Alert Fatigue* dengan debouncing cerdas (*alert cooldown*).
+7. Memitigasi kegagalan transmisi data cacat dan *Time Drift Error* (HTTP 422).
+8. Mengungkap bahaya *Blind Spot* akibat *Careless Whitelisting* dan serangan *Low & Slow APT* (tantangan *Hot vs Cold Storage*).
+9. Menjalankan penanganan insiden aktif melalui **SOAR Playbook (Host Containment / Network Quarantine & User Suspension)** yang memutus paket penyerang di gerbang masuk (*Gatekeeper HTTP 403 Dropped*).
+10. Mendeteksi upaya sabotase hardware fisik fasilitas datacenter (AC Central / Chiller) via protokol telemetri IoT/OT (**MQTT**).
 
 ### 1.2 Profil Tim Pengembang: "JadiBegini"
 Proyek simulasi Mini-SIEM Command Center dikembangkan oleh Tim **JadiBegini**:
@@ -111,6 +112,11 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 * **Hot-Reloading Dinamis (`POST /api/rules/reload`):** Analis dapat menyunting parameter threshold atau menambahkan use case aturan baru di disk lalu memuat ulangnya secara live tanpa downtime atau restart backend.
 * **Runtime Toggle (`PATCH /api/rules/{id}/toggle`):** Kemampuan mengaktifkan/menonaktifkan aturan deteksi spesifik secara instan untuk menekan false-positive massal.
 
+### Fitur G: Threat Intelligence (CTI) & Cortex Observable Analyzer
+* **Automated Enrichment on Alert Generation:** Ketika insiden atau alert dipicu oleh mesin korelasi, IP observable secara otomatis diperkaya (*enriched*) dengan metrik intelijen ancaman.
+* **Metrik CTI Komprehensif:** Menyajikan reputasi vonis (`MALICIOUS`, `SUSPICIOUS`, `BENIGN`), skor *Abuse Confidence* (0-100%), atribusi aktor ancaman (misal: *Mirai Botnet*, *APT29 / Cozy Bear*, *Tor Exit Node*), ASN/ISP, dan geolokasi negara berserta emoji bendera.
+* **On-Demand Observable Lookup (`GET /api/cti/{ip_address}`):** Analis SOC dapat melakukan kueri intelijen ancaman seketika untuk menginvestigasi IP mencurigakan tanpa perlu berpindah ke situs pihak ketiga.
+
 ---
 
 ## 4. Daftar Skenario Demonstrasi
@@ -131,12 +137,13 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 ## 5. Tumpukan Teknologi (Tech Stack)
 
 * **Backend:** Python 3.11 + FastAPI (Asynchronous, High-Performance, ASGI).
+* **Threat Intelligence & Analyzer:** Cortex-inspired CTI Engine (`app/cti_engine.py`) dengan basis data IoC feeds lokal berlatensi rendah.
 * **Detection as Code:** PyYAML + RuleLoader engine (Sigma-style YAML rules).
 * **Validasi Skema:** Pydantic V2 + RFC 5424/OCSF normalization logic.
 * **Adapter & Ingestion:** Universal Log Adapter (`app/log_adapter.py`) dengan regex parser multi-format.
 * **Penyimpanan Telemetri:** *In-memory stateful store* (Event cache, Active Alerts, Whitelist, Suspicious Greylist, Isolated Hosts, SOAR Audit Trail).
 * **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, SOAR Active Panel, tanpa dependencies eksternal).
-* **Simulator & Testing:** Python Requests, Pytest test suite (33 automated test cases, 100% passed).
+* **Simulator & Testing:** Python Requests, Pytest test suite (36 automated test cases, 100% passed).
 
 ---
 

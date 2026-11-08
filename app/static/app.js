@@ -290,6 +290,40 @@ function renderAlerts(alerts) {
             }
         }
 
+        // Cortex Threat Intelligence (CTI) Enrichment Block
+        let ctiBlock = "";
+        if (a.threat_intel) {
+            const ti = a.threat_intel;
+            const verdictColor = ti.verdict === "MALICIOUS" ? "#f87171" : (ti.verdict === "SUSPICIOUS" ? "#fbbf24" : "#34d399");
+            const verdictBg = ti.verdict === "MALICIOUS" ? "rgba(239, 68, 68, 0.15)" : (ti.verdict === "SUSPICIOUS" ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.15)");
+            const verdictBorder = ti.verdict === "MALICIOUS" ? "rgba(239, 68, 68, 0.35)" : (ti.verdict === "SUSPICIOUS" ? "rgba(245, 158, 11, 0.35)" : "rgba(16, 185, 129, 0.35)");
+            
+            const indicatorsHtml = (ti.indicators || []).map(ind => `<span style="font-size: 0.68rem; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; color: #cbd5e1;">${escapeHtml(ind)}</span>`).join(" ");
+
+            ctiBlock = `
+                <div class="alert-cti" style="margin-top: 0.55rem; padding: 0.45rem 0.65rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 3px solid ${verdictColor}; border-radius: 4px; font-size: 0.75rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.2rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <span>${ti.flag || '🌐'}</span>
+                            <strong style="color: #f1f5f9;">${escapeHtml(ti.country || 'Unknown')}</strong>
+                            <span style="color: #64748b;">&bull;</span>
+                            <span style="color: #94a3b8; font-family: monospace;">${escapeHtml(ti.asn || '')}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <span style="background: ${verdictBg}; color: ${verdictColor}; border: 1px solid ${verdictBorder}; padding: 1px 6px; border-radius: 3px; font-weight: 700; font-size: 0.7rem;">
+                                ${ti.verdict} (${ti.abuse_score}%)
+                            </span>
+                            ${ti.threat_actor ? `<span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); padding: 1px 6px; border-radius: 3px; font-size: 0.7rem;">👤 ${escapeHtml(ti.threat_actor)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.72rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                        <span>Kategori: <em style="color: #e2e8f0;">${escapeHtml(ti.category)}</em></span>
+                        ${indicatorsHtml ? `<span style="color: #475569;">|</span> ${indicatorsHtml}` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
         card.innerHTML = `
             <div class="alert-header">
                 <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -307,6 +341,7 @@ function renderAlerts(alerts) {
             </div>
             <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
             <div class="alert-desc">${escapeHtml(a.description)}</div>
+            ${ctiBlock}
             ${metaDetails ? `<div class="alert-meta">${metaDetails}</div>` : ""}
         `;
 

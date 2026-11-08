@@ -1,4 +1,4 @@
-# 🛡️ Mini-SIEM Simulator (V2.2 - Detection as Code & MITRE ATT&CK Edition)
+# 🛡️ Mini-SIEM Simulator (V2.3 - Threat Intel CTI & Detection as Code Edition)
 
 Aplikasi simulasi **Security Information and Event Management (SIEM)** berskala kecil berbasis API yang dibangun menggunakan **FastAPI**, **Pydantic**, dan **HTML5/CSS3/Vanilla JS (SOC Dark Command Center)**.
 
@@ -8,11 +8,12 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 3. Mendeteksi anomali dan serangan siber melalui mesin korelasi berbasis aturan (*Rule-based Correlation Engine*).
 4. **Detection as Code (Sigma YAML Engine)**: Aturan deteksi terpisah secara deklaratif dalam format YAML (terstandarisasi industri ala SigmaHQ) yang mendukung *hot-reloading* tanpa restart server.
 5. **Standarisasi MITRE ATT&CK**: Setiap alert otomatis dipetakan ke taksonomi Taktik & ID Teknik MITRE ATT&CK resmi (e.g. T1110.003, T1078, T1048, T0814).
-6. Mengurangi *Alert Fatigue* dengan debouncing cerdas.
-7. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
-8. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
-9. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
-10. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
+6. **Threat Intelligence (CTI) Cortex Enrichment**: Pengayaan data intelijen otomatis (reputasi IP, skor abuse, bendera negara, ASN/ISP, indikator Tor/Botnet, dan atribusi aktor ancaman) pada setiap alert yang dipicu via engine ala Cortex.
+7. Mengurangi *Alert Fatigue* dengan debouncing cerdas.
+8. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
+9. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
+10. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
+11. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
 
 ---
 
@@ -447,6 +448,7 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 | `GET` | `/api/rules` | **Detection as Code:** Mengambil seluruh daftar aturan deteksi YAML aktif & mapping MITRE | `200 OK` |
 | `POST` | `/api/rules/reload` | **Detection as Code:** *Hot-reload* aturan deteksi dari folder `app/rules/` tanpa restart server | `200 OK` |
 | `PATCH` | `/api/rules/{id}/toggle` | **Detection as Code:** Mengaktifkan / menonaktifkan aturan deteksi tertentu secara live | `200 OK` / `404 Not Found` |
+| `GET` | `/api/cti/{ip}` | **Threat Intelligence (CTI):** Cortex-inspired observable analyzer (reputasi IP, ASN, GeoIP, & Threat Actor) | `200 OK` |
 | `POST` | `/api/simulator/replay` | Menjalankan replay otomatis berkas log fisik dari `sample_logs/` (parameter `scenario=1..9`) | `200 OK` / `400 Bad Request` |
 | `POST` | `/api/reset` | Mereset seluruh log, alert, whitelist, dan karantina SOAR in-memory | `200 OK` |
 
@@ -458,9 +460,10 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 CommandCenter/
 ├── app/
 │   ├── __init__.py          # Modul Python app
-│   ├── main.py              # Router FastAPI, endpoint ingestion, rules API, SOAR containment, & replay
-│   ├── models.py            # Model data Pydantic, schema DetectionRule, MITRE ATT&CK, & IPv4 validator
-│   ├── engine.py            # Mesin korelasi dinamis berbasis rule YAML, debouncing, & SOAR state
+│   ├── main.py              # Router FastAPI, endpoint ingestion, rules API, CTI analyzer, & SOAR
+│   ├── models.py            # Model data Pydantic, schema DetectionRule, ThreatIntelData, & Alert
+│   ├── engine.py            # Mesin korelasi dinamis berbasis rule YAML, CTI auto-enrichment, & SOAR
+│   ├── cti_engine.py        # Cortex Threat Intelligence Engine: IoC feeds, GeoIP, & observable lookup
 │   ├── rule_loader.py       # Detection as Code engine: parser & validator berkas aturan Sigma YAML
 │   ├── rules/               # Direktori berkas aturan deteksi deklaratif (Sigma-like YAML)
 │   │   ├── rule_00_apt_watchlist.yaml
@@ -475,11 +478,11 @@ CommandCenter/
 │   └── static/
 │       ├── index.html       # Antarmuka Command Center SOC Dark Theme (dengan SOAR Panel)
 │       ├── style.css        # Tata letak grid/flexbox, efek visual alert KRITIS & status CONTAINED
-│       └── app.js           # Polling real-time 2s & handler badge MITRE / Rule ID / SOAR
+│       └── app.js           # Polling real-time 2s, badge CTI & MITRE / Rule ID / SOAR
 ├── sample_logs/             # Kumpulan 24 berkas log fisik autentik (8 skenario x 3 varian)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
 ├── simulator.py             # Script simulator interaktif 9 skenario & demo SOAR containment
-├── test_siem.py             # Test suite 33 unit & integration test otomatis (100% passed)
+├── test_siem.py             # Test suite 36 unit & integration test otomatis (100% passed)
 ├── requirements.txt         # Daftar dependensi Python (termasuk pyyaml)
 ├── run_server.bat           # Launcher server satu-klik
 ├── run_simulator.bat        # Launcher simulator satu-klik
