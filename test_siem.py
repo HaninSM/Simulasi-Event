@@ -9,6 +9,11 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def reset_state():
     engine.clear_all()
+    # If tests run during real-world off-hours (00:00 - 05:00 local time),
+    # temporarily disable RULE-ANOM-004 so standard baseline tests aren't polluted by the wall clock
+    is_off_hours = (0 <= datetime.now().hour < 5)
+    if is_off_hours and "RULE-ANOM-004" in engine.rules:
+        engine.rules["RULE-ANOM-004"].enabled = False
     yield
     engine.clear_all()
 
@@ -211,9 +216,13 @@ def test_rule_3_distributed_brute_force():
 # ---------------- 5. RULE 4: OFF-HOURS ANOMALY ----------------
 
 def test_rule_4_off_hours_anomaly():
+    if "RULE-ANOM-004" in engine.rules:
+        engine.rules["RULE-ANOM-004"].enabled = True
     # Construct a timestamp at 02:30 AM local time
     local_now = datetime.now()
     off_hours_dt = local_now.replace(hour=2, minute=30, second=0)
+    if off_hours_dt > local_now:
+        off_hours_dt -= timedelta(days=1)
     # Convert to UTC
     off_hours_utc = off_hours_dt.astimezone(timezone.utc)
 

@@ -56,6 +56,14 @@ def get_sentinel_platform():
     return {"message": "SentinelAI platform page not found."}
 
 
+@app.get("/infographic")
+def get_infographic():
+    infographic_file = os.path.join(static_dir, "infographic.html")
+    if os.path.exists(infographic_file):
+        return FileResponse(infographic_file)
+    return {"message": "Infographic file not found."}
+
+
 @app.get("/presentation")
 def get_presentation():
     pres_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "presentation.html")
