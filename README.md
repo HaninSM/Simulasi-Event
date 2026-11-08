@@ -1,4 +1,4 @@
-# 🛡️ Mini-SIEM Simulator (V2.1 - Real Log Replay & SOAR Active Defense Edition)
+# 🛡️ Mini-SIEM Simulator (V2.2 - Detection as Code & MITRE ATT&CK Edition)
 
 Aplikasi simulasi **Security Information and Event Management (SIEM)** berskala kecil berbasis API yang dibangun menggunakan **FastAPI**, **Pydantic**, dan **HTML5/CSS3/Vanilla JS (SOC Dark Command Center)**.
 
@@ -6,11 +6,13 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 1. Menerima, memvalidasi, dan menormalisasi log telemetri (*Gatekeeper Ingestion*).
 2. Membaca format berkas log fisik autentik dunia nyata (Nginx Combined, Linux Syslog, CSV, PGAudit JSONL) via Universal Log Adapter.
 3. Mendeteksi anomali dan serangan siber melalui mesin korelasi berbasis aturan (*Rule-based Correlation Engine*).
-4. Mengurangi *Alert Fatigue* dengan debouncing cerdas.
-5. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
-6. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
-7. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
-8. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
+4. **Detection as Code (Sigma YAML Engine)**: Aturan deteksi terpisah secara deklaratif dalam format YAML (terstandarisasi industri ala SigmaHQ) yang mendukung *hot-reloading* tanpa restart server.
+5. **Standarisasi MITRE ATT&CK**: Setiap alert otomatis dipetakan ke taksonomi Taktik & ID Teknik MITRE ATT&CK resmi (e.g. T1110.003, T1078, T1048, T0814).
+6. Mengurangi *Alert Fatigue* dengan debouncing cerdas.
+7. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
+8. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
+9. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
+10. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
 
 ---
 
@@ -442,7 +444,10 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 | `POST` | `/api/soar/unsuspend-user` | **SOAR Action:** Mengaktifkan kembali akun user yang dibekukan | `200 OK` / `404 Not Found` |
 | `GET` | `/api/soar/suspended-users` | Mengambil daftar akun user yang sedang dibekukan | `200 OK` |
 | `GET` | `/api/soar/audit` | Mengambil riwayat audit log tindakan penanganan SOAR | `200 OK` |
-| `POST` | `/api/simulator/replay` | Menjalankan replay otomatis berkas log fisik dari `sample_logs/` (parameter `scenario=1..8`) | `200 OK` / `400 Bad Request` |
+| `GET` | `/api/rules` | **Detection as Code:** Mengambil seluruh daftar aturan deteksi YAML aktif & mapping MITRE | `200 OK` |
+| `POST` | `/api/rules/reload` | **Detection as Code:** *Hot-reload* aturan deteksi dari folder `app/rules/` tanpa restart server | `200 OK` |
+| `PATCH` | `/api/rules/{id}/toggle` | **Detection as Code:** Mengaktifkan / menonaktifkan aturan deteksi tertentu secara live | `200 OK` / `404 Not Found` |
+| `POST` | `/api/simulator/replay` | Menjalankan replay otomatis berkas log fisik dari `sample_logs/` (parameter `scenario=1..9`) | `200 OK` / `400 Bad Request` |
 | `POST` | `/api/reset` | Mereset seluruh log, alert, whitelist, dan karantina SOAR in-memory | `200 OK` |
 
 ---
@@ -453,30 +458,31 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 CommandCenter/
 ├── app/
 │   ├── __init__.py          # Modul Python app
-│   ├── main.py              # Router FastAPI, endpoint ingestion, SOAR containment, & replay
-│   ├── models.py            # Model data Pydantic, schema SOAR, IPv4 validator, & time drift rule
-│   ├── engine.py            # Mesin korelasi, debouncing, SOAR state (quarantine & audit trail)
+│   ├── main.py              # Router FastAPI, endpoint ingestion, rules API, SOAR containment, & replay
+│   ├── models.py            # Model data Pydantic, schema DetectionRule, MITRE ATT&CK, & IPv4 validator
+│   ├── engine.py            # Mesin korelasi dinamis berbasis rule YAML, debouncing, & SOAR state
+│   ├── rule_loader.py       # Detection as Code engine: parser & validator berkas aturan Sigma YAML
+│   ├── rules/               # Direktori berkas aturan deteksi deklaratif (Sigma-like YAML)
+│   │   ├── rule_00_apt_watchlist.yaml
+│   │   ├── rule_01_ddos.yaml
+│   │   ├── rule_02_impossible_travel.yaml
+│   │   ├── rule_03_brute_force.yaml
+│   │   ├── rule_04_off_hours.yaml
+│   │   ├── rule_05_exfiltration.yaml
+│   │   ├── rule_06_ot_sabotage.yaml
+│   │   └── rule_07_recon_probe.yaml
 │   ├── log_adapter.py       # Universal Log Adapter: multi-format parser & dynamic timestamp shifter
 │   └── static/
 │       ├── index.html       # Antarmuka Command Center SOC Dark Theme (dengan SOAR Panel)
 │       ├── style.css        # Tata letak grid/flexbox, efek visual alert KRITIS & status CONTAINED
-│       └── app.js           # Polling real-time 2s & handler aksi interaktif Isolate/Release Host
+│       └── app.js           # Polling real-time 2s & handler badge MITRE / Rule ID / SOAR
 ├── sample_logs/             # Kumpulan 24 berkas log fisik autentik (8 skenario x 3 varian)
-│   ├── web_access_normal_[1..3].log         # Format Nginx/Apache Combined Log
-│   ├── nginx_ddos_flood_[1..3].log          # Format Nginx HTTP Flood
-│   ├── vpn_and_gate_access_[1..3].csv       # Format Akses Fisik RFID & VPN Gateway CSV
-│   ├── auth_sshd_bruteforce_[1..3].log      # Format Linux /var/log/auth.log Syslog RFC 3164
-│   ├── postgres_audit_exfiltration_[1..3].jsonl # Format Audit Query Database PostgreSQL JSONL
-│   ├── careless_whitelist_attack_[1..3].log # Format Nginx Web Access untuk Whitelist Demo
-│   ├── legacy_corrupted_device_[1..3].log   # Telemetri format rusak & Time Drift Error
-│   └── apt_recon_and_exploit_[1..3].log     # Format Jejak APT multi-fase (20 hari)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
-├── simulator.py             # Script simulator interaktif 8 skenario & demo SOAR containment
-├── test_siem.py             # Test suite 26 unit & integration test otomatis (100% passed)
-├── requirements.txt         # Daftar dependensi Python
+├── simulator.py             # Script simulator interaktif 9 skenario & demo SOAR containment
+├── test_siem.py             # Test suite 33 unit & integration test otomatis (100% passed)
+├── requirements.txt         # Daftar dependensi Python (termasuk pyyaml)
 ├── run_server.bat           # Launcher server satu-klik
 ├── run_simulator.bat        # Launcher simulator satu-klik
-├── mini_siem_product_requirements_document.md # Dokumen PRD V2.1
 └── README.md                # Panduan teknis lengkap & PoC skenario
 ```
 

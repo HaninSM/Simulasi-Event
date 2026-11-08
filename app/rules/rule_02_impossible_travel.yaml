@@ -1,0 +1,19 @@
+id: RULE-AUTH-002
+title: Impossible Travel
+status: production
+severity: KRITIS
+description: >
+  Mendeteksi anomali perpindahan lokasi secara mustahil: 2 login berhasil untuk user yang sama
+  berasal dari 2 lokasi geografis berbeda dalam rentang waktu kurang dari 1 jam (3600 detik).
+mitre:
+  tactic: Initial Access
+  technique_id: T1078
+  technique_name: Valid Accounts
+detection:
+  event_type: login_attempt
+  status: success
+  correlation:
+    type: impossible_travel
+    window_seconds: 3600
+cooldown_seconds: 10
+enabled: true

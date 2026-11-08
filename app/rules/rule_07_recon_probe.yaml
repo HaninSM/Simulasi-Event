@@ -1,0 +1,17 @@
+id: RULE-RECON-007
+title: Reconnaissance Probe
+status: production
+severity: MENENGAH
+description: >
+  Mendeteksi pemindaian port atau probing kerentanan layanan dari IP eksternal.
+mitre:
+  tactic: Reconnaissance
+  technique_id: T1595
+  technique_name: Active Scanning
+detection:
+  event_type: recon_probe
+  status: any
+  correlation:
+    type: single_event
+cooldown_seconds: 5
+enabled: true

@@ -1,0 +1,18 @@
+id: RULE-APT-000
+title: APT Low & Slow / Persistent Threat
+status: production
+severity: KRITIS
+description: >
+  Mendeteksi korelasi ancaman persisten jangka panjang (Low & Slow) melintasi siklus retensi.
+  IP yang sebelumnya tercatat dalam Stateful Greylist (Watchlist) memicu aktivitas lanjutan.
+mitre:
+  tactic: Persistence
+  technique_id: T1078
+  technique_name: Valid Accounts
+detection:
+  event_type: any
+  status: any
+  correlation:
+    type: watchlist_match
+cooldown_seconds: 5
+enabled: true

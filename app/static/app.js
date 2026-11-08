@@ -294,6 +294,8 @@ function renderAlerts(alerts) {
             <div class="alert-header">
                 <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                     <span class="alert-badge ${a.severity}">${a.severity}</span>
+                    ${a.rule_id ? `<span class="badge-rule-id" style="font-size: 0.7rem; font-family: monospace; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">🏷️ ${escapeHtml(a.rule_id)}</span>` : ""}
+                    ${a.mitre ? `<span class="badge-mitre" style="font-size: 0.7rem; font-family: monospace; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4); color: #fbbf24; padding: 2px 6px; border-radius: 4px;">🎯 MITRE ${escapeHtml(a.mitre.technique_id)} &bull; ${escapeHtml(a.mitre.tactic)}</span>` : ""}
                     ${isHostContained ? `<span class="badge-contained">🔒 HOST QUARANTINED</span>` : ""}
                     ${isUserSuspended ? `<span class="badge-contained" style="border-color: rgba(239,68,68,0.5); color: #f87171;">🚫 USER SUSPENDED</span>` : ""}
                 </div>

@@ -1,0 +1,19 @@
+id: RULE-OT-006
+title: "OT Sabotage: Datacenter AC Central Shutdown (MQTT)"
+status: production
+severity: KRITIS
+description: >
+  Mendeteksi sabotase fasilitas fisik datacenter: perintah tidak sah (POWER_OFF / SHUTDOWN)
+  melalui protokol MQTT yang menargetkan sistem pendingin (AC Central / CRAC / Chiller)
+  sehingga memicu risiko overheating / thermal runaway.
+mitre:
+  tactic: Impact
+  technique_id: T0814
+  technique_name: Denial of Control - ICS/OT
+detection:
+  event_type: mqtt_command
+  status: any
+  correlation:
+    type: ot_command
+cooldown_seconds: 5
+enabled: true

@@ -1,12 +1,50 @@
 import ipaddress
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Literal
+from typing import Optional, Literal, Dict, Any, List
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 EventType = Literal["login_attempt", "web_request", "database_download", "recon_probe", "ot_command", "mqtt_command"]
 EventStatus = Literal["success", "failed"]
 SeverityLevel = Literal["KRITIS", "TINGGI", "MENENGAH"]
+
+
+class MitreAttack(BaseModel):
+    tactic: str
+    technique_id: str
+    technique_name: str
+
+
+class RuleCorrelation(BaseModel):
+    type: str  # "threshold_aggregation" | "impossible_travel" | "watchlist_match" | "single_event" | "off_hours" | "ot_command"
+    window_seconds: Optional[int] = 60
+    min_count: Optional[int] = None
+    group_by: Optional[str] = None
+    min_unique_field: Optional[str] = None
+    min_unique_count: Optional[int] = None
+    extra_params: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+class RuleDetection(BaseModel):
+    event_type: Optional[str] = "any"
+    status: Optional[str] = "any"
+    correlation: Optional[RuleCorrelation] = None
+
+
+class DetectionRule(BaseModel):
+    id: str
+    title: str
+    status: str = "production"
+    severity: SeverityLevel
+    description: str
+    mitre: Optional[MitreAttack] = None
+    detection: RuleDetection
+    cooldown_seconds: int = 10
+    enabled: bool = True
+
+
+class ToggleRuleRequest(BaseModel):
+    enabled: bool
 
 
 class LogEvent(BaseModel):
@@ -109,6 +147,8 @@ class Alert(BaseModel):
     user_id: Optional[str] = None
     status: str = "NEW"  # NEW | CONTAINED | RESOLVED
     details: dict = Field(default_factory=dict)
+    rule_id: Optional[str] = None
+    mitre: Optional[MitreAttack] = None
 
 
 class IsolateHostRequest(BaseModel):
@@ -169,5 +209,3 @@ class UnsuspendUserRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("user_id cannot be empty")
         return v.strip()
-
-

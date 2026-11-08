@@ -1,0 +1,21 @@
+id: RULE-ANOM-004
+title: Off-Hours Anomaly
+status: production
+severity: MENENGAH
+description: >
+  Mendeteksi aktivitas mencurigakan di luar jam operasional kerja: user non-mesin melakukan aksi sukses
+  antara pukul 00:00 - 05:00 waktu lokal.
+mitre:
+  tactic: Defense Evasion
+  technique_id: T1078.002
+  technique_name: Valid Accounts - Domain Accounts
+detection:
+  event_type: any
+  status: success
+  correlation:
+    type: off_hours
+    extra_params:
+      start_hour: 0
+      end_hour: 5
+cooldown_seconds: 10
+enabled: true

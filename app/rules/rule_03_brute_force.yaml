@@ -1,0 +1,23 @@
+id: RULE-AUTH-003
+title: Distributed Brute Force
+status: production
+severity: TINGGI
+description: >
+  Mendeteksi serangan distributed brute force atau password spraying: lebih dari 5 kegagalan login
+  pada 1 user yang sama dari lebih dari 3 IP berbeda dalam rentang waktu 60 detik.
+mitre:
+  tactic: Credential Access
+  technique_id: T1110.003
+  technique_name: Brute Force - Password Spraying
+detection:
+  event_type: login_attempt
+  status: failed
+  correlation:
+    type: threshold_aggregation
+    group_by: user_id
+    window_seconds: 60
+    min_count: 5
+    min_unique_field: ip_address
+    min_unique_count: 3
+cooldown_seconds: 10
+enabled: true

@@ -801,3 +801,104 @@ def test_scenario_9_soar_isolation_defense():
     assert r2.json()["alerts_triggered"] == 0
 
 
+# ---------------- 9. DETECTION AS CODE (YAML & MITRE ATT&CK) ----------------
+
+def test_detection_as_code_yaml_rules_loaded():
+    res = client.get("/api/rules")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert data["total_rules"] >= 8
+
+    rule_ids = {r["id"] for r in data["rules"]}
+    expected_ids = {
+        "RULE-APT-000", "RULE-NET-001", "RULE-AUTH-002", "RULE-AUTH-003",
+        "RULE-ANOM-004", "RULE-EXFIL-005", "RULE-OT-006", "RULE-RECON-007"
+    }
+    assert expected_ids.issubset(rule_ids)
+
+    # Verify MITRE ATT&CK metadata presence
+    bf_rule = next(r for r in data["rules"] if r["id"] == "RULE-AUTH-003")
+    assert bf_rule["mitre"] is not None
+    assert bf_rule["mitre"]["technique_id"] == "T1110.003"
+    assert bf_rule["mitre"]["tactic"] == "Credential Access"
+
+
+def test_detection_rule_toggle_dynamically_silences_alerts():
+    client.post("/api/reset")
+    target_ip = "192.168.1.100"
+
+    # 1. Disable the DDoS rule dynamically via API
+    toggle_res = client.patch("/api/rules/RULE-NET-001/toggle", json={"enabled": False})
+    assert toggle_res.status_code == 200
+    assert toggle_res.json()["rule"]["enabled"] is False
+
+    # 2. Ingest 15 requests - should NOT trigger alert because rule is disabled
+    for _ in range(15):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": target_ip,
+            "location": "Jakarta",
+            "status": "success"
+        })
+
+    alerts = client.get("/api/alerts").json()
+    assert len(alerts) == 0
+
+    # 3. Re-enable DDoS rule
+    toggle_res = client.patch("/api/rules/RULE-NET-001/toggle", json={"enabled": True})
+    assert toggle_res.status_code == 200
+    assert toggle_res.json()["rule"]["enabled"] is True
+
+    # 4. Ingest 15 requests again - now should trigger alert
+    for _ in range(15):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": target_ip,
+            "location": "Jakarta",
+            "status": "success"
+        })
+
+    alerts = client.get("/api/alerts").json()
+    assert len(alerts) >= 1
+    assert alerts[0]["rule_name"] == "DDoS / Botnet"
+
+
+def test_hot_reload_rules_endpoint():
+    res = client.post("/api/rules/reload")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert data["total_rules"] >= 8
+
+
+def test_alert_contains_mitre_and_rule_id():
+    client.post("/api/reset")
+    # Trigger Distributed Brute Force (6 failed logins from 4 distinct IPs)
+    victim_user = "cfo_finance"
+    source_ips = ["10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4", "10.0.0.5", "10.0.0.6"]
+    for ip in source_ips:
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "login_attempt",
+            "user_id": victim_user,
+            "ip_address": ip,
+            "location": "Jakarta",
+            "status": "failed"
+        })
+
+    alerts = client.get("/api/alerts").json()
+    assert len(alerts) >= 1
+    bf_alert = alerts[0]
+    assert bf_alert["rule_name"] == "Distributed Brute Force"
+    assert bf_alert["rule_id"] == "RULE-AUTH-003"
+    assert bf_alert["mitre"] is not None
+    assert bf_alert["mitre"]["technique_id"] == "T1110.003"
+    assert bf_alert["mitre"]["tactic"] == "Credential Access"
+
+
+

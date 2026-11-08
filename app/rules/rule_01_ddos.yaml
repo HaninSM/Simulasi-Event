@@ -1,0 +1,21 @@
+id: RULE-NET-001
+title: DDoS / Botnet
+status: production
+severity: TINGGI
+description: >
+  Mendeteksi pola serangan DDoS / Botnet volumetrik: lebih dari 10 permintaan web
+  dari 1 IP sumber yang sama dalam jendela waktu 10 detik.
+mitre:
+  tactic: Impact
+  technique_id: T1498.001
+  technique_name: Network Denial of Service - Direct Flood
+detection:
+  event_type: web_request
+  status: any
+  correlation:
+    type: threshold_aggregation
+    group_by: ip_address
+    window_seconds: 10
+    min_count: 10
+cooldown_seconds: 5
+enabled: true

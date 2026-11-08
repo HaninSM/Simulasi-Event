@@ -9,7 +9,8 @@ import json
 from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
     IsolateHostRequest, ReleaseHostRequest,
-    SuspendUserRequest, UnsuspendUserRequest
+    SuspendUserRequest, UnsuspendUserRequest,
+    ToggleRuleRequest, DetectionRule
 )
 from app.engine import CorrelationEngine
 from app.log_adapter import LogAdapter
@@ -288,6 +289,48 @@ def list_suspended_users():
     return engine.get_suspended_users()
 
 
+# ---------------- DETECTION AS CODE (SIGMA / YAML RULES) ----------------
+
+@app.get("/api/rules")
+def get_detection_rules():
+    """
+    Returns all registered Detection as Code rules loaded from YAML files (Sigma syntax).
+    """
+    return {
+        "status": "success",
+        "total_rules": len(engine.rules),
+        "rules": engine.get_rules()
+    }
+
+
+@app.post("/api/rules/reload")
+def reload_detection_rules():
+    """
+    Hot-reloads all detection rules from the YAML rules directory without restarting the server.
+    """
+    count = engine.load_rules()
+    return {
+        "status": "success",
+        "message": f"Successfully hot-reloaded {count} detection rules from YAML storage.",
+        "total_rules": count
+    }
+
+
+@app.patch("/api/rules/{rule_id}/toggle")
+def toggle_detection_rule(rule_id: str, req: ToggleRuleRequest):
+    """
+    Dynamically enables or disables a specific detection rule.
+    """
+    updated = engine.toggle_rule(rule_id, req.enabled)
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Detection rule '{rule_id}' not found.")
+    return {
+        "status": "success",
+        "message": f"Rule '{rule_id}' has been {'enabled' if req.enabled else 'disabled'}.",
+        "rule": updated
+    }
+
+
 @app.get("/api/stats")
 def get_stats():
     """
@@ -313,7 +356,8 @@ def get_stats():
         "cold_archive_count": len(engine.cold_archive),
         "isolated_hosts_count": len(engine.isolated_hosts),
         "suspended_users_count": len(engine.suspended_users),
-        "blocked_containment_count": engine.blocked_containment_count
+        "blocked_containment_count": engine.blocked_containment_count,
+        "total_detection_rules": len(engine.rules)
     }
 
 
