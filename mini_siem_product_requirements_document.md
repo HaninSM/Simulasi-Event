@@ -1,4 +1,4 @@
-# 📄 PRD.md: Mini-SIEM Simulator (V2.3 - Enterprise SOC, Real Log Replay, Detection as Code, CTI & SOAR Active Defense Edition)
+# 📄 PRD.md: Mini-SIEM Simulator (V2.4 - Enterprise SOC, Real Log Replay, Detection as Code, CTI, TheHive Case Management & SOAR Active Defense Edition)
 
 ## 1. Ringkasan Produk & Latar Belakang Desain
 
@@ -117,6 +117,13 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 * **Metrik CTI Komprehensif:** Menyajikan reputasi vonis (`MALICIOUS`, `SUSPICIOUS`, `BENIGN`), skor *Abuse Confidence* (0-100%), atribusi aktor ancaman (misal: *Mirai Botnet*, *APT29 / Cozy Bear*, *Tor Exit Node*), ASN/ISP, dan geolokasi negara berserta emoji bendera.
 * **On-Demand Observable Lookup (`GET /api/cti/{ip_address}`):** Analis SOC dapat melakukan kueri intelijen ancaman seketika untuk menginvestigasi IP mencurigakan tanpa perlu berpindah ke situs pihak ketiga.
 
+### Fitur H: Incident Case Management & Investigation Notes (TheHive Paradigm)
+* **Alert Escalation to Incident Case (`POST /api/cases/escalate`):** Menjembatani deteksi SIEM ke alur kerja investigasi formal dengan menerbitkan berkas kasus unik berstandar TheHive (`CASE-2026-XXX`). Status alert asal otomatis diperbarui menjadi `IN_INVESTIGATION`.
+* **Ekstraksi Terstruktur Observable Forensik:** Secara otomatis mengekstraksi dan mengatalogkan observable (artefak IP dengan profil CTI & status karantina, user ID dengan status suspensi, rule name beserta mapping MITRE ATT&CK, dan detail payload alert).
+* **Investigation Timeline Notes (`POST /api/cases/{id}/notes`):** Analis forensik dapat mendokumentasikan temuan, jejak memory dump, atau analisis reverse shell dalam bentuk catatan kronologis berstempel waktu (*UTC timestamp*).
+* **Klasifikasi Kerahasiaan TLP (Traffic Light Protocol):** Mendukung pelabelan `TLP:WHITE`, `TLP:GREEN`, `TLP:AMBER`, dan `TLP:RED` sesuai pedoman FIRST/CISA untuk mengontrol diseminasi informasi insiden.
+* **Siklus Hidup Kasus & Vonis Resolusi (`PATCH /api/cases/{id}/status`):** Mendukung transisi status (`OPEN`, `IN_PROGRESS`, `CLOSED`) dan mewajibkan penetapan vonis resmi (*Verdict*: `TRUE_POSITIVE`, `FALSE_POSITIVE`, `BENIGN`, `UNDETERMINED`) beserta ringkasan resolusi (*Resolution Summary*) saat menutup kasus.
+
 ---
 
 ## 4. Daftar Skenario Demonstrasi
@@ -142,8 +149,9 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 * **Validasi Skema:** Pydantic V2 + RFC 5424/OCSF normalization logic.
 * **Adapter & Ingestion:** Universal Log Adapter (`app/log_adapter.py`) dengan regex parser multi-format.
 * **Penyimpanan Telemetri:** *In-memory stateful store* (Event cache, Active Alerts, Whitelist, Suspicious Greylist, Isolated Hosts, SOAR Audit Trail).
-* **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, SOAR Active Panel, tanpa dependencies eksternal).
-* **Simulator & Testing:** Python Requests, Pytest test suite (36 automated test cases, 100% passed).
+* **Case Management & Incident Tracking:** TheHive-style Incident Case Management engine (`app/models.py`, `app/engine.py`) dengan dukungan Observables, Notes, TLP, & Verdicts.
+* **Frontend:** HTML5 + CSS3 Grid/Flexbox + Vanilla JavaScript (Cyberpunk SOC Dark Theme, SOAR Active Panel, Case Escalation, tanpa dependencies eksternal).
+* **Simulator & Testing:** Python Requests, Pytest test suite (41 automated test cases, 100% passed).
 
 ---
 

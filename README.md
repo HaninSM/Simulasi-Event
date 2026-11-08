@@ -1,4 +1,4 @@
-# 🛡️ Mini-SIEM Simulator (V2.3 - Threat Intel CTI & Detection as Code Edition)
+# 🛡️ Mini-SIEM Simulator (V2.4 - TheHive Incident Case Management Edition)
 
 Aplikasi simulasi **Security Information and Event Management (SIEM)** berskala kecil berbasis API yang dibangun menggunakan **FastAPI**, **Pydantic**, dan **HTML5/CSS3/Vanilla JS (SOC Dark Command Center)**.
 
@@ -9,11 +9,12 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 4. **Detection as Code (Sigma YAML Engine)**: Aturan deteksi terpisah secara deklaratif dalam format YAML (terstandarisasi industri ala SigmaHQ) yang mendukung *hot-reloading* tanpa restart server.
 5. **Standarisasi MITRE ATT&CK**: Setiap alert otomatis dipetakan ke taksonomi Taktik & ID Teknik MITRE ATT&CK resmi (e.g. T1110.003, T1078, T1048, T0814).
 6. **Threat Intelligence (CTI) Cortex Enrichment**: Pengayaan data intelijen otomatis (reputasi IP, skor abuse, bendera negara, ASN/ISP, indikator Tor/Botnet, dan atribusi aktor ancaman) pada setiap alert yang dipicu via engine ala Cortex.
-7. Mengurangi *Alert Fatigue* dengan debouncing cerdas.
-8. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
-9. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
-10. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
-11. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
+7. **Incident Case Management & Investigation Notes (TheHive Paradigm)**: Eskalasi terstruktur dari Alert menjadi Kasus Insiden (`CASE-2026-XXX`), ekstraksi otomatis Observable (IP, user, rule, intel CTI, status isolasi), linimasa catatan investigasi analis forensik (*Case Notes*), klasifikasi kerahasiaan TLP (TLP:WHITE s/d TLP:RED), dan penutupan kasus dengan vonis formal (*True Positive / False Positive / Benign*).
+8. Mengurangi *Alert Fatigue* dengan debouncing cerdas.
+9. Memitigasi data kotor dan *Time Drift Error* (HTTP 422).
+10. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
+11. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
+12. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
 
 ---
 
@@ -416,17 +417,29 @@ test_siem.py::test_soar_release_host_restores_ingestion PASSED           [ 75%]
 test_siem.py::test_soar_alert_status_transitions_to_contained PASSED     [ 79%]
 test_siem.py::test_soar_stats_and_audit_trail PASSED                     [ 82%]
 test_siem.py::test_scenario_3_impossible_travel_isolation_blocks_subsequent_replay PASSED [ 86%]
-test_siem.py::test_soar_user_suspension_blocks_logins_and_replays PASSED [ 89%]
-test_siem.py::test_rule_ot_ac_central_shutdown_mqtt_detection PASSED    [ 93%]
-test_siem.py::test_scenario_9_replay_all_variants PASSED                 [ 96%]
-test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
+test_siem.py::test_soar_user_suspension_blocks_logins_and_replays PASSED
+test_siem.py::test_rule_ot_ac_central_shutdown_mqtt_detection PASSED
+test_siem.py::test_scenario_9_replay_all_variants PASSED
+test_siem.py::test_scenario_9_soar_isolation_defense PASSED
+test_siem.py::test_detection_as_code_yaml_rules_loaded PASSED
+test_siem.py::test_detection_rule_toggle_dynamically_silences_alerts PASSED
+test_siem.py::test_hot_reload_rules_endpoint PASSED
+test_siem.py::test_alert_contains_mitre_and_rule_id PASSED
+test_siem.py::test_cti_engine_lookup_known_tor_node PASSED
+test_siem.py::test_cti_engine_lookup_private_ip PASSED
+test_siem.py::test_alert_automatically_enriched_with_cti PASSED
+test_siem.py::test_escalate_alert_to_incident_case PASSED
+test_siem.py::test_escalate_nonexistent_alert_returns_404 PASSED
+test_siem.py::test_add_investigation_note_to_case PASSED
+test_siem.py::test_close_case_with_resolution_verdict PASSED
+test_siem.py::test_filter_cases_and_stats_metric PASSED
 
-======================== 29 passed, 1 warning in 2.06s ========================
+======================== 41 passed, 1 warning in 2.92s ========================
 ```
 
 ---
 
-## 📡 Daftar Endpoint API SIEM & SOAR
+## 📡 Daftar Endpoint API SIEM, SOAR & Case Management
 
 | Method | Endpoint | Deskripsi | Status Code |
 | :--- | :--- | :--- | :--- |
@@ -434,7 +447,7 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 | `POST` | `/api/ingest` | Menerima & memvalidasi log telemetri, mengevaluasi aturan korelasi, menegakkan karantina SOAR | `201 Created` / `403 Forbidden` / `422 Unprocessable` |
 | `GET` | `/api/alerts` | Mengambil daftar alarm aktif (dapat difilter berdasarkan `severity`) | `200 OK` |
 | `GET` | `/api/logs` | Mengambil 15 log telemetri terbaru yang berhasil di-ingest | `200 OK` |
-| `GET` | `/api/stats` | Mengambil statistik agregasi metrik operasional SOC (termasuk count SOAR) | `200 OK` |
+| `GET` | `/api/stats` | Mengambil statistik agregasi metrik operasional SOC (termasuk count SOAR & Case) | `200 OK` |
 | `POST` | `/api/whitelist` | Menambahkan IP ke daftar pengecualian (*Blind Spot*) | `200 OK` |
 | `GET` | `/api/whitelist` | Melihat daftar IP yang saat ini di-whitelist | `200 OK` |
 | `DELETE` | `/api/whitelist/{ip}`| Menghapus IP dari daftar whitelist | `200 OK` / `404 Not Found` |
@@ -449,8 +462,13 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 | `POST` | `/api/rules/reload` | **Detection as Code:** *Hot-reload* aturan deteksi dari folder `app/rules/` tanpa restart server | `200 OK` |
 | `PATCH` | `/api/rules/{id}/toggle` | **Detection as Code:** Mengaktifkan / menonaktifkan aturan deteksi tertentu secara live | `200 OK` / `404 Not Found` |
 | `GET` | `/api/cti/{ip}` | **Threat Intelligence (CTI):** Cortex-inspired observable analyzer (reputasi IP, ASN, GeoIP, & Threat Actor) | `200 OK` |
+| `POST` | `/api/cases/escalate` | **Case Management (TheHive):** Eskalasi alert menjadi berkas investigasi kasus insiden (`CASE-2026-XXX`) | `201 Created` / `404 Not Found` |
+| `GET` | `/api/cases` | **Case Management (TheHive):** Mengambil daftar kasus insiden (filter `status`, `severity`) | `200 OK` |
+| `GET` | `/api/cases/{id}` | **Case Management (TheHive):** Mengambil detail lengkap kasus, observable, & catatan forensik | `200 OK` / `404 Not Found` |
+| `POST` | `/api/cases/{id}/notes`| **Case Management (TheHive):** Menambahkan catatan temuan analis/forensik ke linimasa kasus | `201 Created` / `404 Not Found` |
+| `PATCH` | `/api/cases/{id}/status`| **Case Management (TheHive):** Memperbarui status kasus (`OPEN`, `IN_PROGRESS`, `CLOSED`) & vonis resolusi | `200 OK` / `404 Not Found` |
 | `POST` | `/api/simulator/replay` | Menjalankan replay otomatis berkas log fisik dari `sample_logs/` (parameter `scenario=1..9`) | `200 OK` / `400 Bad Request` |
-| `POST` | `/api/reset` | Mereset seluruh log, alert, whitelist, dan karantina SOAR in-memory | `200 OK` |
+| `POST` | `/api/reset` | Mereset seluruh log, alert, kasus, whitelist, dan karantina SOAR in-memory | `200 OK` |
 
 ---
 
@@ -460,9 +478,9 @@ test_siem.py::test_scenario_9_soar_isolation_defense PASSED              [100%]
 CommandCenter/
 ├── app/
 │   ├── __init__.py          # Modul Python app
-│   ├── main.py              # Router FastAPI, endpoint ingestion, rules API, CTI analyzer, & SOAR
-│   ├── models.py            # Model data Pydantic, schema DetectionRule, ThreatIntelData, & Alert
-│   ├── engine.py            # Mesin korelasi dinamis berbasis rule YAML, CTI auto-enrichment, & SOAR
+│   ├── main.py              # Router FastAPI, endpoint ingestion, rules API, CTI analyzer, cases API & SOAR
+│   ├── models.py            # Model Pydantic: DetectionRule, ThreatIntelData, IncidentCase, & Alert
+│   ├── engine.py            # Mesin korelasi dinamis, CTI auto-enrichment, Case Management, & SOAR
 │   ├── cti_engine.py        # Cortex Threat Intelligence Engine: IoC feeds, GeoIP, & observable lookup
 │   ├── rule_loader.py       # Detection as Code engine: parser & validator berkas aturan Sigma YAML
 │   ├── rules/               # Direktori berkas aturan deteksi deklaratif (Sigma-like YAML)
@@ -478,11 +496,11 @@ CommandCenter/
 │   └── static/
 │       ├── index.html       # Antarmuka Command Center SOC Dark Theme (dengan SOAR Panel)
 │       ├── style.css        # Tata letak grid/flexbox, efek visual alert KRITIS & status CONTAINED
-│       └── app.js           # Polling real-time 2s, badge CTI & MITRE / Rule ID / SOAR
+│       └── app.js           # Polling real-time 2s, badge CTI & MITRE / Rule ID / SOAR / Case Escalation
 ├── sample_logs/             # Kumpulan 24 berkas log fisik autentik (8 skenario x 3 varian)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
 ├── simulator.py             # Script simulator interaktif 9 skenario & demo SOAR containment
-├── test_siem.py             # Test suite 36 unit & integration test otomatis (100% passed)
+├── test_siem.py             # Test suite 41 unit & integration test otomatis (100% passed)
 ├── requirements.txt         # Daftar dependensi Python (termasuk pyyaml)
 ├── run_server.bat           # Launcher server satu-klik
 ├── run_simulator.bat        # Launcher simulator satu-klik

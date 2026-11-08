@@ -224,3 +224,67 @@ class UnsuspendUserRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("user_id cannot be empty")
         return v.strip()
+
+
+# ---------------- INCIDENT CASE MANAGEMENT (THEHIVE STANDARD) ----------------
+
+CaseStatus = Literal["OPEN", "IN_PROGRESS", "CLOSED"]
+CaseVerdict = Literal["TRUE_POSITIVE", "FALSE_POSITIVE", "BENIGN", "UNDETERMINED"]
+CaseTLP = Literal["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"]
+
+
+class CaseObservable(BaseModel):
+    type: str  # "ip", "user", "device", "rule"
+    value: str
+    details: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+class CaseNote(BaseModel):
+    id: str
+    timestamp: datetime
+    author: str
+    content: str
+
+
+class CaseResolution(BaseModel):
+    verdict: CaseVerdict
+    summary: str
+    closed_at: datetime
+    closed_by: str
+
+
+class IncidentCase(BaseModel):
+    id: str  # e.g., "CASE-2026-001"
+    title: str
+    description: str
+    created_at: datetime
+    severity: SeverityLevel
+    status: CaseStatus = "OPEN"
+    assigned_to: Optional[str] = "SOC Analyst Tier-1"
+    tlp: CaseTLP = "TLP:AMBER"
+    linked_alert_ids: List[str] = Field(default_factory=list)
+    observables: List[CaseObservable] = Field(default_factory=list)
+    notes: List[CaseNote] = Field(default_factory=list)
+    resolution: Optional[CaseResolution] = None
+
+
+class EscalateAlertRequest(BaseModel):
+    alert_id: str
+    title: Optional[str] = None
+    analyst: Optional[str] = "SOC Analyst Tier-1"
+    severity: Optional[SeverityLevel] = None
+    tlp: Optional[CaseTLP] = "TLP:AMBER"
+    initial_note: Optional[str] = None
+
+
+class AddCaseNoteRequest(BaseModel):
+    author: Optional[str] = "SOC Analyst Tier-1"
+    content: str = Field(..., min_length=1)
+
+
+class UpdateCaseStatusRequest(BaseModel):
+    status: CaseStatus
+    verdict: Optional[CaseVerdict] = None
+    summary: Optional[str] = None
+    analyst: Optional[str] = "SOC Analyst Tier-1"
+

@@ -7,7 +7,9 @@ from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
     IsolateHostRequest, ReleaseHostRequest,
     SuspendUserRequest, UnsuspendUserRequest,
-    DetectionRule, MitreAttack, ThreatIntelData
+    DetectionRule, MitreAttack, ThreatIntelData,
+    IncidentCase, CaseObservable, CaseNote, CaseResolution,
+    EscalateAlertRequest, AddCaseNoteRequest, UpdateCaseStatusRequest
 )
 from app.rule_loader import RuleLoader
 from app.cti_engine import ThreatIntelEngine
@@ -22,6 +24,10 @@ class CorrelationEngine:
 
         # Threat Intelligence & Observable Analyzer Engine (Cortex-style)
         self.cti = ThreatIntelEngine()
+
+        # Incident Case Management & Investigation Notes (TheHive standard)
+        self.cases: Dict[str, IncidentCase] = {}
+        self.case_counter: int = 0
 
         # Whitelisted IP addresses: ip_address -> dict(reason, added_at)
         self.whitelist: Dict[str, dict] = {}
@@ -278,6 +284,162 @@ class CorrelationEngine:
     def record_blocked_containment(self, ip_address: str):
         self.blocked_containment_count += 1
 
+    # --- TheHive-Inspired Incident Case Management Methods ---
+
+    def escalate_alert_to_case(self, req: EscalateAlertRequest) -> Optional[IncidentCase]:
+        """
+        Escalates a security alert into a formal incident investigation case.
+        Extracts observables (IP, user, rule, CTI), assigns an analyst, and attaches timeline notes.
+        """
+        target_alert = next((a for a in self.alerts if a.id == req.alert_id), None)
+        if not target_alert:
+            return None
+
+        self.case_counter += 1
+        case_id = f"CASE-2026-{self.case_counter:03d}"
+        now_dt = datetime.now(timezone.utc)
+
+        # Title fallback
+        case_title = req.title or f"Investigasi: {target_alert.rule_name} (Alert #{target_alert.id})"
+
+        # Severity fallback
+        case_severity = req.severity or target_alert.severity
+
+        # Extract observables from alert
+        observables: List[CaseObservable] = []
+        if target_alert.ip_address:
+            observables.append(CaseObservable(
+                type="ip",
+                value=target_alert.ip_address,
+                details={
+                    "threat_intel": target_alert.threat_intel.model_dump() if target_alert.threat_intel else None,
+                    "is_isolated": self.is_host_isolated(target_alert.ip_address)
+                }
+            ))
+
+        if target_alert.user_id:
+            observables.append(CaseObservable(
+                type="user",
+                value=target_alert.user_id,
+                details={
+                    "is_suspended": self.is_user_suspended(target_alert.user_id)
+                }
+            ))
+
+        observables.append(CaseObservable(
+            type="rule",
+            value=target_alert.rule_name,
+            details={
+                "rule_id": target_alert.rule_id,
+                "mitre": target_alert.mitre.model_dump() if target_alert.mitre else None,
+                "alert_details": target_alert.details
+            }
+        ))
+
+        # Initial forensic notes
+        notes: List[CaseNote] = [
+            CaseNote(
+                id=str(uuid.uuid4())[:8],
+                timestamp=now_dt,
+                author=req.analyst or "System",
+                content=f"Kasus dibuka secara otomatis dari eskalasi Alert #{target_alert.id} ({target_alert.rule_name})."
+            )
+        ]
+        if req.initial_note:
+            notes.append(CaseNote(
+                id=str(uuid.uuid4())[:8],
+                timestamp=now_dt,
+                author=req.analyst or "SOC Analyst",
+                content=req.initial_note
+            ))
+
+        # Transition alert status
+        target_alert.status = "IN_INVESTIGATION"
+
+        incident_case = IncidentCase(
+            id=case_id,
+            title=case_title,
+            description=target_alert.description,
+            created_at=now_dt,
+            severity=case_severity,
+            status="OPEN",
+            assigned_to=req.analyst or "SOC Analyst Tier-1",
+            tlp=req.tlp or "TLP:AMBER",
+            linked_alert_ids=[target_alert.id],
+            observables=observables,
+            notes=notes,
+            resolution=None
+        )
+
+        self.cases[case_id] = incident_case
+        return incident_case
+
+    def get_cases(
+        self,
+        status: Optional[str] = None,
+        severity: Optional[str] = None
+    ) -> List[IncidentCase]:
+        results = list(self.cases.values())
+        if status:
+            results = [c for c in results if c.status.upper() == status.upper()]
+        if severity:
+            results = [c for c in results if c.severity.upper() == severity.upper()]
+        return list(reversed(results))
+
+    def get_case(self, case_id: str) -> Optional[IncidentCase]:
+        return self.cases.get(case_id)
+
+    def add_case_note(self, case_id: str, author: str, content: str) -> Optional[CaseNote]:
+        case = self.cases.get(case_id)
+        if not case:
+            return None
+        note = CaseNote(
+            id=str(uuid.uuid4())[:8],
+            timestamp=datetime.now(timezone.utc),
+            author=author,
+            content=content
+        )
+        case.notes.append(note)
+        return note
+
+    def update_case_status(
+        self,
+        case_id: str,
+        status: str,
+        verdict: Optional[str] = None,
+        summary: Optional[str] = None,
+        analyst: str = "SOC Analyst Tier-1"
+    ) -> Optional[IncidentCase]:
+        case = self.cases.get(case_id)
+        if not case:
+            return None
+
+        case.status = status
+        now_dt = datetime.now(timezone.utc)
+
+        if status == "CLOSED":
+            case.resolution = CaseResolution(
+                verdict=verdict or "TRUE_POSITIVE",
+                summary=summary or "Kasus ditutup setelah proses penanganan insiden selesai.",
+                closed_at=now_dt,
+                closed_by=analyst
+            )
+            case.notes.append(CaseNote(
+                id=str(uuid.uuid4())[:8],
+                timestamp=now_dt,
+                author=analyst,
+                content=f"Kasus DITUTUP dengan vonis: [{case.resolution.verdict}]. Ringkasan: {case.resolution.summary}"
+            ))
+        else:
+            case.notes.append(CaseNote(
+                id=str(uuid.uuid4())[:8],
+                timestamp=now_dt,
+                author=analyst,
+                content=f"Status kasus diperbarui menjadi [{status}]."
+            ))
+
+        return case
+
     def archive_to_cold(self, ip_address: Optional[str] = None) -> int:
         """
         Simulates log lifecycle: moves events from hot storage into frozen cold archive.
@@ -326,6 +488,8 @@ class CorrelationEngine:
     def clear_all(self):
         self.raw_logs.clear()
         self.alerts.clear()
+        self.cases.clear()
+        self.case_counter = 0
         self.cold_archive.clear()
         self.watchlist.clear()
         self.isolated_hosts.clear()

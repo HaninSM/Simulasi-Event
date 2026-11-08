@@ -954,5 +954,165 @@ def test_alert_automatically_enriched_with_cti():
     assert ti["flag"] == "🇺🇸"
 
 
+# ---------------- 11. INCIDENT CASE MANAGEMENT (THEHIVE STANDARD) ----------------
+
+def test_escalate_alert_to_incident_case():
+    client.post("/api/reset")
+    attacker_ip = "185.220.101.45"
+
+    # Trigger DDoS alert (12 web requests in rapid succession)
+    for _ in range(12):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": attacker_ip,
+            "location": "Moscow",
+            "status": "success"
+        })
+
+    alerts = client.get("/api/alerts").json()
+    assert len(alerts) >= 1
+    alert_id = alerts[0]["id"]
+
+    # Escalate alert to incident case
+    esc_res = client.post("/api/cases/escalate", json={
+        "alert_id": alert_id,
+        "analyst": "SOC Lead Investigator",
+        "tlp": "TLP:RED",
+        "initial_note": "Identified high-frequency Tor exit brute force attempt. Initiating deep forensic triage."
+    })
+    assert esc_res.status_code == 201
+    case = esc_res.json()
+
+    assert case["id"].startswith("CASE-2026-")
+    assert case["status"] == "OPEN"
+    assert case["severity"] in ["KRITIS", "TINGGI", "MENENGAH"]
+    assert case["tlp"] == "TLP:RED"
+    assert case["assigned_to"] == "SOC Lead Investigator"
+    assert alert_id in case["linked_alert_ids"]
+    assert len(case["notes"]) >= 2  # System note + analyst initial note
+
+    # Check extracted observables
+    obs_types = {o["type"] for o in case["observables"]}
+    assert "ip" in obs_types
+    assert "rule" in obs_types
+
+    ip_obs = next(o for o in case["observables"] if o["type"] == "ip")
+    assert ip_obs["value"] == attacker_ip
+    assert ip_obs["details"]["threat_intel"]["verdict"] == "MALICIOUS"
+
+    # Verify alert status updated
+    updated_alerts = client.get("/api/alerts").json()
+    escalated_alert = next(a for a in updated_alerts if a["id"] == alert_id)
+    assert escalated_alert["status"] == "IN_INVESTIGATION"
+
+
+def test_escalate_nonexistent_alert_returns_404():
+    client.post("/api/reset")
+    res = client.post("/api/cases/escalate", json={"alert_id": "nonexistent-alert-9999"})
+    assert res.status_code == 404
+    assert "not found" in res.json()["detail"].lower()
+
+
+def test_add_investigation_note_to_case():
+    client.post("/api/reset")
+    # Trigger an alert
+    for _ in range(12):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": "45.33.32.156",
+            "location": "Jakarta",
+            "status": "success"
+        })
+    alert_id = client.get("/api/alerts").json()[0]["id"]
+    case_id = client.post("/api/cases/escalate", json={"alert_id": alert_id}).json()["id"]
+
+    # Add forensic investigation note
+    note_res = client.post(f"/api/cases/{case_id}/notes", json={
+        "author": "Forensic Analyst",
+        "content": "Memory dump analyzed. Reverse shell artifacts confirmed in /tmp/rev.sh"
+    })
+    assert note_res.status_code == 201
+    note = note_res.json()
+    assert note["author"] == "Forensic Analyst"
+    assert "Memory dump analyzed" in note["content"]
+
+    # Verify case has note
+    case_res = client.get(f"/api/cases/{case_id}")
+    assert case_res.status_code == 200
+    case_data = case_res.json()
+    assert any("Memory dump analyzed" in n["content"] for n in case_data["notes"])
+
+
+def test_close_case_with_resolution_verdict():
+    client.post("/api/reset")
+    for _ in range(12):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": "45.33.32.156",
+            "location": "Jakarta",
+            "status": "success"
+        })
+    alert_id = client.get("/api/alerts").json()[0]["id"]
+    case_id = client.post("/api/cases/escalate", json={"alert_id": alert_id}).json()["id"]
+
+    # 1. Update status to IN_PROGRESS
+    p_res = client.patch(f"/api/cases/{case_id}/status", json={
+        "status": "IN_PROGRESS",
+        "analyst": "SOC Tier-2"
+    })
+    assert p_res.status_code == 200
+    assert p_res.json()["status"] == "IN_PROGRESS"
+
+    # 2. Close case with TRUE_POSITIVE verdict
+    c_res = client.patch(f"/api/cases/{case_id}/status", json={
+        "status": "CLOSED",
+        "verdict": "TRUE_POSITIVE",
+        "summary": "Confirmed Mirai botnet attack. Source IP isolated and perimeter firewall updated.",
+        "analyst": "Incident Commander"
+    })
+    assert c_res.status_code == 200
+    closed_case = c_res.json()
+    assert closed_case["status"] == "CLOSED"
+    assert closed_case["resolution"] is not None
+    assert closed_case["resolution"]["verdict"] == "TRUE_POSITIVE"
+    assert closed_case["resolution"]["closed_by"] == "Incident Commander"
+    assert "Mirai botnet" in closed_case["resolution"]["summary"]
+
+
+def test_filter_cases_and_stats_metric():
+    client.post("/api/reset")
+    for _ in range(12):
+        client.post("/api/ingest", json={
+            "timestamp": get_iso_now(),
+            "event_type": "web_request",
+            "user_id": "anon",
+            "ip_address": "45.33.32.156",
+            "location": "Jakarta",
+            "status": "success"
+        })
+    alerts = client.get("/api/alerts").json()
+    case1_id = client.post("/api/cases/escalate", json={"alert_id": alerts[0]["id"]}).json()["id"]
+
+    # Close case1
+    client.patch(f"/api/cases/{case1_id}/status", json={"status": "CLOSED", "verdict": "BENIGN"})
+
+    # Check stats
+    stats = client.get("/api/stats").json()
+    assert stats["total_cases"] >= 1
+
+    # Filter by status
+    open_cases = client.get("/api/cases?status=OPEN").json()
+    closed_cases = client.get("/api/cases?status=CLOSED").json()
+    assert all(c["status"] == "OPEN" for c in open_cases)
+    assert any(c["id"] == case1_id for c in closed_cases)
+
+
+
 
 

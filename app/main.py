@@ -10,7 +10,9 @@ from app.models import (
     LogEvent, Alert, WhitelistRequest, WatchlistRequest,
     IsolateHostRequest, ReleaseHostRequest,
     SuspendUserRequest, UnsuspendUserRequest,
-    ToggleRuleRequest, DetectionRule, ThreatIntelData
+    ToggleRuleRequest, DetectionRule, ThreatIntelData,
+    IncidentCase, CaseNote, EscalateAlertRequest,
+    AddCaseNoteRequest, UpdateCaseStatusRequest
 )
 from app.engine import CorrelationEngine
 from app.log_adapter import LogAdapter
@@ -343,6 +345,87 @@ def get_threat_intelligence(ip_address: str):
     return engine.cti.lookup(ip_address)
 
 
+# ---------------- INCIDENT CASE MANAGEMENT (THEHIVE STANDARD) ----------------
+
+@app.post("/api/cases/escalate", response_model=IncidentCase, status_code=status.HTTP_201_CREATED)
+def escalate_alert_to_case(req: EscalateAlertRequest):
+    """
+    TheHive Incident Management: Escalates an alert into a full investigation case.
+    Extracts observables (IP, user, rule, CTI), assigns an analyst, and attaches timeline notes.
+    """
+    case = engine.escalate_alert_to_case(req)
+    if not case:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Alert #{req.alert_id} not found for case escalation."
+        )
+    return case
+
+
+@app.get("/api/cases", response_model=List[IncidentCase])
+def list_incident_cases(
+    status: Optional[str] = Query(None),
+    severity: Optional[str] = Query(None)
+):
+    """
+    Returns incident investigation cases with optional status and severity filtering.
+    """
+    return engine.get_cases(status=status, severity=severity)
+
+
+@app.get("/api/cases/{case_id}", response_model=IncidentCase)
+def get_incident_case(case_id: str):
+    """
+    Returns full details, observables, notes, and resolution for a specific incident case.
+    """
+    case = engine.get_case(case_id)
+    if not case:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Case '{case_id}' not found."
+        )
+    return case
+
+
+@app.post("/api/cases/{case_id}/notes", response_model=CaseNote, status_code=status.HTTP_201_CREATED)
+def add_case_investigation_note(case_id: str, req: AddCaseNoteRequest):
+    """
+    Appends a forensic investigation note or analyst observation to an ongoing incident case.
+    """
+    note = engine.add_case_note(
+        case_id=case_id,
+        author=req.author or "SOC Analyst Tier-1",
+        content=req.content
+    )
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Case '{case_id}' not found."
+        )
+    return note
+
+
+@app.patch("/api/cases/{case_id}/status", response_model=IncidentCase)
+def update_case_status(case_id: str, req: UpdateCaseStatusRequest):
+    """
+    Updates the lifecycle status of an incident case (OPEN, IN_PROGRESS, CLOSED).
+    When closing, records the resolution verdict (TRUE_POSITIVE, FALSE_POSITIVE, BENIGN, etc.).
+    """
+    updated_case = engine.update_case_status(
+        case_id=case_id,
+        status=req.status,
+        verdict=req.verdict,
+        summary=req.summary,
+        analyst=req.analyst or "SOC Analyst Tier-1"
+    )
+    if not updated_case:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Case '{case_id}' not found."
+        )
+    return updated_case
+
+
 @app.get("/api/stats")
 def get_stats():
     """
@@ -370,7 +453,8 @@ def get_stats():
         "suspended_users_count": len(engine.suspended_users),
         "blocked_containment_count": engine.blocked_containment_count,
         "total_detection_rules": len(engine.rules),
-        "total_cti_lookups": engine.cti.lookup_counter
+        "total_cti_lookups": engine.cti.lookup_counter,
+        "total_cases": len(engine.cases)
     }
 
 

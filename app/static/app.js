@@ -337,6 +337,7 @@ function renderAlerts(alerts) {
                     <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
                     ${hostButtonHtml}
                     ${userButtonHtml}
+                    <button class="btn-action-escalate" data-action="escalate-case" data-alert="${a.id}" type="button" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.5); color: #c084fc; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">📁 Escalate</button>
                 </div>
             </div>
             <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
@@ -372,6 +373,36 @@ alertList.addEventListener("click", async (e) => {
     } else if (action === "unsuspend-user") {
         const userId = btn.dataset.user;
         await window.unsuspendUser(userId);
+    } else if (action === "escalate-case") {
+        const alertId = btn.dataset.alert;
+        const initialNote = await showPromptModal({
+            title: `Eskalasi Alert #${alertId} ke Kasus Insiden`,
+            message: "Masukkan catatan awal investigasi (opsional):",
+            defaultValue: "Analisis awal menunjukkan anomali terkonfirmasi, eskalasi ke tier investigasi.",
+            placeholder: "Catatan temuan SOC Analyst..."
+        });
+        if (initialNote === null) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/cases/escalate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    alert_id: alertId,
+                    analyst: "SOC Analyst Tier-1",
+                    initial_note: initialNote.trim() || undefined
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(`Kasus ${data.id} berhasil dieskalasi! (${data.tlp})`, "success");
+                await fetchAlerts();
+                await fetchStats();
+            } else {
+                showToast(`Gagal eskalasi: ${data.detail || 'Terjadi kesalahan'}`, "error");
+            }
+        } catch (err) {
+            showToast(`Gagal eskalasi: ${err.message}`, "error");
+        }
     }
 });
 
