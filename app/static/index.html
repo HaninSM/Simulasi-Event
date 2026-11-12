@@ -19,14 +19,14 @@
                 <div>
                     <h1 class="brand-title">
                         MINI-SIEM COMMAND CENTER
-                        <span class="brand-badge">V1.0 PRODUCTION</span>
+                        <span class="brand-badge">TIMELINE V1.0</span>
                     </h1>
                 </div>
             </div>
 
-            <div class="status-indicator" role="status" aria-live="polite">
+            <div id="statusIndicator" class="status-indicator" role="status" aria-live="polite">
                 <div class="status-dot"></div>
-                <span>Live Correlation Engine (2s Interval)</span>
+                <span id="statusText">Live Correlation Engine (2s Interval)</span>
             </div>
 
             <div class="header-actions">
@@ -48,6 +48,15 @@
             </div>
         </div>
     </header>
+
+    <!-- Offline / Connection Loss Notification Banner -->
+    <div id="connectionBanner" class="connection-banner" hidden role="alert">
+        <div class="connection-banner-content">
+            <span class="connection-icon" aria-hidden="true">⚠️</span>
+            <span><strong>Koneksi SIEM Gateway Terputus:</strong> Gagal menghubungi server backend. Mencoba rekoneksi otomatis...</span>
+        </div>
+        <button id="btnRetryConnection" type="button" class="btn btn-outline" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">Coba Sekarang</button>
+    </div>
 
     <!-- Main Container -->
     <main class="container">
@@ -124,65 +133,111 @@
 
         </section>
 
-        <!-- Main Dashboard Split Layout -->
-        <div class="dashboard-grid">
-
-            <!-- Left Main Column: Live Alerts & Log Stream -->
-            <div class="col-main">
-
-                <!-- Real-time Alerts Panel -->
-                <section class="panel" aria-labelledby="alertsPanelTitle">
-                    <div class="panel-header">
-                        <h2 id="alertsPanelTitle" class="panel-title">
-                            🚨 Real-Time Security Incident Feed
-                        </h2>
-                        <span class="panel-badge" id="alertCountBadge">0 Total</span>
+        <!-- REAL-TIME CYBER THREAT ATTACK MAP & TIMELAPSE -->
+        <section class="panel attack-map-panel" aria-labelledby="attackMapTitle">
+            <div class="panel-header">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <h2 id="attackMapTitle" class="panel-title">
+                        🌐 Global Threat Attack Vector Map
+                    </h2>
+                    <span class="live-beacon-tag" id="mapModeBadge">● LIVE TELEMETRY</span>
+                </div>
+                <div class="map-header-hud">
+                    <span id="mapTargetHud" class="hud-mono">TARGET: JAKARTA HQ [10.0.1.5]</span>
+                    <span id="mapActiveArcsCount" class="panel-badge">0 Vectors</span>
+                </div>
+            </div>
+            
+            <div class="attack-map-wrapper">
+                <canvas id="attackMapCanvas" width="1200" height="420" aria-label="Interactive world map showing real-time cyber attack vectors from origin to destination"></canvas>
+                
+                <!-- Live HUD Vector Readout Overlay -->
+                <div class="attack-hud-overlay" id="attackHudOverlay">
+                    <div class="hud-stream-item" id="hudVectorText">
+                        Awaiting live attack telemetry stream...
                     </div>
-                    <div class="panel-body">
-                        <div id="alertList" class="alert-list" role="region" aria-live="polite">
-                            <div class="empty-state">
-                                Awaiting security incident detection.<br>
-                                Trigger an attack scenario from the Simulator tab to evaluate detection rules.
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Recent Raw Ingestion Stream -->
-                <section class="panel" aria-labelledby="logsPanelTitle">
-                    <div class="panel-header">
-                        <h2 id="logsPanelTitle" class="panel-title">
-                            📡 Ingestion Event Stream (Raw Telemetry)
-                        </h2>
-                        <span class="panel-badge" id="logCountBadge">0 Recent</span>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-container">
-                            <table id="logTable">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Timestamp (UTC)</th>
-                                        <th scope="col">Event Type</th>
-                                        <th scope="col">User ID</th>
-                                        <th scope="col">Source IP</th>
-                                        <th scope="col">Location</th>
-                                        <th scope="col">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="logTableBody">
-                                    <tr>
-                                        <td colspan="6" class="empty-state">No ingestion events recorded yet via POST /api/ingest</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
+                </div>
             </div>
 
-            <!-- Right Column: Tabbed Management Console -->
-            <div class="col-side">
+            <!-- Timelapse Scrubber & Playback Controls Bar -->
+            <div class="timelapse-control-bar">
+                <div class="timelapse-actions">
+                    <button id="btnMapPlayPause" class="btn btn-outline" type="button" aria-label="Toggle timelapse playback">
+                        ▶ Play
+                    </button>
+                    <button id="btnMapLive" class="btn btn-primary" type="button" aria-label="Switch to real-time live mode">
+                        ● Live Mode
+                    </button>
+                    <div class="speed-toggle-group">
+                        <button class="btn-speed active" data-speed="1" type="button">1x</button>
+                        <button class="btn-speed" data-speed="2" type="button">2x</button>
+                        <button class="btn-speed" data-speed="5" type="button">5x</button>
+                    </div>
+                </div>
+
+                <div class="timelapse-slider-container">
+                    <input type="range" id="timelapseScrubber" class="timelapse-range" min="0" max="100" value="100" step="1" aria-label="Timelapse timeline slider">
+                    <span id="timelapseTimestamp" class="timelapse-time-label">LIVE STREAM</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: Chronological Incident Timeline Stream (Vertical Nodes) -->
+        <section class="panel timeline-panel" aria-labelledby="alertsPanelTitle">
+            <div class="panel-header">
+                <h2 id="alertsPanelTitle" class="panel-title">
+                    ⏱️ Chronological Incident Timeline Stream
+                </h2>
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <span class="timeline-status-tag">CHRONOLOGICAL EVENT STREAM</span>
+                    <span class="panel-badge" id="alertCountBadge">0 Total</span>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div id="alertList" class="alert-list" role="region" aria-live="polite">
+                    <div class="empty-state">
+                        Awaiting security incident detection.<br>
+                        Trigger an attack scenario from the Simulator tab to evaluate detection rules.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Investigation & Ingestion Hub (Directly Underneath the Timeline) -->
+        <div class="investigation-grid">
+
+            <!-- Left: Raw Ingestion Event Stream -->
+            <section class="panel" aria-labelledby="logsPanelTitle">
+                <div class="panel-header">
+                    <h2 id="logsPanelTitle" class="panel-title">
+                        📡 Ingestion Event Stream (Raw Telemetry)
+                    </h2>
+                    <span class="panel-badge" id="logCountBadge">0 Recent</span>
+                </div>
+                <div class="panel-body">
+                    <div class="table-container">
+                        <table id="logTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Timestamp (UTC)</th>
+                                    <th scope="col">Event Type</th>
+                                    <th scope="col">User ID</th>
+                                    <th scope="col">Source IP</th>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logTableBody">
+                                <tr>
+                                    <td colspan="6" class="empty-state">No ingestion events recorded yet via POST /api/ingest</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: SOAR Management & Interactive Simulator -->
 
                 <div class="panel panel-tabs">
                     <!-- Tab Navigation Header -->
@@ -370,8 +425,6 @@
                 </div>
 
             </div>
-
-        </div>
 
     </main>
 

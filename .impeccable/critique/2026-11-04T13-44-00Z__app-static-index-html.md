@@ -9,6 +9,7 @@ target_identity: "file:C:\\Users\\ZYREX\\Documents\\CommandCenter\\app\\static\\
 target_path: "C:\\Users\\ZYREX\\Documents\\CommandCenter\\app\\static\\index.html"
 timestamp: 2026-11-04T13-44-00Z
 slug: app-static-index-html
+closed: true
 ---
 #### Report header provenance
 Method: verified-remediation (Dual-agent evidence verified + 100% automated detector pass)
