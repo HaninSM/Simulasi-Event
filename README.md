@@ -21,12 +21,13 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 ## 📋 Daftar Isi
 1. [Spesifikasi Kontrak Data](#-spesifikasi-kontrak-data)
 2. [5 Aturan Mesin Korelasi & Logika APT](#-5-aturan-mesin-korelasi--logika-apt)
-3. [SOAR Active Defense & Host Containment](#-soar-active-defense--host-containment)
+3. [SOAR Active Defense & Incident Case Management (TheHive)](#-soar-active-defense--incident-case-management-thehive)
 4. [Topologi Penempatan SIEM & Peran Lapisan dalam Ekosistem](#-topologi-penempatan-siem--peran-lapisan-dalam-ekosistem)
-5. [Arsitektur Log Adapter & Matriks 24 Varian Berkas Sample Logs](#-arsitektur-log-adapter--matriks-24-varian-berkas-sample-logs)
-6. [Instalasi & Persiapan Lingkungan](#-instalasi--persiapan-lingkungan)
-7. [Menjalankan Server & Dashboard](#-menjalankan-server--dashboard)
-8. [Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 8](#-panduan-step-by-step-menjalankan-poc-skenario-1-sd-8)
+5. [Arsitektur Log Adapter & Matriks 27 Varian Berkas Sample Logs](#-arsitektur-log-adapter--matriks-27-varian-berkas-sample-logs)
+6. [Tata Kelola & Arsitektur Pengaman (AI & Human-in-the-Loop)](#-tata-kelola--arsitektur-pengaman-ai--human-in-the-loop)
+7. [Instalasi & Persiapan Lingkungan](#-instalasi--persiapan-lingkungan)
+8. [Menjalankan Server & Dashboard](#-menjalankan-server--dashboard)
+9. [Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 9](#-panduan-step-by-step-menjalankan-poc-skenario-1-sd-9)
    - [Skenario 1: Trafik Normal (Baseline)](#skenario-1-trafik-normal-baseline)
    - [Skenario 2: DDoS / Botnet Attack (Rule 1 - TINGGI)](#skenario-2-ddos--botnet-attack-rule-1---tinggi)
    - [Skenario 3: Impossible Travel (Rule 2 - KRITIS)](#skenario-3-impossible-travel-rule-2---kritis)
@@ -37,9 +38,9 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
    - [Skenario 8: The Low & Slow APT (Hot vs Cold Storage & Greylist Demo)](#skenario-8-the-low--slow-apt-hot-vs-cold-storage--greylist-demo)
    - [Skenario 9: OT Hardware Sabotage - AC Central Datacenter Shutdown (MQTT)](#skenario-9-ot-hardware-sabotage---ac-central-datacenter-shutdown-mqtt)
    - [Demo SOAR: Host Isolation & Active Traffic Dropping](#demo-soar-host-isolation--active-traffic-dropping)
-9. [Otomasi Pengujian (Automated Unit & Integration Tests - 29 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---29-passed)
-10. [Daftar Endpoint API SIEM & SOAR](#-daftar-endpoint-api-siem--soar)
-11. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
+10. [Otomasi Pengujian (Automated Unit & Integration Tests - 41 Passed)](#-otomasi-pengujian-automated-unit--integration-tests---41-passed)
+11. [Daftar Endpoint API SIEM, SOAR & Case Management](#-daftar-endpoint-api-siem-soar--case-management)
+12. [Struktur Direktori Proyek](#-struktur-direktori-proyek)
 
 ---
 
@@ -74,17 +75,47 @@ Setiap log yang dikirim ke `POST /api/ingest` wajib memenuhi format JSON kanonik
 
 ---
 
-## 🔒 SOAR Active Defense & Host Containment
-Mini-SIEM mengintegrasikan kapabilitas **SOAR (Security Orchestration, Automation, and Response)** untuk respons aktif:
+## 🔒 SOAR Active Defense & Incident Case Management (TheHive)
+Mini-SIEM mengintegrasikan kapabilitas **SOAR (Security Orchestration, Automation, and Response)** dan paradigma investigasi insiden berstandar **TheHive**:
+
 1. **Network Quarantine (Isolate Host):**
    * Analis dapat mengeklik tombol **"🔒 Isolate Host"** langsung pada kartu alert di dashboard, atau mengirim permintaan `POST /api/soar/isolate`.
    * Status alert otomatis bertransisi menjadi **`[CONTAINED]`** dan animasi berkedip darurat dinonaktifkan.
-2. **Gatekeeper Enforcement (Active Traffic Drop):**
-   * Semua paket atau log lanjutan dari host yang telah diisolasi langsung ditolak di pintu masuk Gatekeeper dengan status kode **`HTTP 403 Forbidden`**.
+2. **Identity Defense (User Suspension):**
+   * Analis dapat membekukan akun yang terkompromi (misalnya insiden *Impossible Travel*) via `POST /api/soar/suspend-user`.
+   * Seluruh autentikasi lanjutan ditolak di Gatekeeper (**HTTP 403 USER_SUSPENDED**).
+3. **Gatekeeper Enforcement (Active Traffic Drop):**
+   * Semua paket atau log lanjutan dari host/user terisolasi langsung ditolak di pintu masuk Gatekeeper (**HTTP 403 Forbidden**).
    * Counter *Blocked Traffic (SOAR)* bertambah secara *real-time*.
-3. **Audit Trail & Recovery:**
+4. **TheHive Incident Case Management (`CASE-2026-XXX`):**
+   * Eskalasi alert menjadi berkas investigasi formal (`POST /api/cases/escalate`).
+   * Ekstraksi otomatis artefak forensik (*Observables*), klasifikasi kerahasiaan TLP (`TLP:WHITE` s/d `TLP:RED`), linimasa catatan investigasi (*Case Notes*), serta penetapan vonis resolusi final (*True Positive*, *False Positive*, atau *Benign*).
+5. **Audit Trail & Recovery:**
    * Setiap penindakan dicatat dalam riwayat audit SOAR (`GET /api/soar/audit`).
-   * Host dapat dilepaskan dari karantina melalui tombol **"🔓 Release Host"** (`POST /api/soar/release`) setelah proses remediasi selesai.
+   * Host atau user dapat dilepaskan dari karantina melalui tombol **"🔓 Release Host"** (`POST /api/soar/release`) atau `POST /api/soar/unsuspend-user`.
+
+### Diagram Siklus Penanganan Insiden & SOAR Closed-Loop Defense
+
+```mermaid
+flowchart TD
+    INGEST["📥 Log Lolos Validasi Gatekeeper"] --> CORR["🧠 Mesin Korelasi (Sigma YAML Rules)"]
+    CORR -->|Kondisi Rule Terpenuhi| ALERT["🚨 Alert Terpicu (Level TINGGI / KRITIS)"]
+    
+    ALERT --> ENRICH["🔍 Cortex CTI Auto-Enrichment\n(Abuse Score, GeoIP, ASN, Threat Actor, MITRE ATT&CK)"]
+    ENRICH --> DASH["🖥️ Live SOC Command Center Dashboard"]
+
+    subgraph DefenseLoop["⚡ Closed-Loop Active Defense"]
+        DASH -->|1. Aksi Mitigasi Cepat| SOAR["🔒 SOAR Active Defense\n(Isolate Host / Suspend User)"]
+        SOAR -->|Pemberlakuan Deterministik| BLOCK["🚫 Gatekeeper Menolak Akses Lanjutan\n(HTTP 403 Forbidden Dropped)"]
+    end
+
+    subgraph CaseManagement["📋 TheHive Investigation Workflow"]
+        DASH -->|2. Eskalasi Investigasi| CASE["📁 Berkas Kasus Formal\n(CASE-2026-XXX | TLP:AMBER)"]
+        CASE --> OBS["Ekstraksi Otomatis Observables\n(IP, User, CTI Intel, Status Isolasi)"]
+        OBS --> NOTES["Catatan Investigasi Forensik (Timeline Notes)"]
+        NOTES --> VERDICT["Penutupan Kasus & Penetapan Vonis\n(True Positive / False Positive / Benign)"]
+    end
+```
 
 ---
 
@@ -198,8 +229,8 @@ flowchart TD
 
 ---
 
-## 🔄 Arsitektur Log Adapter & Matriks 24 Varian Berkas Sample Logs
-Mini-SIEM mengintegrasikan modul **Universal Log Adapter** (`app/log_adapter.py`) yang membaca berkas telemetri autentik dari folder `sample_logs/`. Untuk memperluas cakupan simulasi real-world, setiap skenario (1 s/d 8) dilengkapi dengan **3 varian berkas log unik** (total 24 berkas):
+## 🔄 Arsitektur Log Adapter & Matriks 27 Varian Berkas Sample Logs
+Mini-SIEM mengintegrasikan modul **Universal Log Adapter** (`app/log_adapter.py`) yang membaca berkas telemetri autentik dari folder `sample_logs/`. Untuk memperluas cakupan simulasi real-world, setiap skenario (1 s/d 9) dilengkapi dengan **3 varian berkas log unik** (total 27 berkas):
 
 | Skenario | Format Telemetri | Varian 1 | Varian 2 | Varian 3 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -213,19 +244,34 @@ Mini-SIEM mengintegrasikan modul **Universal Log Adapter** (`app/log_adapter.py`
 | **8. Low & Slow APT** | Multi-phase APT Log | `apt_recon_and_exploit_1.log` (198.51.100.77) | `apt_recon_and_exploit_2.log` (203.0.113.144) | `apt_recon_and_exploit_3.log` (192.0.2.199) |
 | **9. OT AC Central Shutdown**| MQTT Broker JSONL | `mqtt_datacenter_hvac_1.jsonl` (CRAC-01 / Hall A) | `mqtt_datacenter_hvac_2.jsonl` (Chiller-02 / Plant) | `mqtt_datacenter_hvac_3.jsonl` (PAC-C03 / AI Row) |
 
-```
-[Raw Log Sources (27 Files)]        [Universal Log Adapter]               [Gatekeeper & Correlation Engine]
-sample_logs/                         app/log_adapter.py                     app/engine.py
-├── web_access_normal_[1..3].log  -> Nginx Combined Regex Parser --------> POST /api/ingest (Canonical JSON)
-├── nginx_ddos_flood_[1..3].log   -> HTTP Flood Regex Parser -------------> POST /api/ingest
-├── vpn_and_gate_access_[1..3].csv-> RFID CSV & Geo Parser ---------------> POST /api/ingest
-├── auth_sshd_bruteforce_[1..3].log> Syslog RFC 3164 Regex Parser --------> POST /api/ingest
-├── postgres_audit_exfil_[1..3].. -> PGAudit JSON Lines Parser -----------> POST /api/ingest
-├── careless_whitelist_[1..3].log -> Dynamic Attacker IP Parser ----------> POST /api/ingest
-├── legacy_corrupted_[1..3].log   -> Raw Corrupted Injector --------------> POST /api/ingest (Negative Test)
-├── apt_recon_and_exploit_[1..3]  -> APT Multi-stage Parser --------------> POST /api/ingest (Rehydration)
-└── mqtt_datacenter_hvac_[1..3]   -> MQTT OT Protocol Parser -------------> POST /api/ingest (OT Sabotage)
-└── apt_recon_exploit_[1..3].log  -> Multi-phase APT Parser --------------> POST /api/ingest (Temporal Demo)
+### Diagram Pipeline Universal Log Adapter & Normalisasi Log
+
+```mermaid
+flowchart LR
+    subgraph Sources["📁 Berkas sample_logs/ (27 Varian)"]
+        direction TB
+        L1["Nginx Access Logs\n(Skenario 1, 2, 6)"]
+        L2["RFID & VPN Access CSV\n(Skenario 3)"]
+        L3["Linux auth.log Syslog\n(Skenario 4)"]
+        L4["PostgreSQL PGAudit JSONL\n(Skenario 5)"]
+        L5["MQTT Datacenter IoT JSONL\n(Skenario 9)"]
+        L6["APT Multi-stage Log\n(Skenario 8)"]
+    end
+
+    subgraph Adapter["🔄 Universal Log Adapter (app/log_adapter.py)"]
+        direction TB
+        PARSER["Multi-format Regex & JSON Parser"]
+        SHIFTER["Dynamic Timestamp Shifter\n(Proyeksi Relatif ke NOW())"]
+    end
+
+    subgraph Gatekeeper["🛡️ Gatekeeper Ingestion (app/main.py)"]
+        direction TB
+        SCHEMA["Validasi Skema Kanonikal & IPv4"]
+        DRIFT["Time Drift Sanity Check (< 24 Jam)"]
+        POST["POST /api/ingest\n(HTTP 201 / 403 / 422)"]
+    end
+
+    Sources --> PARSER --> SHIFTER --> SCHEMA --> DRIFT --> POST
 ```
 
 ### Mekanisme Pemilihan Varian (Random & Deterministic)
@@ -234,6 +280,23 @@ sample_logs/                         app/log_adapter.py                     app/
 
 ### Mekanisme Dynamic Timestamp Shifting
 `LogAdapter.shift_timestamps_to_now()` menghitung selisih waktu antara entri pertama dalam berkas log dengan waktu saat ini (`NOW()`), lalu memproyeksikan seluruh baris log secara proporsional ke detik berjalan. Hal ini memastikan data mentah asli tetap 100% autentik sekaligus memicu sliding correlation windows tanpa melanggar Gatekeeper Time Drift Check.
+
+---
+
+## 🤖 Tata Kelola & Arsitektur Pengaman (AI & Human-in-the-Loop)
+Jika SIEM diizinkan memodifikasi atau membuat aturan deteksi secara otonom tanpa supervisi analis, muncul 3 risiko kritis: **Concept Drift / Data Poisoning**, **Self-Inflicted DoS**, dan **Pelanggaran Kepatuhan Audit (ISO 27001 / PCI-DSS)**. Mini-SIEM mengadopsi model *Human-Supervised Adaptation*:
+
+### Blueprint Siklus Aman: "Human-Supervised Adaptation"
+
+```mermaid
+flowchart LR
+    A["1. Gatekeeper Ingest"] -->|Format Rusak / Drift| DROP["Drop HTTP 422"]
+    A -->|Pola Anomali Baru| DLQ["2. Dead-Letter Queue (DLQ)\n(Isolasi Anomali)"]
+    DLQ --> AI["3. AI Suggestion Engine\n(Sintesis Candidate Rule)"]
+    AI --> CANARY["4. Canary Replay Test\n(Validasi Data 30 Hari - FP < 2%)"]
+    CANARY --> HITL["5. HITL Approval\n(Lead SOC Analyst Otorisasi)"]
+    HITL --> PROD["6. Promosi ke Production\n(Detection as Code Sigma YAML)"]
+```
 
 ---
 
@@ -278,12 +341,12 @@ Dashboard melakukan sinkronisasi data (*polling*) setiap **2 detik** ke API SIEM
 
 ---
 
-## 🎯 Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 8
+## 🎯 Panduan Step-by-Step Menjalankan PoC Skenario 1 s/d 9
 
 Buka jendela terminal kedua dengan server tetap menyala di jendela pertama. 
 
 Anda dapat menjalankan skenario melalui:
-1. **Script CLI Simulator**: `python simulator.py --scenario <1-8> [--variant <1-3>]`
+1. **Script CLI Simulator**: `python simulator.py --scenario <1-9> [--variant <1-3>]`
 2. **Demo SOAR Active Defense**: `python simulator.py --soar`
 3. **One-Click Batch**: `run_simulator.bat`
 4. **Web UI Dashboard**: Mengklik langsung tombol pada panel *"Quick Scenario Launcher"* di sisi kanan halaman web (otomatis memilih varian secara acak).
@@ -344,6 +407,34 @@ Anda dapat menjalankan skenario melalui:
 * **Tujuan**: Mengedukasi tantangan arsitektur *Hot Storage vs Cold Storage* dan mendemonstrasikan mitigasi kebutaan korelasi (*temporal blind spot*).
 * **Perintah**: `python simulator.py --scenario 8`
 
+#### Diagram Linimasa Deteksi APT & Rehidrasi Cold Storage
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Attacker as 🥷 Penyerang (APT)
+    participant GK as 🛡️ Gatekeeper
+    participant MEM as 🧠 Active State (Greylist)
+    participant HOT as 🔥 Hot Storage (RAM)
+    participant COLD as 🧊 Cold Storage (Archive)
+    participant SOC as 🚨 SOC Command Center
+
+    Note over Attacker,COLD: HARI KE-1: Tahap Reconnaissance
+    Attacker->>GK: Port Scanning / Recon Probe
+    GK->>HOT: Ingest Log Recon
+    HOT->>MEM: Daftarkan IP ke Stateful Greylist (Skor Risiko Tinggi)
+    Note over HOT,COLD: Waktu berjalan... (> 14 Hari)
+    HOT-->>COLD: Log Mentah Dirotasi ke Cold Storage
+
+    Note over Attacker,COLD: HARI KE-20: Tahap Exploitation
+    Attacker->>GK: Exploit Request
+    GK->>MEM: Periksa IP pada Stateful Greylist
+    MEM-->>GK: MATCH! IP Terdaftar sebagai Target Pengawasan APT
+    GK->>COLD: Rehidrasi Jejak Forensik Hari ke-1
+    COLD-->>SOC: Kirim Bukti Linimasa Lengkap (Kill Chain)
+    GK->>SOC: 🚨 BUNYIKAN ALARM KRITIS: Low & Slow APT Detected!
+```
+
 ---
 
 ### Skenario 9: OT Hardware Sabotage - AC Central Datacenter Shutdown (MQTT)
@@ -378,7 +469,7 @@ python simulator.py --all
 
 ---
 
-## 🧪 Otomasi Pengujian (Automated Unit & Integration Tests - 29 Passed)
+## 🧪 Otomasi Pengujian (Automated Unit & Integration Tests - 41 Passed)
 
 Untuk memvalidasi integritas seluruh fungsionalitas sistem secara otomatis, jalankan rangkaian uji menggunakan `pytest`:
 
@@ -390,7 +481,7 @@ pytest test_siem.py -v
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.1.1
-collected 29 items
+collected 41 items
 
 test_siem.py::test_missing_ip_address_rejected PASSED                    [  3%]
 test_siem.py::test_null_ip_address_rejected PASSED                       [  6%]
@@ -497,7 +588,7 @@ CommandCenter/
 │       ├── index.html       # Antarmuka Command Center SOC Dark Theme (dengan SOAR Panel)
 │       ├── style.css        # Tata letak grid/flexbox, efek visual alert KRITIS & status CONTAINED
 │       └── app.js           # Polling real-time 2s, badge CTI & MITRE / Rule ID / SOAR / Case Escalation
-├── sample_logs/             # Kumpulan 24 berkas log fisik autentik (8 skenario x 3 varian)
+├── sample_logs/             # Kumpulan 27 berkas log fisik autentik (9 skenario x 3 varian)
 ├── presentation.html        # Slide presentasi interaktif SOC Architecture & Implementation
 ├── simulator.py             # Script simulator interaktif 9 skenario & demo SOAR containment
 ├── test_siem.py             # Test suite 41 unit & integration test otomatis (100% passed)
