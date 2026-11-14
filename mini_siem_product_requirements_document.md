@@ -101,6 +101,14 @@ Sistem memproses log di memori dan memicu alarm berdasarkan aturan berikut:
 
 ### Fitur E: Dashboard Real-Time & Tuning
 * **Live SOC Monitor:** Antarmuka web mengambil data dari `GET /api/alerts` setiap 2 detik.
+* **Dual-Mode Incident Stream (UI/UX Pro Max):** Menyediakan kontrol tersegmentasi untuk beralih instan antara:
+  * **Mode Kronologis (⏱️ Chronological):** Menjaga urutan kejadian berbasis linimasa vertikal lengkap dengan *connecting spine line* dan titik node waktu.
+  * **Mode Tingkat Keparahan (🚨 Highest Severity):** Mengurutkan temuan secara hierarkis (**KRITIS** &rarr; **TINGGI** &rarr; **MENENGAH**) lengkap dengan penomoran urut prioritas (`RANK #1`, `RANK #2`), banner tier kelompok keparahan, serta filter chips interaktif (*All, KRITIS, TINGGI, MENENGAH*).
+  * **Persistensi State:** Mode tampilan tersimpan di `localStorage` peramban untuk mencegah *flicker* atau reset posisi saat siklus polling berjalan.
+* **Arsitektur Anti-Cache & Tampilan Terkalibrasi:**
+  * Penanda versi berkas statis (`?v=2.4.2`) pada file CSS dan JavaScript.
+  * Middleware backend FastAPI yang menyematkan header `Cache-Control: no-cache, no-store, must-revalidate` untuk seluruh aset statis.
+  * Universal CSS Reset untuk elemen tombol (`button`) guna mencegah tampilan *default buttonface* peramban.
 * **Visualisasi Insiden:** Alarm kritis berkedip merah dengan penanda waktu ISO; alert yang telah diisolasi ditandai dengan badge `[CONTAINED]` berlatar tenang.
 * **Panel SOAR Terintegrasi:** Menampilkan daftar host yang sedang dikarantina beserta audit trail tindakan analis.
 * **Careless Whitelisting:** Menyediakan kontrol (`POST /api/whitelist`) untuk mengecualikan IP secara manual, memvisualisasikan terciptanya celah *Blind Spot*.

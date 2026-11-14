@@ -34,12 +34,14 @@ Menyediakan sistem pusat komando keamanan siber (*Mini-SIEM Command Center*) ter
 - **Confirmed Capabilities**:
   - Mesin korelasi 6 rule ancaman utama: SSH Brute Force (`RULE-BRUTE-001`), SQL Injection (`RULE-SQLI-002`), Impossible Travel (`RULE-TRAVEL-003`), Off-Hours Anomaly (`RULE-ANOM-004`), OT Sensor/AC Sabotage (`RULE-OT-005`), dan High Volume Data Exfiltration (`RULE-EXFIL-006`).
   - Mitigasi SOAR aktif: Isolasi Host (IP quarantine) dan Penangguhan Akun Pengguna (User suspend) yang terintegrasi dengan Gatekeeper HTTP 403 middleware.
+  - Dual-Mode Incident Stream (UI/UX Pro Max): Peralihan instan antara linimasa kronologis vertikal dan peringkat keparahan tertinggi (*Highest Severity Ranking: KRITIS &rarr; TINGGI &rarr; MENENGAH*) lengkap dengan sub-filter chips dan persistensi state di `localStorage`.
+  - Anti-Cache Architecture: Versioning query parameter (`?v=2.4.2`), global button CSS reset, dan FastAPI anti-cache middleware response header untuk menjamin konsistensi rendering UI di semua peramban.
   - Whitelist IP bypass korelasi dengan peringatan risiko *detection blind spot*.
-  - Simulator skenario serangan interaktif terpadu untuk pengujian instan.
+  - Simulator skenario serangan interaktif terpadu untuk pengujian instan (9 skenario autentik & demo SOAR).
   - Audit trail forensik yang mencatat seluruh aksi SOAR dan modifikasi whitelist.
-  - Arsitektur: Backend FastAPI (Python 3.11), Database SQLite lokal, Frontend Vanilla JS/HTML5/CSS3 tanpa ketergantungan runtime npm/node.
+  - Arsitektur: Backend FastAPI (Python 3.11), Database in-memory stateful store, Frontend Vanilla JS/HTML5/CSS3 tanpa ketergantungan runtime npm/node.
 - **Constraints**:
-  - Single-instance SQLite database (belum mendukung cluster multi-node enterprise).
+  - Single-instance in-memory stateful store (belum mendukung cluster multi-node enterprise).
   - Refresh data polling HTTP 2 detik berbasis client-side dengan optimalisasi background pause.
 
 ## Brand Commitments
@@ -50,9 +52,9 @@ Menyediakan sistem pusat komando keamanan siber (*Mini-SIEM Command Center*) ter
 
 ## Evidence on Hand
 
-- Implementasi backend lengkap pada [`app/main.py`](file:///c:/Users/ZYREX/Documents/CommandCenter/app/main.py), [`app/rules.py`](file:///c:/Users/ZYREX/Documents/CommandCenter/app/rules.py), dan [`app/database.py`](file:///c:/Users/ZYREX/Documents/CommandCenter/app/database.py).
-- Antarmuka frontend mandiri pada [`app/static/index.html`](file:///c:/Users/ZYREX/Documents/CommandCenter/app/static/index.html), [`app/static/style.css`](file:///c:/Users/ZYREX/Documents/CommandCenter/app/static/style.css), dan [`app/static/app.js`](file:///c:/Users/ZYREX/Documents/CommandCenter/app/static/app.js).
-- Suite pengujian otomasi 41 test cases di [`test_siem.py`](file:///c:/Users/ZYREX/Documents/CommandCenter/test_siem.py) (100% lulus).
+- Implementasi backend lengkap pada [`app/main.py`](file:///d:/Simulasi-Event/app/main.py), [`app/engine.py`](file:///d:/Simulasi-Event/app/engine.py), dan [`app/models.py`](file:///d:/Simulasi-Event/app/models.py).
+- Antarmuka frontend mandiri pada [`app/static/index.html`](file:///d:/Simulasi-Event/app/static/index.html), [`app/static/style.css`](file:///d:/Simulasi-Event/app/static/style.css), dan [`app/static/app.js`](file:///d:/Simulasi-Event/app/static/app.js).
+- Suite pengujian otomasi 41 test cases di [`test_siem.py`](file:///d:/Simulasi-Event/test_siem.py) (100% lulus).
 - Pemindaian detektor Impeccable: 0 errors, 0 warnings pada seluruh file frontend utama.
 
 ## Product Principles

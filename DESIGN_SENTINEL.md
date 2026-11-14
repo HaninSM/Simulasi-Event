@@ -84,6 +84,12 @@ A dual-typeface system balancing futuristic authority with technical data legibi
 - Modal dialog for launching live adversarial scenarios (`Layer-7 Rapid-Reset Flood`, `Impossible Geo-velocity`, `S3 Exfiltration Sweep`, `Kerberoasting`).
 - Non-blocking toast notifications positioned at bottom-right with progress animations and explicit dismiss controls.
 
+### 7. Dual-Mode Incident Stream & UI/UX Pro Max Architecture
+- **Segmented View Switcher**: High-precision dark toggle (`#080808` recessed container, `#1c1c1c` active surface, subtle border stroke) switching between:
+  - *Chronological Node Stream*: Connecting vertical spine line with timestamped nodes.
+  - *Highest Severity Priority Matrix*: Deterministic triage ranking (`RANK #1, #2...`), severity tier banners (`tier-kritis`, `tier-tinggi`, `tier-menengah`), and interactive severity filter chips (*All, KRITIS, TINGGI, MENENGAH*).
+- **Anti-Cache & Visual Reliability**: Asset versioning query parameter (`?v=2.4.2`), universal button CSS reset, and FastAPI anti-cache middleware response headers ensuring consistent dark-room command center aesthetic across all client environments.
+
 ---
 
 ## 4. Craft Floor Compliance Checklist

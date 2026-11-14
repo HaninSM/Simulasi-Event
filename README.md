@@ -15,6 +15,8 @@ Sistem ini mendemonstrasikan secara *real-time* bagaimana pusat komando operasi 
 10. Memvisualisasikan bahaya fatal dari **Careless Whitelisting** (celah *Blind Spot* buatan).
 11. Menjawab tantangan *Hot vs Cold Storage* dan mendeteksi serangan **Low & Slow APT** melintasi rentang waktu 20 hari.
 12. **SOAR Active Defense & Containment Playbook**: Memungkinkan analis mengisolasi host yang disusupi (*Network Quarantine*) dengan satu klik, memutus total traffic lanjutan di pintu Gatekeeper (**HTTP 403 Forbidden**).
+13. **Dual-Mode Incident Stream (UI/UX Pro Max Architecture)**: Fleksibilitas peralihan instan antara **Chronological Timeline** (linimasa kejadian vertikal) dan **Highest Severity Ranking** (triage prioritas KRITIS &rarr; TINGGI &rarr; MENENGAH) dengan chip filter dan persistensi state tanpa layout-shift.
+14. **Anti-Cache Development Engine**: Integrasi asset versioning (`?v=2.4.2`), global button reset, dan middleware response header anti-cache pada FastAPI untuk menjamin kelancaran tampilan di semua peramban.
 
 ---
 
