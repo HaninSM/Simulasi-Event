@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini-SIEM Command Center | Security Operations Console</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=2.4.2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -182,19 +182,44 @@
             </div>
         </section>
 
-        <!-- SECTION 1: Chronological Incident Timeline Stream (Vertical Nodes) -->
+        <!-- SECTION 1: Chronological & Severity Prioritized Incident Stream -->
         <section class="panel timeline-panel" aria-labelledby="alertsPanelTitle">
-            <div class="panel-header">
-                <h2 id="alertsPanelTitle" class="panel-title">
-                    ⏱️ Chronological Incident Timeline Stream
-                </h2>
-                <div style="display: flex; align-items: center; gap: 0.65rem;">
-                    <span class="timeline-status-tag">CHRONOLOGICAL EVENT STREAM</span>
+            <div class="panel-header incident-stream-header">
+                <div class="header-left-cluster">
+                    <h2 id="alertsPanelTitle" class="panel-title">
+                        <span id="timelineTitleIcon" aria-hidden="true">⏱️</span>
+                        <span id="timelineTitleText">Chronological Incident Timeline Stream</span>
+                    </h2>
+                    <span class="timeline-status-tag" id="timelineModeTag">CHRONOLOGICAL EVENT STREAM</span>
+                </div>
+
+                <!-- UI/UX Pro Max Segmented Stream Controls -->
+                <div class="stream-view-controls" role="toolbar" aria-label="Incident Stream View and Sorting Controls">
+                    <div class="segmented-control" role="tablist" aria-label="Incident Ordering Mode">
+                        <button type="button" class="btn-segmented active" id="btnViewChronological" role="tab" aria-selected="true" aria-controls="alertList" title="Urutkan berdasarkan linimasa waktu kejadian (Terbaru &rarr; Terdahulu)">
+                            <span class="seg-icon" aria-hidden="true">⏱️</span>
+                            <span class="seg-label">Chronological</span>
+                        </button>
+                        <button type="button" class="btn-segmented" id="btnViewSeverity" role="tab" aria-selected="false" aria-controls="alertList" title="Prioritaskan daftar temuan dari tingkat keparahan tertinggi (KRITIS &rarr; TINGGI &rarr; MENENGAH)">
+                            <span class="seg-icon" aria-hidden="true">🚨</span>
+                            <span class="seg-label">Highest Severity</span>
+                            <span class="seg-badge" id="criticalCounterBadge" hidden>0</span>
+                        </button>
+                    </div>
+
+                    <!-- Severity Filter Chips (Active in Severity Mode) -->
+                    <div class="severity-filter-chips" id="severityFilterChips" role="radiogroup" aria-label="Filter Tingkat Keparahan" hidden>
+                        <button type="button" class="chip-filter active" data-filter="ALL" aria-checked="true">Semua</button>
+                        <button type="button" class="chip-filter chip-critical" data-filter="KRITIS" aria-checked="false">KRITIS <span class="chip-count" id="countFilterCritical">0</span></button>
+                        <button type="button" class="chip-filter chip-high" data-filter="TINGGI" aria-checked="false">TINGGI <span class="chip-count" id="countFilterHigh">0</span></button>
+                        <button type="button" class="chip-filter chip-medium" data-filter="MENENGAH" aria-checked="false">MENENGAH <span class="chip-count" id="countFilterMedium">0</span></button>
+                    </div>
+
                     <span class="panel-badge" id="alertCountBadge">0 Total</span>
                 </div>
             </div>
             <div class="panel-body">
-                <div id="alertList" class="alert-list" role="region" aria-live="polite">
+                <div id="alertList" class="alert-list mode-chrono" role="region" aria-live="polite">
                     <div class="empty-state">
                         Awaiting security incident detection.<br>
                         Trigger an attack scenario from the Simulator tab to evaluate detection rules.
@@ -452,6 +477,6 @@
     <!-- Non-blocking Toast Notification Stack -->
     <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=2.4.2"></script>
 </body>
 </html>

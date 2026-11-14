@@ -1,5 +1,8 @@
 @echo off
-set PYTHON="C:\Users\ZYREX\AppData\Local\Programs\Python\Python311\python.exe"
+set PYTHON="C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe"
+if not exist %PYTHON% (
+    set PYTHON="C:\Users\ZYREX\AppData\Local\Programs\Python\Python311\python.exe"
+)
 if not exist %PYTHON% (
     set PYTHON=python
 )

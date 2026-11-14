@@ -40,6 +40,22 @@ const valColdCount = document.getElementById("valColdCount");
 const alertCountBadge = document.getElementById("alertCountBadge");
 const logCountBadge = document.getElementById("logCountBadge");
 
+// UI/UX Pro Max: Stream Ordering & Severity Mode Elements
+const btnViewChronological = document.getElementById("btnViewChronological");
+const btnViewSeverity = document.getElementById("btnViewSeverity");
+const severityFilterChips = document.getElementById("severityFilterChips");
+const criticalCounterBadge = document.getElementById("criticalCounterBadge");
+const timelineTitleIcon = document.getElementById("timelineTitleIcon");
+const timelineTitleText = document.getElementById("timelineTitleText");
+const timelineModeTag = document.getElementById("timelineModeTag");
+const countFilterCritical = document.getElementById("countFilterCritical");
+const countFilterHigh = document.getElementById("countFilterHigh");
+const countFilterMedium = document.getElementById("countFilterMedium");
+
+let currentCachedAlerts = [];
+let incidentViewMode = localStorage.getItem("mini_siem_incident_view_mode") || "chrono";
+let currentSeverityFilter = "ALL";
+
 // Modal Elements
 const modalOverlay = document.getElementById("modalOverlay");
 const modalTitle = document.getElementById("modalTitle");
@@ -111,6 +127,65 @@ function initTabs() {
     });
 }
 initTabs();
+
+// ======================= UI/UX PRO MAX: INCIDENT STREAM VIEW SWITCHER =======================
+
+function setIncidentViewMode(mode) {
+    if (mode !== "chrono" && mode !== "severity") mode = "chrono";
+    incidentViewMode = mode;
+    localStorage.setItem("mini_siem_incident_view_mode", mode);
+
+    const isChrono = mode === "chrono";
+    if (btnViewChronological) {
+        btnViewChronological.classList.toggle("active", isChrono);
+        btnViewChronological.setAttribute("aria-selected", isChrono ? "true" : "false");
+    }
+    if (btnViewSeverity) {
+        btnViewSeverity.classList.toggle("active", !isChrono);
+        btnViewSeverity.setAttribute("aria-selected", !isChrono ? "true" : "false");
+    }
+    if (severityFilterChips) {
+        severityFilterChips.hidden = isChrono;
+    }
+    if (timelineTitleIcon) timelineTitleIcon.textContent = isChrono ? "⏱️" : "🚨";
+    if (timelineTitleText) timelineTitleText.textContent = isChrono ? "Chronological Incident Timeline Stream" : "Prioritized Incident Stream (Highest Severity)";
+    if (timelineModeTag) timelineModeTag.textContent = isChrono ? "CHRONOLOGICAL EVENT STREAM" : "PRIORITIZED SEVERITY RANKING";
+
+    // Force re-render with active view mode
+    lastAlertsDataHash = "";
+    renderAlerts(currentCachedAlerts);
+}
+
+function initIncidentStreamControls() {
+    if (btnViewChronological) {
+        btnViewChronological.addEventListener("click", () => setIncidentViewMode("chrono"));
+    }
+    if (btnViewSeverity) {
+        btnViewSeverity.addEventListener("click", () => setIncidentViewMode("severity"));
+    }
+
+    if (severityFilterChips) {
+        severityFilterChips.addEventListener("click", (e) => {
+            const chip = e.target.closest(".chip-filter");
+            if (!chip) return;
+            const filter = chip.dataset.filter || "ALL";
+            currentSeverityFilter = filter;
+
+            severityFilterChips.querySelectorAll(".chip-filter").forEach(c => {
+                const isActive = c === chip;
+                c.classList.toggle("active", isActive);
+                c.setAttribute("aria-checked", isActive ? "true" : "false");
+            });
+
+            lastAlertsDataHash = "";
+            renderAlerts(currentCachedAlerts);
+        });
+    }
+
+    // Set initial active state based on stored preference
+    setIncidentViewMode(incidentViewMode);
+}
+initIncidentStreamControls();
 
 // ======================= NON-BLOCKING MODAL & TOAST SYSTEM =======================
 
@@ -314,12 +389,128 @@ async function fetchAlerts() {
     }
 }
 
+function createAlertCardElement(a, rankNumber = null) {
+    const isHostContained = a.ip_address && isolatedIpsSet.has(a.ip_address);
+    const isUserSuspended = a.user_id && suspendedUsersSet.has(a.user_id);
+    const isContained = a.status === "CONTAINED" || isHostContained || isUserSuspended;
+
+    const card = document.createElement("div");
+    card.className = `alert-card ${a.severity} ${isContained ? 'CONTAINED' : ''}`;
+    card.id = `alert-${a.id}`;
+
+    const metaDetails = a.details ? Object.entries(a.details)
+        .map(([k, v]) => `<span class="meta-item"><strong>${escapeHtml(k)}:</strong> ${typeof v === 'object' ? escapeHtml(JSON.stringify(v)) : escapeHtml(String(v))}</span>`)
+        .join("") : "";
+
+    let hostButtonHtml = "";
+    if (a.ip_address) {
+        if (isHostContained) {
+            hostButtonHtml = `<button class="btn-action-release" data-action="release-host" data-ip="${escapeHtml(a.ip_address)}" type="button">🔓 Release Host</button>`;
+        } else {
+            hostButtonHtml = `<button class="btn-action-isolate" data-action="isolate-host" data-ip="${escapeHtml(a.ip_address)}" data-alert="${a.id}" type="button">🔒 Isolate Host</button>`;
+        }
+    }
+
+    let userButtonHtml = "";
+    if (a.user_id) {
+        if (isUserSuspended) {
+            userButtonHtml = `<button class="btn-action-release" data-action="unsuspend-user" data-user="${escapeHtml(a.user_id)}" type="button">🔓 Unsuspend User</button>`;
+        } else {
+            userButtonHtml = `<button class="btn-action-suspend" data-action="suspend-user" data-user="${escapeHtml(a.user_id)}" data-alert="${a.id}" type="button">🚫 Suspend User</button>`;
+        }
+    }
+
+    // Cortex Threat Intelligence (CTI) Enrichment Block
+    let ctiBlock = "";
+    if (a.threat_intel) {
+        const ti = a.threat_intel;
+        const verdictColor = ti.verdict === "MALICIOUS" ? "#f87171" : (ti.verdict === "SUSPICIOUS" ? "#fbbf24" : "#34d399");
+        const verdictBg = ti.verdict === "MALICIOUS" ? "rgba(239, 68, 68, 0.15)" : (ti.verdict === "SUSPICIOUS" ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.15)");
+        const verdictBorder = ti.verdict === "MALICIOUS" ? "rgba(239, 68, 68, 0.35)" : (ti.verdict === "SUSPICIOUS" ? "rgba(245, 158, 11, 0.35)" : "rgba(16, 185, 129, 0.35)");
+        
+        const indicatorsHtml = (ti.indicators || []).map(ind => `<span style="font-size: 0.68rem; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; color: #cbd5e1;">${escapeHtml(ind)}</span>`).join(" ");
+
+        ctiBlock = `
+            <div class="alert-cti" style="margin-top: 0.55rem; padding: 0.45rem 0.65rem; background: rgba(15, 23, 42, 0.6); border: 1px solid ${verdictBorder}; border-radius: 4px; font-size: 0.75rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.2rem;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span>${ti.flag || '🌐'}</span>
+                        <strong style="color: #f1f5f9;">${escapeHtml(ti.country || 'Unknown')}</strong>
+                        <span style="color: #64748b;">&bull;</span>
+                        <span style="color: #94a3b8; font-family: monospace;">${escapeHtml(ti.asn || '')}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span style="background: ${verdictBg}; color: ${verdictColor}; border: 1px solid ${verdictBorder}; padding: 1px 6px; border-radius: 3px; font-weight: 700; font-size: 0.7rem;">
+                            ${ti.verdict} (${ti.abuse_score}%)
+                        </span>
+                        ${ti.threat_actor ? `<span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); padding: 1px 6px; border-radius: 3px; font-size: 0.7rem;">👤 ${escapeHtml(ti.threat_actor)}</span>` : ''}
+                    </div>
+                </div>
+                <div style="color: #94a3b8; font-size: 0.72rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span>Kategori: <em style="color: #e2e8f0;">${escapeHtml(ti.category)}</em></span>
+                    ${indicatorsHtml ? `<span style="color: #475569;">|</span> ${indicatorsHtml}` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    const rankBadgeHtml = rankNumber !== null ? `
+        <span class="badge-priority-rank rank-${(a.severity || '').toLowerCase()}">RANK #${rankNumber}</span>
+    ` : '';
+
+    card.innerHTML = `
+        <div class="alert-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                ${rankBadgeHtml}
+                <span class="alert-badge ${a.severity}">${a.severity}</span>
+                ${a.rule_id ? `<span class="badge-rule-id" style="font-size: 0.7rem; font-family: monospace; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">🏷️ ${escapeHtml(a.rule_id)}</span>` : ""}
+                ${a.mitre ? `<span class="badge-mitre" style="font-size: 0.7rem; font-family: monospace; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4); color: #fbbf24; padding: 2px 6px; border-radius: 4px;">🎯 MITRE ${escapeHtml(a.mitre.technique_id)} &bull; ${escapeHtml(a.mitre.tactic)}</span>` : ""}
+                ${isHostContained ? `<span class="badge-contained">🔒 HOST QUARANTINED</span>` : ""}
+                ${isUserSuspended ? `<span class="badge-contained" style="border-color: rgba(239,68,68,0.5); color: #f87171;">🚫 USER SUSPENDED</span>` : ""}
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+                <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
+                ${hostButtonHtml}
+                ${userButtonHtml}
+                <button class="btn-action-escalate" data-action="escalate-case" data-alert="${a.id}" type="button" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.5); color: #c084fc; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">📁 Escalate</button>
+            </div>
+        </div>
+        <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
+        <div class="alert-desc">${escapeHtml(a.description)}</div>
+        ${ctiBlock}
+        ${metaDetails ? `<div class="alert-meta">${metaDetails}</div>` : ""}
+    `;
+
+    return card;
+}
+
 function renderAlerts(alerts) {
+    currentCachedAlerts = alerts || [];
+
+    // Calculate dynamic severity totals
+    const criticalCount = currentCachedAlerts.filter(a => a.severity === "KRITIS").length;
+    const highCount = currentCachedAlerts.filter(a => a.severity === "TINGGI").length;
+    const mediumCount = currentCachedAlerts.filter(a => a.severity === "MENENGAH").length;
+
+    if (countFilterCritical) countFilterCritical.textContent = criticalCount;
+    if (countFilterHigh) countFilterHigh.textContent = highCount;
+    if (countFilterMedium) countFilterMedium.textContent = mediumCount;
+
+    if (criticalCounterBadge) {
+        if (criticalCount > 0) {
+            criticalCounterBadge.textContent = criticalCount;
+            criticalCounterBadge.hidden = false;
+        } else {
+            criticalCounterBadge.hidden = true;
+        }
+    }
+
     if (alertCountBadge) alertCountBadge.textContent = `${alerts.length} Total`;
 
     if (!alerts || alerts.length === 0) {
         if (lastAlertsDataHash !== "empty") {
             lastAlertsDataHash = "empty";
+            alertList.className = `alert-list mode-${incidentViewMode}`;
             alertList.innerHTML = `
                 <div class="empty-state">
                     Awaiting security incident detection.<br>
@@ -329,7 +520,7 @@ function renderAlerts(alerts) {
         return;
     }
 
-    const currentHash = alerts.map(a => `${a.id}_${a.severity}_${a.status}_${isolatedIpsSet.has(a.ip_address)}_${suspendedUsersSet.has(a.user_id)}`).join("|");
+    const currentHash = `${incidentViewMode}_${currentSeverityFilter}_` + alerts.map(a => `${a.id}_${a.severity}_${a.status}_${isolatedIpsSet.has(a.ip_address)}_${suspendedUsersSet.has(a.user_id)}`).join("|");
     if (currentHash === lastAlertsDataHash) {
         return; // No DOM mutation needed, prevents selection wipe and repaint
     }
@@ -337,95 +528,70 @@ function renderAlerts(alerts) {
 
     const fragment = document.createDocumentFragment();
 
-    alerts.forEach(a => {
-        const isHostContained = a.ip_address && isolatedIpsSet.has(a.ip_address);
-        const isUserSuspended = a.user_id && suspendedUsersSet.has(a.user_id);
-        const isContained = a.status === "CONTAINED" || isHostContained || isUserSuspended;
+    if (incidentViewMode === "chrono") {
+        // Mode 1: Chronological Incident Timeline Stream (Vertical Spine Line)
+        alertList.className = "alert-list mode-chrono";
+        alerts.forEach(a => {
+            fragment.appendChild(createAlertCardElement(a, null));
+        });
+    } else {
+        // Mode 2: Highest Severity Ranking (UI/UX Pro Max Priority Tiers)
+        alertList.className = "alert-list mode-severity";
 
-        const card = document.createElement("div");
-        card.className = `alert-card ${a.severity} ${isContained ? 'CONTAINED' : ''}`;
-        card.id = `alert-${a.id}`;
+        const severityOrder = { "KRITIS": 3, "TINGGI": 2, "MENENGAH": 1 };
 
-        const metaDetails = a.details ? Object.entries(a.details)
-            .map(([k, v]) => `<span class="meta-item"><strong>${escapeHtml(k)}:</strong> ${typeof v === 'object' ? escapeHtml(JSON.stringify(v)) : escapeHtml(String(v))}</span>`)
-            .join("") : "";
-
-        let hostButtonHtml = "";
-        if (a.ip_address) {
-            if (isHostContained) {
-                hostButtonHtml = `<button class="btn-action-release" data-action="release-host" data-ip="${escapeHtml(a.ip_address)}" type="button">🔓 Release Host</button>`;
-            } else {
-                hostButtonHtml = `<button class="btn-action-isolate" data-action="isolate-host" data-ip="${escapeHtml(a.ip_address)}" data-alert="${a.id}" type="button">🔒 Isolate Host</button>`;
-            }
+        let filteredAlerts = [...alerts];
+        if (currentSeverityFilter !== "ALL") {
+            filteredAlerts = filteredAlerts.filter(a => a.severity === currentSeverityFilter);
         }
 
-        let userButtonHtml = "";
-        if (a.user_id) {
-            if (isUserSuspended) {
-                userButtonHtml = `<button class="btn-action-release" data-action="unsuspend-user" data-user="${escapeHtml(a.user_id)}" type="button">🔓 Unsuspend User</button>`;
-            } else {
-                userButtonHtml = `<button class="btn-action-suspend" data-action="suspend-user" data-user="${escapeHtml(a.user_id)}" data-alert="${a.id}" type="button">🚫 Suspend User</button>`;
-            }
+        // Sort by Severity first (KRITIS -> TINGGI -> MENENGAH), then by timestamp descending
+        filteredAlerts.sort((a, b) => {
+            const weightA = severityOrder[a.severity] || 0;
+            const weightB = severityOrder[b.severity] || 0;
+            if (weightB !== weightA) return weightB - weightA;
+            return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        });
+
+        if (filteredAlerts.length === 0) {
+            const emptyEl = document.createElement("div");
+            emptyEl.className = "empty-state";
+            emptyEl.textContent = `Tidak ditemukan temuan insiden dengan tingkat keparahan ${currentSeverityFilter}.`;
+            fragment.appendChild(emptyEl);
+        } else {
+            // Group into visible severity tiers for rapid SOC triage
+            const grouped = {
+                KRITIS: filteredAlerts.filter(a => a.severity === "KRITIS"),
+                TINGGI: filteredAlerts.filter(a => a.severity === "TINGGI"),
+                MENENGAH: filteredAlerts.filter(a => a.severity === "MENENGAH")
+            };
+
+            let globalRank = 1;
+
+            const tiers = [
+                { id: "KRITIS", name: "🔴 TIER 1: KRITIS (IMMEDIATE MITIGATION REQUIRED)", items: grouped.KRITIS, classSuffix: "kritis" },
+                { id: "TINGGI", name: "🟠 TIER 2: TINGGI (ELEVATED ATTACK VECTORS)", items: grouped.TINGGI, classSuffix: "tinggi" },
+                { id: "MENENGAH", name: "🔵 TIER 3: MENENGAH (OPERATIONAL ANOMALIES)", items: grouped.MENENGAH, classSuffix: "menengah" }
+            ];
+
+            tiers.forEach(tier => {
+                if (tier.items.length === 0) return;
+
+                // Render UI/UX Pro Max Tier Header
+                const tierHeader = document.createElement("div");
+                tierHeader.className = `severity-tier-header tier-${tier.classSuffix}`;
+                tierHeader.innerHTML = `
+                    <span>${tier.name}</span>
+                    <span class="tier-badge-pill">${tier.items.length} Temuan Aktif</span>
+                `;
+                fragment.appendChild(tierHeader);
+
+                tier.items.forEach(a => {
+                    fragment.appendChild(createAlertCardElement(a, globalRank++));
+                });
+            });
         }
-
-        // Cortex Threat Intelligence (CTI) Enrichment Block
-        let ctiBlock = "";
-        if (a.threat_intel) {
-            const ti = a.threat_intel;
-            const verdictColor = ti.verdict === "MALICIOUS" ? "#f87171" : (ti.verdict === "SUSPICIOUS" ? "#fbbf24" : "#34d399");
-            const verdictBg = ti.verdict === "MALICIOUS" ? "rgba(239, 68, 68, 0.15)" : (ti.verdict === "SUSPICIOUS" ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.15)");
-            const verdictBorder = ti.verdict === "MALICIOUS" ? "rgba(239, 68, 68, 0.35)" : (ti.verdict === "SUSPICIOUS" ? "rgba(245, 158, 11, 0.35)" : "rgba(16, 185, 129, 0.35)");
-            
-            const indicatorsHtml = (ti.indicators || []).map(ind => `<span style="font-size: 0.68rem; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; color: #cbd5e1;">${escapeHtml(ind)}</span>`).join(" ");
-
-            ctiBlock = `
-                <div class="alert-cti" style="margin-top: 0.55rem; padding: 0.45rem 0.65rem; background: rgba(15, 23, 42, 0.6); border: 1px solid ${verdictBorder}; border-radius: 4px; font-size: 0.75rem;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.2rem;">
-                        <div style="display: flex; align-items: center; gap: 0.4rem;">
-                            <span>${ti.flag || '🌐'}</span>
-                            <strong style="color: #f1f5f9;">${escapeHtml(ti.country || 'Unknown')}</strong>
-                            <span style="color: #64748b;">&bull;</span>
-                            <span style="color: #94a3b8; font-family: monospace;">${escapeHtml(ti.asn || '')}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem;">
-                            <span style="background: ${verdictBg}; color: ${verdictColor}; border: 1px solid ${verdictBorder}; padding: 1px 6px; border-radius: 3px; font-weight: 700; font-size: 0.7rem;">
-                                ${ti.verdict} (${ti.abuse_score}%)
-                            </span>
-                            ${ti.threat_actor ? `<span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); padding: 1px 6px; border-radius: 3px; font-size: 0.7rem;">👤 ${escapeHtml(ti.threat_actor)}</span>` : ''}
-                        </div>
-                    </div>
-                    <div style="color: #94a3b8; font-size: 0.72rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                        <span>Kategori: <em style="color: #e2e8f0;">${escapeHtml(ti.category)}</em></span>
-                        ${indicatorsHtml ? `<span style="color: #475569;">|</span> ${indicatorsHtml}` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        card.innerHTML = `
-            <div class="alert-header">
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <span class="alert-badge ${a.severity}">${a.severity}</span>
-                    ${a.rule_id ? `<span class="badge-rule-id" style="font-size: 0.7rem; font-family: monospace; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">🏷️ ${escapeHtml(a.rule_id)}</span>` : ""}
-                    ${a.mitre ? `<span class="badge-mitre" style="font-size: 0.7rem; font-family: monospace; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4); color: #fbbf24; padding: 2px 6px; border-radius: 4px;">🎯 MITRE ${escapeHtml(a.mitre.technique_id)} &bull; ${escapeHtml(a.mitre.tactic)}</span>` : ""}
-                    ${isHostContained ? `<span class="badge-contained">🔒 HOST QUARANTINED</span>` : ""}
-                    ${isUserSuspended ? `<span class="badge-contained" style="border-color: rgba(239,68,68,0.5); color: #f87171;">🚫 USER SUSPENDED</span>` : ""}
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                    <span class="alert-time">⏱️ ${formatTimestamp(a.timestamp)} (ID: ${a.id})</span>
-                    ${hostButtonHtml}
-                    ${userButtonHtml}
-                    <button class="btn-action-escalate" data-action="escalate-case" data-alert="${a.id}" type="button" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.5); color: #c084fc; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">📁 Escalate</button>
-                </div>
-            </div>
-            <div class="alert-rule">${escapeHtml(a.rule_name)}</div>
-            <div class="alert-desc">${escapeHtml(a.description)}</div>
-            ${ctiBlock}
-            ${metaDetails ? `<div class="alert-meta">${metaDetails}</div>` : ""}
-        `;
-
-        fragment.appendChild(card);
-    });
+    }
 
     alertList.innerHTML = "";
     alertList.appendChild(fragment);

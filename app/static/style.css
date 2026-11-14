@@ -48,6 +48,22 @@
     scrollbar-color: rgba(163, 163, 163, 0.25) transparent;
 }
 
+/* Universal Button Reset (UI/UX Pro Max Anti-Default-Style) */
+button {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
 /* Custom Minimalist Scrollbars */
 ::-webkit-scrollbar {
     width: 6px;
@@ -434,6 +450,174 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.incident-stream-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-left-cluster {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.stream-view-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+/* UI/UX Pro Max: Precision Segmented View Switcher */
+.segmented-control {
+    display: inline-flex;
+    align-items: center;
+    background: #080808;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.btn-segmented {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 0.35rem 0.75rem;
+    border-radius: 5px;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    min-height: 32px;
+}
+
+.btn-segmented:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-segmented:focus-visible {
+    outline: 2px solid var(--border-subtle);
+    outline-offset: 1px;
+}
+
+.btn-segmented.active {
+    background: #1c1c1c;
+    color: var(--text-primary);
+    font-weight: 600;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.btn-segmented#btnViewSeverity.active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(20, 20, 20, 0.95) 100%);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.2), inset 0 0 0 1px rgba(239, 68, 68, 0.25);
+}
+
+.seg-icon {
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.seg-badge {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    border-radius: 10px;
+    background: var(--critical-red);
+    color: #ffffff;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+/* UI/UX Pro Max: Severity Filter Chips */
+.severity-filter-chips {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 2px 4px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    animation: fadeInControl 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInControl {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chip-filter {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 28px;
+}
+
+.chip-filter:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.chip-filter.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.chip-filter.chip-critical.active {
+    background: rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
+.chip-filter.chip-high.active {
+    background: rgba(249, 115, 22, 0.22);
+    color: #fdba74;
+    border-color: rgba(249, 115, 22, 0.6);
+}
+
+.chip-filter.chip-medium.active {
+    background: rgba(59, 130, 246, 0.22);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.6);
+}
+
+.chip-count {
+    background: rgba(0, 0, 0, 0.45);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
 }
 
 .timeline-status-tag {
@@ -445,6 +629,87 @@ body {
     padding: 0.2rem 0.55rem;
     border-radius: 4px;
     font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+/* UI/UX Pro Max: Severity Group Tiers in Ranked Mode */
+.severity-tier-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    margin-top: 0.9rem;
+    margin-bottom: 0.45rem;
+    border: 1px solid transparent;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.severity-tier-header:first-child {
+    margin-top: 0;
+}
+
+.severity-tier-header.tier-kritis {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.04) 100%);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+}
+
+.severity-tier-header.tier-tinggi {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.18) 0%, rgba(249, 115, 22, 0.04) 100%);
+    border-color: rgba(249, 115, 22, 0.4);
+    color: #fdba74;
+}
+
+.severity-tier-header.tier-menengah {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.04) 100%);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #93c5fd;
+}
+
+.tier-badge-pill {
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-weight: 600;
+}
+
+.badge-priority-rank {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+}
+
+.badge-priority-rank.rank-kritis {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+}
+
+.badge-priority-rank.rank-tinggi {
+    background: rgba(249, 115, 22, 0.2);
+    border-color: rgba(249, 115, 22, 0.5);
+    color: #fdba74;
+}
+
+.badge-priority-rank.rank-menengah {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.5);
+    color: #93c5fd;
 }
 
 .alert-list {
@@ -454,12 +719,13 @@ body {
     gap: 1.15rem;
     padding-left: 2rem;
     padding-right: 0.5rem;
-    max-height: 520px;
+    max-height: 540px;
     overflow-y: auto;
+    transition: padding-left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Vertical Timeline Spine Line */
-.alert-list::before {
+/* Chronological Mode: Left Vertical Connecting Spine */
+.alert-list.mode-chrono::before {
     content: '';
     position: absolute;
     top: 1rem;
@@ -467,6 +733,36 @@ body {
     left: 14px;
     width: 2px;
     background: var(--border-color);
+}
+
+/* Highest Severity Mode: High-density layout without spine line */
+.alert-list.mode-severity {
+    padding-left: 0.5rem;
+    gap: 0.85rem;
+}
+
+.alert-list.mode-severity::before {
+    display: none;
+}
+
+.alert-list.mode-severity .alert-card {
+    border-left-width: 4px;
+}
+
+.alert-list.mode-severity .alert-card::before {
+    display: none;
+}
+
+.alert-list.mode-severity .alert-card.KRITIS {
+    border-left-color: var(--critical-red);
+}
+
+.alert-list.mode-severity .alert-card.TINGGI {
+    border-left-color: var(--high-orange);
+}
+
+.alert-list.mode-severity .alert-card.MENENGAH {
+    border-left-color: var(--medium-yellow);
 }
 
 /* Timeline Entry (Alert Card with Node) */
